@@ -25,6 +25,7 @@ function App() {
     endDate: new Date(),
     period: "week" as "today" | "week" | "month" | "custom",
   });
+  const [isDateFilterExpanded, setIsDateFilterExpanded] = useState(false);
   const scannerRef = useRef<React.ElementRef<typeof Scanner>>(null);
 
   const handleImageCaptured = (imageData: string | Blob) => {
@@ -161,112 +162,137 @@ function App() {
 
       {/* Date Filter Section */}
       <section className="px-6 pb-6">
-        <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-xl p-6 backdrop-blur-sm">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-xl backdrop-blur-sm">
+          <button
+            onClick={() => setIsDateFilterExpanded(!isDateFilterExpanded)}
+            className="w-full flex items-center justify-between p-6 hover:bg-zinc-800/50 transition-colors"
+          >
             <h3 className="text-lg font-semibold flex items-center gap-2">
               <Calendar size={20} />
               Filtr dat
             </h3>
-            <div className="flex items-center gap-2 text-sm text-gray-400">
-              <Filter size={16} />
-              {dateFilter.period === "today" && "Dziś"}
-              {dateFilter.period === "week" && "Ostatni tydzień"}
-              {dateFilter.period === "month" && "Ostatni miesiąc"}
-              {dateFilter.period === "custom" && "Okres niestandardowy"}
+            <svg
+              className={`w-4 h-4 transition-transform ${
+                isDateFilterExpanded ? "rotate-180" : ""
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+
+          <div
+            className={`overflow-hidden transition-all duration-300 ${
+              isDateFilterExpanded
+                ? "max-h-96 opacity-100"
+                : "max-h-0 opacity-0"
+            }`}
+          >
+            <div className="p-6 border-t border-zinc-700/50">
+              {/* Quick Period Buttons */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {[
+                  { key: "today", label: "Dziś" },
+                  { key: "week", label: "Tydzień" },
+                  { key: "month", label: "Miesiąc" },
+                  { key: "custom", label: "Niestandardowy" },
+                ].map((period) => (
+                  <button
+                    key={period.key}
+                    onClick={() =>
+                      setDateFilter({
+                        ...dateFilter,
+                        period: period.key as
+                          | "today"
+                          | "week"
+                          | "month"
+                          | "custom",
+                        startDate:
+                          period.key === "custom"
+                            ? null
+                            : (() => {
+                                const today = new Date();
+                                const startOfWeek = new Date(today);
+                                startOfWeek.setDate(
+                                  today.getDate() - today.getDay(),
+                                );
+                                startOfWeek.setHours(0, 0, 0, 0);
+                                return startOfWeek;
+                              })(),
+                        endDate: period.key === "custom" ? null : new Date(),
+                      })
+                    }
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 border border-zinc-700/50 ${
+                      dateFilter.period === period.key
+                        ? "bg-zinc-800 text-white hover:bg-zinc-700"
+                        : "bg-zinc-800/50 text-zinc-300 hover:bg-zinc-700/50 hover:text-white"
+                    }`}
+                  >
+                    {period.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Custom Date Range */}
+              {dateFilter.period === "custom" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">
+                      Data początkowa
+                    </label>
+                    <input
+                      type="date"
+                      value={
+                        dateFilter.startDate
+                          ? dateFilter.startDate.toISOString().split("T")[0]
+                          : ""
+                      }
+                      onChange={(e) => {
+                        const date = e.target.value
+                          ? new Date(e.target.value)
+                          : null;
+                        setDateFilter({
+                          ...dateFilter,
+                          startDate: date,
+                        });
+                      }}
+                      className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-zinc-600/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">
+                      Data końcowa
+                    </label>
+                    <input
+                      type="date"
+                      value={
+                        dateFilter.endDate
+                          ? dateFilter.endDate.toISOString().split("T")[0]
+                          : ""
+                      }
+                      onChange={(e) => {
+                        const date = e.target.value
+                          ? new Date(e.target.value)
+                          : null;
+                        setDateFilter({
+                          ...dateFilter,
+                          endDate: date,
+                        });
+                      }}
+                      className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-zinc-600/50"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-
-          {/* Quick Period Buttons */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            {[
-              { key: "today", label: "Dziś" },
-              { key: "week", label: "Tydzień" },
-              { key: "month", label: "Miesiąc" },
-              { key: "custom", label: "Niestandardowy" },
-            ].map((period) => (
-              <button
-                key={period.key}
-                onClick={() =>
-                  setDateFilter({
-                    ...dateFilter,
-                    period: period.key as "today" | "week" | "month" | "custom",
-                    startDate:
-                      period.key === "custom"
-                        ? null
-                        : (() => {
-                            const today = new Date();
-                            const startOfWeek = new Date(today);
-                            startOfWeek.setDate(
-                              today.getDate() - today.getDay(),
-                            );
-                            startOfWeek.setHours(0, 0, 0, 0);
-                            return startOfWeek;
-                          })(),
-                    endDate: period.key === "custom" ? null : new Date(),
-                  })
-                }
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 border border-zinc-700/50 ${
-                  dateFilter.period === period.key
-                    ? "bg-zinc-800 text-white hover:bg-zinc-700"
-                    : "bg-zinc-800/50 text-zinc-300 hover:bg-zinc-700/50 hover:text-white"
-                }`}
-              >
-                {period.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Custom Date Range */}
-          {dateFilter.period === "custom" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  Data początkowa
-                </label>
-                <input
-                  type="date"
-                  value={
-                    dateFilter.startDate
-                      ? dateFilter.startDate.toISOString().split("T")[0]
-                      : ""
-                  }
-                  onChange={(e) => {
-                    const date = e.target.value
-                      ? new Date(e.target.value)
-                      : null;
-                    setDateFilter({
-                      ...dateFilter,
-                      startDate: date,
-                    });
-                  }}
-                  className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-zinc-600/50"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  Data końcowa
-                </label>
-                <input
-                  type="date"
-                  value={
-                    dateFilter.endDate
-                      ? dateFilter.endDate.toISOString().split("T")[0]
-                      : ""
-                  }
-                  onChange={(e) => {
-                    const date = e.target.value
-                      ? new Date(e.target.value)
-                      : null;
-                    setDateFilter({
-                      ...dateFilter,
-                      endDate: date,
-                    });
-                  }}
-                  className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-zinc-600/50"
-                />
-              </div>
-            </div>
-          )}
         </div>
       </section>
 
