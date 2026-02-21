@@ -40,10 +40,43 @@ export default function Receipts(props: ReceiptsProps) {
   const [error, setError] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<Item[]>([]);
   const [itemsLoading, setItemsLoading] = useState(false);
+  const [itemCounts, setItemCounts] = useState<Record<number, number>>({});
 
   useEffect(() => {
     fetchReceipts();
   }, [props.dateFilter]);
+
+  // Fetch item counts for all receipts
+  useEffect(() => {
+    const fetchItemCounts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("items")
+          .select("receipt_id")
+          .in(
+            "receipt_id",
+            receipts.map((r) => r.id),
+          );
+
+        if (error) {
+          throw error;
+        }
+
+        const counts: Record<number, number> = {};
+        data?.forEach((item) => {
+          counts[item.receipt_id] = (counts[item.receipt_id] || 0) + 1;
+        });
+
+        setItemCounts(counts);
+      } catch (err) {
+        console.error("Error fetching item counts:", err);
+      }
+    };
+
+    if (receipts.length > 0) {
+      fetchItemCounts();
+    }
+  }, [receipts]);
 
   const fetchItemsForReceipt = async (receiptId: number) => {
     try {
@@ -204,10 +237,13 @@ export default function Receipts(props: ReceiptsProps) {
                   Sklep
                 </th>
                 <th className="text-left px-4 py-3 text-gray-300 font-medium text-sm">
-                  Kwota
+                  Ilość pozycji
                 </th>
                 <th className="text-left px-4 py-3 text-gray-300 font-medium text-sm">
                   Kategoria
+                </th>
+                <th className="text-left px-4 py-3 text-gray-300 font-medium text-sm">
+                  Kwota
                 </th>
               </tr>
             </thead>
@@ -240,7 +276,7 @@ export default function Receipts(props: ReceiptsProps) {
                     </td>
                     <td className="px-4 py-3">
                       <div className="font-semibold text-white">
-                        {receipt.total_amount.toFixed(2)} PLN
+                        {itemCounts[receipt.id] || 0}
                       </div>
                     </td>
                     <td className="px-4 py-3">
@@ -251,6 +287,11 @@ export default function Receipts(props: ReceiptsProps) {
                       >
                         {receipt.category}
                       </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="font-semibold text-white">
+                        {receipt.total_amount.toFixed(2)} PLN
+                      </div>
                     </td>
                   </tr>
                   {props.selectedReceiptId === receipt.id && (
@@ -269,7 +310,7 @@ export default function Receipts(props: ReceiptsProps) {
                                 </span>
                               </div>
                             ) : selectedItems.length > 0 ? (
-                              selectedItems.map((item, index) => (
+                              selectedItems.map((item) => (
                                 <div
                                   key={item.id}
                                   className="grid grid-cols-3 gap-4 bg-zinc-800/50 p-2 rounded border border-zinc-700/50"
