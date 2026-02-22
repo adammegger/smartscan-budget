@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Theme Variables using Tailwind v4 @theme syntax */
+/* Theme Variables - Tailwind v4 @theme syntax */
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -36,14 +36,14 @@
   --primary-foreground: #ffffff;
   --secondary: #f4f4f5;
   --secondary-foreground: #18181b;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --accent: #f4f4f5;
+  --muted: #f8fafc;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
   --accent-foreground: #18181b;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: #e4e4e7;
-  --input: #e4e4e7;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
   --ring: #f97316;
 
   /* Category colors - darker for light mode (WCAG compliant) */
@@ -101,48 +101,32 @@ body {
     color 0.3s ease;
 }
 
-/* Utility classes for theme colors */
-.bg-theme-background {
-  background-color: var(--background);
-}
-
-.text-theme-foreground {
-  color: var(--foreground);
-}
-
-.bg-theme-card {
+/* Utility classes for theme colors - these work with both themes */
+.bg-card {
   background-color: var(--card);
 }
 
-.text-theme-card-foreground {
+.text-card-foreground {
   color: var(--card-foreground);
 }
 
-.bg-theme-primary {
-  background-color: var(--primary);
-}
-
-.text-theme-primary-foreground {
-  color: var(--primary-foreground);
-}
-
-.bg-theme-secondary {
-  background-color: var(--secondary);
-}
-
-.text-theme-secondary-foreground {
-  color: var(--secondary-foreground);
-}
-
-.bg-theme-muted {
+.bg-muted {
   background-color: var(--muted);
 }
 
-.text-theme-muted-foreground {
+.text-muted-foreground {
   color: var(--muted-foreground);
 }
 
-.border-theme-border {
+.bg-secondary {
+  background-color: var(--secondary);
+}
+
+.text-secondary-foreground {
+  color: var(--secondary-foreground);
+}
+
+.border-border {
   border-color: var(--border);
 }
 

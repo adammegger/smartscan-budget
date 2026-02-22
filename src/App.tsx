@@ -33,7 +33,7 @@ function ThemeToggle() {
   return (
     <button
       onClick={handleToggle}
-      className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-400 hover:text-white hover:bg-zinc-800/50 rounded-md transition-colors"
+      className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
       aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
     >
       {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
@@ -124,7 +124,6 @@ function AppContent() {
   useEffect(() => {
     const checkSupabaseConnection = async () => {
       try {
-        // Try to get the current session to test the connection
         const { data, error } = await supabase.auth.getSession();
 
         if (error) {
@@ -143,7 +142,6 @@ function AppContent() {
     checkSupabaseConnection();
   }, []);
 
-  // Check authentication status on mount and set up auth listener
   useEffect(() => {
     const checkAuth = async () => {
       const {
@@ -160,7 +158,6 @@ function AppContent() {
 
     checkAuth();
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -179,7 +176,7 @@ function AppContent() {
   // Show loading while checking auth
   if (isAuthenticated === null) {
     return (
-      <div className="min-h-screen bg-zinc-950 dark:bg-background text-foreground flex items-center justify-center">
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
       </div>
     );
@@ -191,13 +188,13 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 dark:bg-background text-foreground pt-12 px-4">
+    <div className="min-h-screen bg-background text-foreground pt-12 px-4">
       {/* Header */}
       <header className="px-6 py-8">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <User size={20} className="text-gray-400" />
-            <span className="text-sm text-gray-300">{userEmail}</span>
+            <User size={20} className="text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">{userEmail}</span>
           </div>
           <div className="flex items-center gap-4">
             <ThemeToggle />
@@ -205,13 +202,13 @@ function AppContent() {
               <div
                 className={`w-3 h-3 rounded-full ${
                   supabaseStatus === "connected"
-                    ? "bg-green-400"
+                    ? "bg-green-500"
                     : supabaseStatus === "error"
-                      ? "bg-red-400"
-                      : "bg-yellow-400"
+                      ? "bg-red-500"
+                      : "bg-yellow-500"
                 }`}
               />
-              <span className="text-sm text-gray-400">
+              <span className="text-sm text-muted-foreground">
                 {supabaseStatus === "connected"
                   ? "Supabase połączony"
                   : supabaseStatus === "error"
@@ -221,7 +218,7 @@ function AppContent() {
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-400 hover:text-white hover:bg-zinc-800/50 rounded-md transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
             >
               <LogOut size={16} />
               Wyloguj
@@ -236,17 +233,17 @@ function AppContent() {
           <button
             onClick={triggerScan}
             disabled={isAnalyzing}
-            className={`bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold p-6 rounded-full shadow-lg transform transition-all duration-200 hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-orange-300 flex items-center justify-center ${
+            className={`bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-primary-foreground font-bold p-6 rounded-full shadow-lg transform transition-all duration-200 hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-orange-300 flex items-center justify-center ${
               isAnalyzing ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
             {isAnalyzing ? (
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-foreground"></div>
             ) : (
               <Camera size={32} />
             )}
           </button>
-          <span className="mt-4 text-lg font-semibold text-gray-300">
+          <span className="mt-4 text-lg font-semibold text-muted-foreground">
             {isAnalyzing ? "ANALIZUJĘ..." : "SKANUJ PARAGON"}
           </span>
         </div>
@@ -257,10 +254,10 @@ function AppContent() {
             <p
               className={`font-semibold ${
                 captureMessage.includes("Błąd")
-                  ? "text-red-400"
+                  ? "text-destructive"
                   : captureMessage.includes("pomyślnie")
-                    ? "text-green-400"
-                    : "text-yellow-400"
+                    ? "text-green-600 dark:text-green-400"
+                    : "text-yellow-600 dark:text-yellow-400"
               }`}
             >
               {captureMessage}
@@ -271,14 +268,14 @@ function AppContent() {
 
       {/* Navigation Tabs */}
       <nav className="px-6 pb-6">
-        <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-xl backdrop-blur-sm">
+        <div className="bg-card border border-border rounded-xl">
           <div className="flex">
             <button
               onClick={() => setActiveTab("receipts")}
               className={`flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-colors ${
                 activeTab === "receipts"
-                  ? "bg-zinc-800 text-white"
-                  : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"
+                  ? "bg-secondary text-secondary-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
               <Calendar size={20} />
@@ -288,8 +285,8 @@ function AppContent() {
               onClick={() => setActiveTab("priceHistory")}
               className={`flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-colors ${
                 activeTab === "priceHistory"
-                  ? "bg-zinc-800 text-white"
-                  : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"
+                  ? "bg-secondary text-secondary-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
               <BarChart3 size={20} />
@@ -302,10 +299,10 @@ function AppContent() {
       {/* Date Filter Section - only show for receipts tab */}
       {activeTab === "receipts" && (
         <section className="px-6 pb-6">
-          <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-xl backdrop-blur-sm">
+          <div className="bg-card border border-border rounded-xl">
             <button
               onClick={() => setIsDateFilterExpanded(!isDateFilterExpanded)}
-              className="w-full flex items-center justify-between p-6 hover:bg-zinc-800/50 transition-colors"
+              className="w-full flex items-center justify-between p-6 hover:bg-muted transition-colors"
             >
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <Calendar size={20} />
@@ -335,7 +332,7 @@ function AppContent() {
                   : "max-h-0 opacity-0"
               }`}
             >
-              <div className="p-6 border-t border-zinc-700/50">
+              <div className="p-6 border-t border-border">
                 {/* Quick Period Buttons */}
                 <div className="flex flex-wrap gap-2 mb-4">
                   {[
@@ -369,10 +366,10 @@ function AppContent() {
                           endDate: period.key === "custom" ? null : new Date(),
                         })
                       }
-                      className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 border border-zinc-700/50 ${
+                      className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 border ${
                         dateFilter.period === period.key
-                          ? "bg-zinc-800 text-white hover:bg-zinc-700"
-                          : "bg-zinc-800/50 text-zinc-300 hover:bg-zinc-700/50 hover:text-white"
+                          ? "bg-secondary text-secondary-foreground border-secondary"
+                          : "bg-muted text-muted-foreground border-border hover:bg-secondary"
                       }`}
                     >
                       {period.label}
@@ -384,7 +381,7 @@ function AppContent() {
                 {dateFilter.period === "custom" && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-1">
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">
                         Data początkowa
                       </label>
                       <input
@@ -403,11 +400,11 @@ function AppContent() {
                             startDate: date,
                           });
                         }}
-                        className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-zinc-600/50"
+                        className="w-full px-3 py-2 bg-muted border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-input"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-1">
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">
                         Data końcowa
                       </label>
                       <input
@@ -426,7 +423,7 @@ function AppContent() {
                             endDate: date,
                           });
                         }}
-                        className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-zinc-600/50"
+                        className="w-full px-3 py-2 bg-muted border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-input"
                       />
                     </div>
                   </div>

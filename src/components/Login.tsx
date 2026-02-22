@@ -40,19 +40,21 @@ export default function Login({ onLoginSuccess }: LoginProps) {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 dark:bg-background dark:text-foreground text-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold tracking-tight">SmartScan</h1>
-          <p className="text-gray-400 mt-2">Zaloguj się do swojego konta</p>
+          <p className="text-muted-foreground mt-2">
+            Zaloguj się do swojego konta
+          </p>
         </div>
 
-        <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-xl p-6 backdrop-blur-sm">
+        <div className="bg-card border border-border rounded-xl p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-300 mb-1"
+                className="block text-sm font-medium text-muted-foreground mb-1"
               >
                 Adres e-mail
               </label>
@@ -62,7 +64,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-zinc-600/50"
+                className="w-full px-3 py-2 bg-muted border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-input"
                 placeholder="twoj@email.com"
               />
             </div>
@@ -70,7 +72,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-300 mb-1"
+                className="block text-sm font-medium text-muted-foreground mb-1"
               >
                 Hasło
               </label>
@@ -80,25 +82,25 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-zinc-600/50"
+                className="w-full px-3 py-2 bg-muted border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-input"
                 placeholder="••••••••"
               />
             </div>
 
             {error && (
-              <div className="bg-red-500/10 border border-red-500/50 rounded-md p-3">
-                <p className="text-red-400 text-sm">{error}</p>
+              <div className="bg-destructive/10 border border-destructive/50 rounded-md p-3">
+                <p className="text-destructive text-sm">{error}</p>
               </div>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-3 px-4 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-primary-foreground font-bold py-3 px-4 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground"></div>
                   Logowanie...
                 </span>
               ) : (
@@ -108,7 +110,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
           </form>
         </div>
 
-        <p className="text-center text-gray-500 text-sm mt-6">
+        <p className="text-center text-muted-foreground text-sm mt-6">
           Witaj w aplikacji SmartScan - Twoim osobistym asystencie zakupowym
         </p>
       </div>
