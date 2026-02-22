@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
+import ProductPriceHistory from "./ProductPriceHistory";
 
 interface Receipt {
   id: number;
@@ -41,6 +42,9 @@ export default function Receipts(props: ReceiptsProps) {
   const [selectedItems, setSelectedItems] = useState<Item[]>([]);
   const [itemsLoading, setItemsLoading] = useState(false);
   const [itemCounts, setItemCounts] = useState<Record<number, number>>({});
+  const [showingPriceHistory, setShowingPriceHistory] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     fetchReceipts();
@@ -316,7 +320,13 @@ export default function Receipts(props: ReceiptsProps) {
                                   className="grid grid-cols-3 gap-4 bg-zinc-800/50 p-2 rounded border border-zinc-700/50"
                                 >
                                   <div className="text-gray-300">
-                                    <div className="font-medium">
+                                    <div
+                                      className="font-medium cursor-pointer hover:text-orange-400 transition-colors"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowingPriceHistory(item.name);
+                                      }}
+                                    >
                                       {item.name}
                                     </div>
                                     <div className="text-xs text-gray-400">
@@ -422,6 +432,18 @@ export default function Receipts(props: ReceiptsProps) {
           </table>
         </div>
       </div>
+
+      {/* Product Price History Modal */}
+      {showingPriceHistory && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <ProductPriceHistory
+              productName={showingPriceHistory}
+              onClose={() => setShowingPriceHistory(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
