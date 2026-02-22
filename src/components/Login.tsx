@@ -40,7 +40,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-zinc-950 dark:bg-background dark:text-foreground text-white flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold tracking-tight">SmartScan</h1>

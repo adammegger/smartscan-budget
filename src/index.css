@@ -1,1 +1,196 @@
 @import "tailwindcss";
+
+/* Theme Variables using Tailwind v4 @theme syntax */
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+/* Light Theme (default) */
+:root,
+.light {
+  --background: #fafafa;
+  --foreground: #18181b;
+  --card: #ffffff;
+  --card-foreground: #18181b;
+  --popover: #ffffff;
+  --popover-foreground: #18181b;
+  --primary: #f97316;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #f4f4f5;
+  --accent-foreground: #18181b;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #f97316;
+
+  /* Category colors - darker for light mode (WCAG compliant) */
+  --category-food: #15803d;
+  --category-transport: #1d4ed8;
+  --category-home: #a16207;
+  --category-health: #dc2626;
+  --category-entertainment: #7c3aed;
+  --category-shopping: #db2777;
+  --category-default: #52525b;
+}
+
+/* Dark Theme */
+.dark {
+  --background: #09090b;
+  --foreground: #fafafa;
+  --card: #18181b;
+  --card-foreground: #fafafa;
+  --popover: #18181b;
+  --popover-foreground: #fafafa;
+  --primary: #f97316;
+  --primary-foreground: #ffffff;
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent: #27272a;
+  --accent-foreground: #fafafa;
+  --destructive: #f87171;
+  --destructive-foreground: #ffffff;
+  --border: #27272a;
+  --input: #27272a;
+  --ring: #f97316;
+
+  /* Category colors - brighter/neon for dark mode */
+  --category-food: #22c55e;
+  --category-transport: #3b82f6;
+  --category-home: #eab308;
+  --category-health: #ef4444;
+  --category-entertainment: #a855f7;
+  --category-shopping: #ec4899;
+  --category-default: #6b7280;
+}
+
+/* Base styles using CSS variables */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+/* Utility classes for theme colors */
+.bg-theme-background {
+  background-color: var(--background);
+}
+
+.text-theme-foreground {
+  color: var(--foreground);
+}
+
+.bg-theme-card {
+  background-color: var(--card);
+}
+
+.text-theme-card-foreground {
+  color: var(--card-foreground);
+}
+
+.bg-theme-primary {
+  background-color: var(--primary);
+}
+
+.text-theme-primary-foreground {
+  color: var(--primary-foreground);
+}
+
+.bg-theme-secondary {
+  background-color: var(--secondary);
+}
+
+.text-theme-secondary-foreground {
+  color: var(--secondary-foreground);
+}
+
+.bg-theme-muted {
+  background-color: var(--muted);
+}
+
+.text-theme-muted-foreground {
+  color: var(--muted-foreground);
+}
+
+.border-theme-border {
+  border-color: var(--border);
+}
+
+/* Category color utilities using CSS variables */
+.bg-category-food {
+  background-color: var(--category-food);
+}
+
+.bg-category-transport {
+  background-color: var(--category-transport);
+}
+
+.bg-category-home {
+  background-color: var(--category-home);
+}
+
+.bg-category-health {
+  background-color: var(--category-health);
+}
+
+.bg-category-entertainment {
+  background-color: var(--category-entertainment);
+}
+
+.bg-category-shopping {
+  background-color: var(--category-shopping);
+}
+
+.text-category-food {
+  color: var(--category-food);
+}
+
+.text-category-transport {
+  color: var(--category-transport);
+}
+
+.text-category-home {
+  color: var(--category-home);
+}
+
+.text-category-health {
+  color: var(--category-health);
+}
+
+.text-category-entertainment {
+  color: var(--category-entertainment);
+}
+
+.text-category-shopping {
+  color: var(--category-shopping);
+}

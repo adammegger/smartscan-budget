@@ -1,13 +1,49 @@
-import { Camera, Calendar, BarChart3, LogOut, User } from "lucide-react";
+import {
+  Camera,
+  Calendar,
+  BarChart3,
+  LogOut,
+  User,
+  Sun,
+  Moon,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "./lib/supabase";
+import { ThemeProvider, useTheme } from "./lib/theme";
 import Scanner from "./components/Scanner";
 import Receipts from "./components/Receipts";
 import CategorySummary from "./components/CategorySummary";
 import ProductPriceHistory from "./components/ProductPriceHistory";
 import Login from "./components/Login";
 
-function App() {
+// Theme Toggle Button Component
+function ThemeToggle() {
+  const { theme, toggleTheme } = useTheme();
+
+  const handleToggle = () => {
+    console.log(
+      "Current theme:",
+      theme,
+      "-> switching to:",
+      theme === "dark" ? "light" : "dark",
+    );
+    toggleTheme();
+  };
+
+  return (
+    <button
+      onClick={handleToggle}
+      className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-400 hover:text-white hover:bg-zinc-800/50 rounded-md transition-colors"
+      aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+    >
+      {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+      {theme === "dark" ? "Jasny" : "Ciemny"}
+    </button>
+  );
+}
+
+// Main App Content
+function AppContent() {
   const [supabaseStatus, setSupabaseStatus] = useState<
     "loading" | "connected" | "error"
   >("loading");
@@ -143,7 +179,7 @@ function App() {
   // Show loading while checking auth
   if (isAuthenticated === null) {
     return (
-      <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-zinc-950 dark:bg-background text-foreground flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
       </div>
     );
@@ -155,7 +191,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white pt-12 px-4">
+    <div className="min-h-screen bg-zinc-950 dark:bg-background text-foreground pt-12 px-4">
       {/* Header */}
       <header className="px-6 py-8">
         <div className="flex justify-between items-center">
@@ -164,6 +200,7 @@ function App() {
             <span className="text-sm text-gray-300">{userEmail}</span>
           </div>
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <div className="flex items-center gap-2">
               <div
                 className={`w-3 h-3 rounded-full ${
@@ -426,6 +463,14 @@ function App() {
         onAnalysisError={handleAnalysisError}
       />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
 
