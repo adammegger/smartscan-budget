@@ -3,6 +3,15 @@ import { supabase } from "../lib/supabase";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import ProductPriceHistory from "./ProductPriceHistory";
+import CategoryIcon from "./CategoryIcon";
+
+interface Category {
+  id: number;
+  name: string;
+  icon: string;
+  color: string;
+  user_id: string | null;
+}
 
 interface Receipt {
   id: number;
@@ -46,6 +55,33 @@ export default function Receipts(props: ReceiptsProps) {
   const [showingPriceHistory, setShowingPriceHistory] = useState<string | null>(
     null,
   );
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) return;
+
+        const { data, error } = await supabase
+          .from("categories")
+          .select("*")
+          .or(`user_id.eq.${user.id},user_id.is.null`)
+          .order("name", { ascending: true });
+
+        if (error) throw error;
+        setCategories(data || []);
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     fetchReceipts();
@@ -222,21 +258,31 @@ export default function Receipts(props: ReceiptsProps) {
     }
   };
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case "Food":
-        return "bg-green-100 text-green-800";
-      case "Transport":
-        return "bg-blue-100 text-blue-800";
-      case "Home":
-        return "bg-yellow-100 text-yellow-800";
-      case "Health":
-        return "bg-red-100 text-red-800";
-      case "Entertainment":
-        return "bg-purple-100 text-purple-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
+  // Get category data from categories array
+  const getCategoryData = (categoryName: string) => {
+    return categories.find(
+      (cat) => cat.name.toLowerCase() === categoryName.toLowerCase(),
+    );
+  };
+
+  // Render category badge with icon and color
+  const renderCategoryBadge = (categoryName: string) => {
+    const categoryData = getCategoryData(categoryName);
+    const color = categoryData?.color || "#6b7280";
+    const icon = categoryData?.icon || "MoreHorizontal";
+
+    return (
+      <span
+        className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-semibold rounded-full"
+        style={{
+          backgroundColor: `${color}20`,
+          color: color,
+        }}
+      >
+        <CategoryIcon icon={icon} color={color} size={12} />
+        {categoryName}
+      </span>
+    );
   };
 
   if (loading) {
@@ -330,13 +376,7 @@ export default function Receipts(props: ReceiptsProps) {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getCategoryColor(
-                          receipt.category,
-                        )}`}
-                      >
-                        {receipt.category}
-                      </span>
+                      {renderCategoryBadge(receipt.category)}
                     </td>
                     <td className="px-4 py-3">
                       <div className="font-semibold text-white">
@@ -377,13 +417,7 @@ export default function Receipts(props: ReceiptsProps) {
                                       >
                                         {item.name}
                                       </div>
-                                      <span
-                                        className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getCategoryColor(
-                                          item.category,
-                                        )}`}
-                                      >
-                                        {item.category}
-                                      </span>
+                                      {renderCategoryBadge(item.category)}
                                     </div>
                                     <div className="flex items-center">
                                       <span className="font-semibold text-white text-lg">
@@ -434,14 +468,8 @@ export default function Receipts(props: ReceiptsProps) {
                                         key={category}
                                         className="bg-zinc-800/40 p-4 rounded-lg border border-zinc-700/50"
                                       >
-                                        <div
-                                          className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full mb-2 ${getCategoryColor(
-                                            category,
-                                          )}`}
-                                        >
-                                          {category}
-                                        </div>
-                                        <div className="text-xl font-bold text-white">
+                                        {renderCategoryBadge(category)}
+                                        <div className="text-xl font-bold text-white mt-2">
                                           {total.toFixed(2)} PLN
                                         </div>
                                       </div>

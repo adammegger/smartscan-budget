@@ -195,27 +195,23 @@ function App() {
 
       {/* Scan Button */}
       <section className="px-6 py-8">
-        <div className="flex justify-center">
-          <div className="space-y-4">
-            <button
-              onClick={triggerScan}
-              disabled={isAnalyzing}
-              className={`bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold p-6 rounded-full shadow-lg transform transition-all duration-200 hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-orange-300 flex items-center justify-center ${
-                isAnalyzing ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            >
-              {isAnalyzing ? (
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-              ) : (
-                <Camera size={32} />
-              )}
-            </button>
-            <div className="text-center">
-              <span className="text-lg font-semibold text-gray-300">
-                {isAnalyzing ? "ANALIZUJĘ..." : "SKANUJ PARAGON"}
-              </span>
-            </div>
-          </div>
+        <div className="flex flex-col items-center">
+          <button
+            onClick={triggerScan}
+            disabled={isAnalyzing}
+            className={`bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold p-6 rounded-full shadow-lg transform transition-all duration-200 hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-orange-300 flex items-center justify-center ${
+              isAnalyzing ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          >
+            {isAnalyzing ? (
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+            ) : (
+              <Camera size={32} />
+            )}
+          </button>
+          <span className="mt-4 text-lg font-semibold text-gray-300">
+            {isAnalyzing ? "ANALIZUJĘ..." : "SKANUJ PARAGON"}
+          </span>
         </div>
 
         {/* Capture Message */}
