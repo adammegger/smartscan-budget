@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import { supabase } from "../lib/supabase";
+import { format } from "date-fns";
+import { pl } from "date-fns/locale";
 
 export default function ProductPriceHistory() {
   const [productList, setProductList] = useState<string[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [priceHistory, setPriceHistory] = useState<
-    Array<{ price: number; receipts?: { date: string } }>
+    Array<{ price: number; receiptDate: string }>
   >([]);
   const [loading, setLoading] = useState(false);
 
@@ -13,15 +15,36 @@ export default function ProductPriceHistory() {
   const productListFetchedRef = useRef(false);
   const priceHistoryFetchedRef = useRef(false);
 
+  // Helper function to format date
+  const formatDate = (dateValue: string | undefined): string => {
+    if (!dateValue) return "Brak daty";
+    try {
+      return format(new Date(dateValue), "dd.MM.yyyy", { locale: pl });
+    } catch {
+      return "Brak daty";
+    }
+  };
+
   // Krok 1: Pobieranie Listy - wykonuje się tylko raz po wejściu w zakładkę
   useEffect(() => {
     const fetchProductList = async () => {
       console.log("Fetching products...");
 
       try {
+        // Get current authenticated user
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser();
+
+        if (!authUser) {
+          productListFetchedRef.current = true;
+          return;
+        }
+
         const { data, error } = await supabase
           .from("items")
           .select("name")
+          .eq("user_id", authUser.id)
           .order("name", { ascending: true });
 
         if (error) {
@@ -68,12 +91,30 @@ export default function ProductPriceHistory() {
       try {
         setLoading(true);
 
+        // Get current authenticated user
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser();
+
+        if (!authUser) {
+          setPriceHistory([]);
+          setLoading(false);
+          return;
+        }
+
         // SQL query to get price history for the selected product
+        // Using join to get date from receipts table instead of created_at
         const { data, error } = await supabase
           .from("items")
-          .select("price, receipts!fk_items_receipt_id(date)")
+          .select(
+            `
+            price,
+            receipts!fk_items_receipt_id(date)
+          `,
+          )
           .eq("name", selectedProduct)
-          .order("date", { foreignTable: "receipts", ascending: true });
+          .eq("user_id", authUser.id)
+          .order("date", { foreignTable: "receipts", ascending: false });
 
         if (error) {
           throw error;
@@ -81,13 +122,36 @@ export default function ProductPriceHistory() {
 
         if (data) {
           // Transform data to match our type structure
-          const transformedData = data.map((item) => ({
-            price: item.price,
-            receipts: item.receipts?.[0]
-              ? { date: item.receipts[0].date }
-              : undefined,
-          }));
-          setPriceHistory(transformedData);
+          const transformedData = data.map(
+            (item: {
+              price: number;
+              receipts?: { date: string } | { date: string }[];
+            }) => {
+              // Extract date from nested receipts structure
+              const receipts = item.receipts;
+              const rawDate = receipts
+                ? Array.isArray(receipts)
+                  ? receipts[0]?.date
+                  : receipts.date
+                : undefined;
+
+              return {
+                price: item.price,
+                receiptDate: rawDate || "",
+              };
+            },
+          );
+
+          // Sort manually - newest dates first (descending order)
+          const sortedData = transformedData.sort(
+            (a, b) =>
+              new Date(b.receiptDate).getTime() -
+              new Date(a.receiptDate).getTime(),
+          );
+
+          console.log("Mapped item", transformedData);
+          console.log("Final sorted", sortedData);
+          setPriceHistory(sortedData);
           priceHistoryFetchedRef.current = true;
         }
       } catch (err) {
@@ -147,7 +211,7 @@ export default function ProductPriceHistory() {
               {priceHistory.map((item, index) => (
                 <div key={index} className="flex justify-between text-sm">
                   <span className="text-gray-400">
-                    {item.receipts?.date || "Brak daty"}
+                    {formatDate(item.receiptDate)}
                   </span>
                   <span className="text-white font-medium">
                     {item.price} PLN

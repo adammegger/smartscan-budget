@@ -35,8 +35,22 @@ export default function CategorySummary(props: CategorySummaryProps) {
       setLoading(true);
       setError(null);
 
+      // Get current authenticated user
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+
+      if (!authUser) {
+        setCategorySummary([]);
+        setLoading(false);
+        return;
+      }
+
       // First, get filtered receipts based on date
-      let receiptsQuery = supabase.from("receipts").select("id");
+      let receiptsQuery = supabase
+        .from("receipts")
+        .select("id")
+        .eq("user_id", authUser.id);
 
       if (props.dateFilter && props.dateFilter.period) {
         const { startDate, endDate, period } = props.dateFilter;
@@ -87,6 +101,7 @@ export default function CategorySummary(props: CategorySummaryProps) {
       const { data, error } = await supabase
         .from("items")
         .select("name, price, category")
+        .eq("user_id", authUser.id)
         .in("receipt_id", receiptIds);
 
       if (error) {

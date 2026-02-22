@@ -20,7 +20,8 @@ interface Item {
   name: string;
   price: number;
   category: string;
-  created_at: string;
+  created_at?: string;
+  receipts?: { date: string }[];
 }
 
 interface DateFilter {
@@ -54,9 +55,17 @@ export default function Receipts(props: ReceiptsProps) {
   useEffect(() => {
     const fetchItemCounts = async () => {
       try {
+        // Get current authenticated user
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser();
+
+        if (!authUser) return;
+
         const { data, error } = await supabase
           .from("items")
           .select("receipt_id")
+          .eq("user_id", authUser.id)
           .in(
             "receipt_id",
             receipts.map((r) => r.id),
@@ -85,11 +94,32 @@ export default function Receipts(props: ReceiptsProps) {
   const fetchItemsForReceipt = async (receiptId: number) => {
     try {
       setItemsLoading(true);
+
+      // Get current authenticated user
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+
+      if (!authUser) {
+        setSelectedItems([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("items")
-        .select("*")
+        .select(
+          `
+          id,
+          receipt_id,
+          name,
+          price,
+          category,
+          receipts!fk_items_receipt_id(date)
+        `,
+        )
         .eq("receipt_id", receiptId)
-        .order("created_at", { ascending: true });
+        .eq("user_id", authUser.id)
+        .order("date", { foreignTable: "receipts", ascending: true });
 
       if (error) {
         throw error;
@@ -117,7 +147,23 @@ export default function Receipts(props: ReceiptsProps) {
       setLoading(true);
       setError(null);
 
-      let query = supabase.from("receipts").select("*");
+      // Get current authenticated user
+      const {
+        data: { user: authUser },
+        error: authError,
+      } = await supabase.auth.getUser();
+
+      if (authError || !authUser) {
+        // User not authenticated, show empty list
+        setReceipts([]);
+        setLoading(false);
+        return;
+      }
+
+      let query = supabase
+        .from("receipts")
+        .select("*")
+        .eq("user_id", authUser.id);
 
       // Apply date filtering if dateFilter is provided
       if (props.dateFilter) {
@@ -299,69 +345,68 @@ export default function Receipts(props: ReceiptsProps) {
                     </td>
                   </tr>
                   {props.selectedReceiptId === receipt.id && (
-                    <tr className="bg-zinc-800/50">
-                      <td colSpan={4} className="px-4 py-4">
-                        <div className="space-y-3">
-                          <h4 className="font-semibold text-white">
-                            Pozycje na paragonie:
-                          </h4>
-                          <div className="space-y-2 max-h-40 overflow-y-auto">
-                            {itemsLoading ? (
-                              <div className="text-center py-4 text-gray-400">
-                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500 mx-auto"></div>
-                                <span className="mt-2 block">
-                                  Ładowanie pozycji...
-                                </span>
-                              </div>
-                            ) : selectedItems.length > 0 ? (
-                              selectedItems.map((item) => (
-                                <div
-                                  key={item.id}
-                                  className="grid grid-cols-3 gap-4 bg-zinc-800/50 p-2 rounded border border-zinc-700/50"
-                                >
-                                  <div className="text-gray-300">
-                                    <div
-                                      className="font-medium cursor-pointer hover:text-orange-400 transition-colors"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setShowingPriceHistory(item.name);
-                                      }}
-                                    >
-                                      {item.name}
-                                    </div>
-                                    <div className="text-xs text-gray-400">
-                                      1 pozycja
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center">
-                                    <span
-                                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getCategoryColor(
-                                        item.category,
-                                      )} whitespace-nowrap`}
-                                    >
-                                      {item.category}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-end">
-                                    <span className="font-medium text-white">
-                                      {item.price.toFixed(2)} PLN
-                                    </span>
-                                  </div>
+                    <tr className="bg-zinc-900/30">
+                      <td colSpan={5} className="p-0">
+                        <div className="w-full p-6 space-y-6">
+                          {/* Items Section */}
+                          <div>
+                            <h4 className="font-semibold text-white text-lg mb-4">
+                              Pozycje na paragonie ({selectedItems.length})
+                            </h4>
+                            <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+                              {itemsLoading ? (
+                                <div className="text-center py-6 text-gray-400">
+                                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500 mx-auto"></div>
+                                  <span className="mt-2 block">
+                                    Ładowanie pozycji...
+                                  </span>
                                 </div>
-                              ))
-                            ) : (
-                              <div className="text-gray-400">
-                                Brak pozycji na tym paragonie
-                              </div>
-                            )}
+                              ) : selectedItems.length > 0 ? (
+                                selectedItems.map((item) => (
+                                  <div
+                                    key={item.id}
+                                    className="flex items-center justify-between bg-zinc-800/40 p-4 rounded-lg border border-zinc-700/50 hover:bg-zinc-800/60 transition-colors"
+                                  >
+                                    <div className="flex items-center gap-4 flex-1">
+                                      <div
+                                        className="font-medium text-white cursor-pointer hover:text-orange-400 transition-colors text-base"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setShowingPriceHistory(item.name);
+                                        }}
+                                      >
+                                        {item.name}
+                                      </div>
+                                      <span
+                                        className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getCategoryColor(
+                                          item.category,
+                                        )}`}
+                                      >
+                                        {item.category}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center">
+                                      <span className="font-semibold text-white text-lg">
+                                        {item.price.toFixed(2)} PLN
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="text-gray-400 text-center py-4">
+                                  Brak pozycji na tym paragonie
+                                </div>
+                              )}
+                            </div>
                           </div>
+
                           {/* Category Summary */}
                           {selectedItems.length > 0 && (
-                            <div className="space-y-2 pt-3 border-t border-zinc-700/50">
-                              <h5 className="font-semibold text-white text-sm">
-                                Podsumowanie według kategorii:
+                            <div className="pt-4 border-t border-zinc-700/50">
+                              <h5 className="font-semibold text-white text-lg mb-4">
+                                Podsumowanie według kategorii
                               </h5>
-                              <div className="grid grid-cols-3 gap-2">
+                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                                 {(() => {
                                   // Calculate category totals from selectedItems
                                   const categoryTotals = new Map<
@@ -385,15 +430,18 @@ export default function Receipts(props: ReceiptsProps) {
 
                                   return sortedCategories.map(
                                     ([category, total]) => (
-                                      <div key={category} className="space-y-1">
+                                      <div
+                                        key={category}
+                                        className="bg-zinc-800/40 p-4 rounded-lg border border-zinc-700/50"
+                                      >
                                         <div
-                                          className={`p-2 rounded text-xs font-medium ${getCategoryColor(
+                                          className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full mb-2 ${getCategoryColor(
                                             category,
                                           )}`}
                                         >
                                           {category}
                                         </div>
-                                        <div className="text-xs text-gray-300">
+                                        <div className="text-xl font-bold text-white">
                                           {total.toFixed(2)} PLN
                                         </div>
                                       </div>
@@ -404,7 +452,8 @@ export default function Receipts(props: ReceiptsProps) {
                             </div>
                           )}
 
-                          <div className="flex justify-between items-center pt-2 border-t border-zinc-700/50">
+                          {/* Footer */}
+                          <div className="flex justify-between items-center pt-4 border-t border-zinc-700/50">
                             <div className="flex items-center space-x-4">
                               <span className="text-sm text-gray-400">
                                 Zapisano:{" "}
@@ -437,10 +486,7 @@ export default function Receipts(props: ReceiptsProps) {
       {showingPriceHistory && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <ProductPriceHistory
-              productName={showingPriceHistory}
-              onClose={() => setShowingPriceHistory(null)}
-            />
+            <ProductPriceHistory />
           </div>
         </div>
       )}

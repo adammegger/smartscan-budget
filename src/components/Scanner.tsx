@@ -32,10 +32,20 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
           onImageCaptured(imageData as string);
 
           try {
+            // Get current authenticated user
+            const {
+              data: { user: authUser },
+              error: authError,
+            } = await supabase.auth.getUser();
+
+            if (authError || !authUser) {
+              throw new Error("User not authenticated");
+            }
+
             // Process receipt with Gemini AI
             const receiptData = await processReceipt(imageData as string);
 
-            // Save to Supabase - save receipt without items
+            // Save to Supabase - save receipt with user_id
             const { data: receiptDataResult, error: receiptError } =
               await supabase
                 .from("receipts")
@@ -44,6 +54,7 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
                   date: receiptData.date,
                   total_amount: receiptData.total_amount,
                   category: receiptData.category,
+                  user_id: authUser.id,
                   created_at: new Date().toISOString(),
                 })
                 .select("id")
@@ -53,13 +64,17 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
               throw receiptError;
             }
 
-            // Save items to separate table
+            // Save items to separate table with all new fields
             if (receiptData.items && Array.isArray(receiptData.items)) {
               const itemsToInsert = receiptData.items.map((item: any) => ({
                 receipt_id: receiptDataResult.id,
                 name: item.name,
                 price: item.price,
                 category: item.category,
+                unit: item.unit || "szt",
+                quantity: item.quantity || 1,
+                brand: item.brand || null,
+                user_id: authUser.id,
               }));
 
               const { error: itemsError } = await supabase

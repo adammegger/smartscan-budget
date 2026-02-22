@@ -9,7 +9,7 @@ export async function processReceipt(base64Image: string) {
         {
           parts: [
             {
-              text: 'You are a receipt scanner. Extract: store_name, date (YYYY-MM-DD), total_amount (numeric), and items (array of objects with name, price, and category). Assign a category to each item based on its name. Categories: Food, Transport, Home, Health, Entertainment, Other. Also assign a category to the entire receipt based on the store and items. Return only pure JSON with this structure: {"store_name": "string", "date": "YYYY-MM-DD", "total_amount": number, "category": "string", "items": [{"name": "string", "price": number, "category": "string"}]}',
+              text: 'You are a receipt scanner. Extract: store_name, date (YYYY-MM-DD), total_amount (numeric), and items (array of objects with name, price, category, unit (like "kg", "g", "l", "ml", "szt"), quantity (numeric), and brand if detectable). Parse quantities from text like "200g" -> quantity: 0.2, unit: "kg". For items without unit/quantity, use unit: "szt", quantity: 1. Assign a category to each item based on its name. Categories: Food, Transport, Home, Health, Entertainment, Other. Also assign a category to the entire receipt based on the store and items. Return only pure JSON with this structure: {"store_name": "string", "date": "YYYY-MM-DD", "total_amount": number, "category": "string", "items": [{"name": "string", "price": number, "category": "string", "unit": "string", "quantity": number, "brand": "string|null"}]}',
             },
             {
               inlineData: {
