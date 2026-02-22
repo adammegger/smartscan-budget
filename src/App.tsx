@@ -1,9 +1,10 @@
-import { Camera, Calendar, Filter } from "lucide-react";
+import { Camera, Calendar, Filter, BarChart3 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "./lib/supabase";
 import Scanner from "./components/Scanner";
 import Receipts from "./components/Receipts";
 import CategorySummary from "./components/CategorySummary";
+import ProductPriceHistory from "./components/ProductPriceHistory";
 
 function App() {
   const [supabaseStatus, setSupabaseStatus] = useState<
@@ -25,6 +26,9 @@ function App() {
     endDate: new Date(),
     period: "week" as "today" | "week" | "month" | "custom",
   });
+  const [activeTab, setActiveTab] = useState<"receipts" | "priceHistory">(
+    "receipts",
+  );
   const [isDateFilterExpanded, setIsDateFilterExpanded] = useState(false);
   const scannerRef = useRef<React.ElementRef<typeof Scanner>>(null);
 
@@ -159,6 +163,36 @@ function App() {
           </div>
         )}
       </section>
+
+      {/* Navigation Tabs */}
+      <nav className="px-6 pb-6">
+        <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-xl backdrop-blur-sm">
+          <div className="flex">
+            <button
+              onClick={() => setActiveTab("receipts")}
+              className={`flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-colors ${
+                activeTab === "receipts"
+                  ? "bg-zinc-800 text-white"
+                  : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"
+              }`}
+            >
+              <Calendar size={20} />
+              Paragony
+            </button>
+            <button
+              onClick={() => setActiveTab("priceHistory")}
+              className={`flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-colors ${
+                activeTab === "priceHistory"
+                  ? "bg-zinc-800 text-white"
+                  : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"
+              }`}
+            >
+              <BarChart3 size={20} />
+              Historia cen
+            </button>
+          </div>
+        </div>
+      </nav>
 
       {/* Date Filter Section */}
       <section className="px-6 pb-6">
@@ -296,16 +330,22 @@ function App() {
         </div>
       </section>
 
-      {/* Receipts Section */}
+      {/* Main Content */}
       <section className="px-6 pb-8">
-        <Receipts
-          selectedReceiptId={selectedReceiptId}
-          onReceiptSelect={setSelectedReceiptId}
-          dateFilter={dateFilter}
-        />
-        <div className="mt-8">
-          <CategorySummary dateFilter={dateFilter} />
-        </div>
+        {activeTab === "receipts" ? (
+          <>
+            <Receipts
+              selectedReceiptId={selectedReceiptId}
+              onReceiptSelect={setSelectedReceiptId}
+              dateFilter={dateFilter}
+            />
+            <div className="mt-8">
+              <CategorySummary dateFilter={dateFilter} />
+            </div>
+          </>
+        ) : (
+          <ProductPriceHistory />
+        )}
       </section>
 
       {/* Hidden Scanner Component */}
