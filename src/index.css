@@ -32,7 +32,7 @@
   --card-foreground: #18181b;
   --popover: #ffffff;
   --popover-foreground: #18181b;
-  --primary: #f97316;
+  --primary: #ff7043;
   --primary-foreground: #ffffff;
   --secondary: #f4f4f5;
   --secondary-foreground: #18181b;
@@ -44,7 +44,7 @@
   --destructive-foreground: #ffffff;
   --border: #e2e8f0;
   --input: #e2e8f0;
-  --ring: #f97316;
+  --ring: #ff7043;
 
   /* Category colors - darker for light mode (WCAG compliant) */
   --category-food: #15803d;
@@ -64,7 +64,7 @@
   --card-foreground: #fafafa;
   --popover: #18181b;
   --popover-foreground: #fafafa;
-  --primary: #f97316;
+  --primary: #ff7043;
   --primary-foreground: #ffffff;
   --secondary: #27272a;
   --secondary-foreground: #fafafa;
@@ -76,7 +76,7 @@
   --destructive-foreground: #ffffff;
   --border: #27272a;
   --input: #27272a;
-  --ring: #f97316;
+  --ring: #ff7043;
 
   /* Category colors - brighter/neon for dark mode */
   --category-food: #22c55e;

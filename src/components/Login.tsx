@@ -43,7 +43,18 @@ export default function Login({ onLoginSuccess }: LoginProps) {
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">SmartScan</h1>
+          <div className="flex justify-center mb-4">
+            <img
+              src="/logo-light.png"
+              alt="Paragonly"
+              className="h-16 w-auto dark:hidden"
+            />
+            <img
+              src="/logo-dark.png"
+              alt="Paragonly"
+              className="h-16 w-auto hidden dark:block"
+            />
+          </div>
           <p className="text-muted-foreground mt-2">
             Zaloguj się do swojego konta
           </p>
@@ -111,7 +122,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
         </div>
 
         <p className="text-center text-muted-foreground text-sm mt-6">
-          Witaj w aplikacji SmartScan - Twoim osobistym asystencie zakupowym
+          Witaj w aplikacji Paragonly - Twoim osobistym asystencie zakupowym
         </p>
       </div>
     </div>

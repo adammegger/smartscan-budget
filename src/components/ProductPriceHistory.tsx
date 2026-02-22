@@ -288,7 +288,7 @@ export default function ProductPriceHistory() {
       {/* Loading */}
       {loading && (
         <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#ff7043] mx-auto"></div>
           <p className="text-muted-foreground mt-2">Ładowanie danych...</p>
         </div>
       )}
@@ -403,10 +403,10 @@ export default function ProductPriceHistory() {
                   <Line
                     type="monotone"
                     dataKey="price"
-                    stroke="#f97316"
+                    stroke="#ff7043"
                     strokeWidth={2}
-                    dot={{ fill: "#f97316", strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 6, fill: "#f97316" }}
+                    dot={{ fill: "#ff7043", strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, fill: "#ff7043" }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -434,7 +434,7 @@ export default function ProductPriceHistory() {
                       </span>
                     </div>
                     <div className="text-right">
-                      <span className="text-orange-600 dark:text-orange-400 font-bold">
+                      <span className="text-[#ff7043] dark:text-[#ff7043] font-bold">
                         {store.min_price.toFixed(2)} PLN
                       </span>
                       <span className="text-muted-foreground text-xs ml-2">

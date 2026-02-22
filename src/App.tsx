@@ -192,10 +192,25 @@ function AppContent() {
       {/* Header */}
       <header className="px-6 py-8">
         <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <User size={20} className="text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">{userEmail}</span>
+          {/* Logo and App Name */}
+          <div className="flex items-center gap-3">
+            <img
+              src="/logo-light.png"
+              alt="Paragonly"
+              className="h-10 w-auto dark:hidden"
+            />
+            <img
+              src="/logo-dark.png"
+              alt="Paragonly"
+              className="h-10 w-auto hidden dark:block"
+            />
+            <div className="hidden">
+              <h1 className="text-xl font-bold text-orange-500">Paragonly</h1>
+              <p className="text-xs text-muted-foreground">Twoje finanse</p>
+            </div>
           </div>
+
+          {/* User Info */}
           <div className="flex items-center gap-4">
             <ThemeToggle />
             <div className="flex items-center gap-2">
