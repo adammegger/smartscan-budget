@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import ProductPriceHistory from "./ProductPriceHistory";
 import CategoryIcon from "./CategoryIcon";
+import { AlertTriangle } from "lucide-react";
 
 interface Category {
   id: number;
@@ -56,6 +57,82 @@ export default function Receipts(props: ReceiptsProps) {
     null,
   );
   const [categories, setCategories] = useState<Category[]>([]);
+  const [overBudgetCategories, setOverBudgetCategories] = useState<Set<string>>(
+    new Set(),
+  );
+
+  // Fetch budgets and check which categories are over budget
+  useEffect(() => {
+    const fetchBudgetStatus = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Get budgets
+        const { data: budgetsData } = await supabase
+          .from("budgets")
+          .select("category_name, amount")
+          .eq("user_id", user.id);
+
+        if (!budgetsData || budgetsData.length === 0) {
+          setOverBudgetCategories(new Set());
+          return;
+        }
+
+        // Get spending for current month
+        const today = new Date();
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+        const { data: receipts } = await supabase
+          .from("receipts")
+          .select("id")
+          .eq("user_id", user.id)
+          .gte("date", startOfMonth.toISOString().split("T")[0]);
+
+        const receiptIds = receipts?.map((r) => r.id) || [];
+
+        if (receiptIds.length === 0) {
+          setOverBudgetCategories(new Set());
+          return;
+        }
+
+        const { data: items } = await supabase
+          .from("items")
+          .select("price, category")
+          .eq("user_id", user.id)
+          .in("receipt_id", receiptIds);
+
+        // Calculate spending per category
+        const spendingByCategory: Record<string, number> = {};
+        items?.forEach((item) => {
+          const category = item.category;
+          const price =
+            typeof item.price === "number"
+              ? item.price
+              : parseFloat(String(item.price).replace(",", "."));
+          spendingByCategory[category] =
+            (spendingByCategory[category] || 0) + price;
+        });
+
+        // Check which budgets are exceeded
+        const overBudget = new Set<string>();
+        budgetsData.forEach((budget) => {
+          const spent = spendingByCategory[budget.category_name] || 0;
+          if (spent > budget.amount) {
+            overBudget.add(budget.category_name);
+          }
+        });
+
+        setOverBudgetCategories(overBudget);
+      } catch (err) {
+        console.error("Error fetching budget status:", err);
+      }
+    };
+
+    fetchBudgetStatus();
+  }, []);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -216,6 +293,7 @@ export default function Receipts(props: ReceiptsProps) {
   const renderCategoryBadge = (categoryName: string) => {
     const categoryData = getCategoryData(categoryName);
     const color = categoryData?.color || "#6b7280";
+    const isOverBudget = overBudgetCategories.has(categoryName);
     return (
       <span
         className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-semibold rounded-full"
@@ -227,6 +305,12 @@ export default function Receipts(props: ReceiptsProps) {
           size={12}
         />
         {categoryName}
+        {isOverBudget && (
+          <AlertTriangle
+            size={12}
+            className="ml-1 text-red-500 dark:text-red-400"
+          />
+        )}
       </span>
     );
   };

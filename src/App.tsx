@@ -3,9 +3,9 @@ import {
   Calendar,
   BarChart3,
   LogOut,
-  User,
   Sun,
   Moon,
+  Wallet,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "./lib/supabase";
@@ -15,6 +15,8 @@ import Receipts from "./components/Receipts";
 import CategorySummary from "./components/CategorySummary";
 import ProductPriceHistory from "./components/ProductPriceHistory";
 import Login from "./components/Login";
+import Budgets from "./components/Budgets";
+import BudgetProgress from "./components/BudgetProgress";
 
 // Theme Toggle Button Component
 function ThemeToggle() {
@@ -48,13 +50,17 @@ function AppContent() {
     "loading" | "connected" | "error"
   >("loading");
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [userEmail, setUserEmail] = useState<string>("");
+  const [, setUserEmail] = useState<string>("");
   const [captureMessage, setCaptureMessage] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedReceiptId, setSelectedReceiptId] = useState<number | null>(
     null,
   );
-  const [dateFilter, setDateFilter] = useState({
+  const [dateFilter, setDateFilter] = useState<{
+    startDate: Date | null;
+    endDate: Date | null;
+    period: "today" | "week" | "month" | "custom";
+  }>({
     startDate: (() => {
       const today = new Date();
       const startOfWeek = new Date(today);
@@ -63,11 +69,15 @@ function AppContent() {
       return startOfWeek;
     })(),
     endDate: new Date(),
-    period: "week" as "today" | "week" | "month" | "custom",
+    period: "week",
   });
-  const [activeTab, setActiveTab] = useState<"receipts" | "priceHistory">(
-    "receipts",
-  );
+  const [activeTab, setActiveTab] = useState<
+    "receipts" | "priceHistory" | "budgets"
+  >("receipts");
+  const [budgetKey, setBudgetKey] = useState(0);
+  const handleBudgetChange = () => {
+    setBudgetKey((prev) => prev + 1);
+  };
   const [isDateFilterExpanded, setIsDateFilterExpanded] = useState(false);
   const scannerRef = useRef<React.ElementRef<typeof Scanner>>(null);
 
@@ -293,6 +303,17 @@ function AppContent() {
               Paragony
             </button>
             <button
+              onClick={() => setActiveTab("budgets")}
+              className={`flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-colors ${
+                activeTab === "budgets"
+                  ? "bg-secondary text-secondary-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
+            >
+              <Wallet size={20} />
+              Budżety
+            </button>
+            <button
               onClick={() => setActiveTab("priceHistory")}
               className={`flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-colors ${
                 activeTab === "priceHistory"
@@ -449,6 +470,7 @@ function AppContent() {
       <section className="px-6 pb-8">
         {activeTab === "receipts" ? (
           <>
+            <BudgetProgress dateFilter={dateFilter} key={budgetKey} />
             <Receipts
               selectedReceiptId={selectedReceiptId}
               onReceiptSelect={setSelectedReceiptId}
@@ -458,6 +480,11 @@ function AppContent() {
               <CategorySummary dateFilter={dateFilter} />
             </div>
           </>
+        ) : activeTab === "budgets" ? (
+          <Budgets
+            dateFilter={dateFilter}
+            onBudgetChange={handleBudgetChange}
+          />
         ) : (
           <ProductPriceHistory />
         )}
