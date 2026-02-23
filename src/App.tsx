@@ -470,7 +470,9 @@ function AppContent() {
       <section className="px-6 pb-8">
         {activeTab === "receipts" ? (
           <>
-            <BudgetProgress dateFilter={dateFilter} key={budgetKey} />
+            <div className="mb-8">
+              <BudgetProgress dateFilter={dateFilter} key={budgetKey} />
+            </div>
             <Receipts
               selectedReceiptId={selectedReceiptId}
               onReceiptSelect={setSelectedReceiptId}

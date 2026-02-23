@@ -199,7 +199,7 @@ export default function BudgetProgress(props: BudgetProgressProps) {
   }
 
   return (
-    <div className="bg-card border border-border rounded-xl p-4">
+    <div className="bg-card border-2 border-orange-500/20 dark:border-orange-500/30 rounded-xl p-4 shadow-sm">
       <h3 className="text-foreground font-semibold text-sm mb-4 flex items-center gap-2">
         <span>Postępy budżetów</span>
         <span className="text-muted-foreground font-normal text-xs">
