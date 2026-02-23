@@ -163,6 +163,7 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
         quantity: 1,
         brand: null,
         user_id: authUser.id,
+        tags: {}, // Initialize empty tags object for JSONB column
       }));
 
       const { error: itemsError } = await supabase
@@ -273,6 +274,7 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
                     quantity: item.quantity || 1,
                     brand: item.brand || null,
                     user_id: authUser.id,
+                    tags: {}, // Initialize empty tags object for JSONB column
                   };
                 },
               );

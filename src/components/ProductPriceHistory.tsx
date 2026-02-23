@@ -11,6 +11,13 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { Leaf, AlertTriangle, Info } from "lucide-react";
+import {
+  fetchAndCacheProductTags,
+  NUTRI_SCORE_COLORS,
+  NUTRI_SCORE_TEXT_COLORS,
+} from "../lib/openfoodfacts";
+import type { ProductTags } from "../lib/openfoodfacts";
 
 interface PriceHistoryItem {
   price: number;
@@ -39,6 +46,8 @@ export default function ProductPriceHistory({
   const [priceHistory, setPriceHistory] = useState<PriceHistoryItem[]>([]);
   const [storePrices, setStorePrices] = useState<StorePrice[]>([]);
   const [loading, setLoading] = useState(false);
+  const [productTags, setProductTags] = useState<ProductTags | null>(null);
+  const [tagsLoading, setTagsLoading] = useState(false);
 
   // Refs to prevent infinite loops
   const productListFetchedRef = useRef(false);
@@ -228,6 +237,42 @@ export default function ProductPriceHistory({
     }
   }, [selectedProduct]); // Depends only on selectedProduct
 
+  // Fetch product tags when a product is selected
+  useEffect(() => {
+    const fetchTags = async () => {
+      if (!selectedProduct) {
+        setProductTags(null);
+        return;
+      }
+
+      try {
+        setTagsLoading(true);
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser();
+
+        if (!authUser) {
+          setProductTags(null);
+          setTagsLoading(false);
+          return;
+        }
+
+        const tags = await fetchAndCacheProductTags(
+          selectedProduct,
+          supabase,
+          authUser.id,
+        );
+        setProductTags(tags);
+      } catch (err) {
+        console.error("Error fetching product tags:", err);
+      } finally {
+        setTagsLoading(false);
+      }
+    };
+
+    fetchTags();
+  }, [selectedProduct]);
+
   // Calculate statistics
   const stats = useMemo(() => {
     if (priceHistory.length === 0) return null;
@@ -300,6 +345,141 @@ export default function ProductPriceHistory({
           ))}
         </select>
       </div>
+
+      {/* Product Tags - Nutri-Score and Warnings */}
+      {(productTags || tagsLoading) && (
+        <div className="mb-6 p-4 bg-muted rounded-lg border border-border">
+          {tagsLoading ? (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
+              <span>Pobieranie informacji o produkcie...</span>
+            </div>
+          ) : productTags ? (
+            <div className="space-y-4">
+              {/* Nutri-Score Display */}
+              {productTags.nutriscore && productTags.nutriscore !== "N/A" && (
+                <div className="flex items-center gap-4">
+                  <div className="text-sm text-muted-foreground font-medium">
+                    Nutri-Score:
+                  </div>
+                  <div
+                    className={`w-12 h-12 rounded-lg flex items-center justify-center text-2xl font-bold text-white ${
+                      NUTRI_SCORE_COLORS[
+                        productTags.nutriscore?.toLowerCase() || ""
+                      ] || "bg-gray-400"
+                    }`}
+                  >
+                    {productTags.nutriscore?.toUpperCase()}
+                  </div>
+                </div>
+              )}
+
+              {/* BIO Badge */}
+              {productTags.isBio && (
+                <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                  <Leaf size={20} />
+                  <span className="font-medium">Produkt BIO</span>
+                </div>
+              )}
+
+              {/* Macronutrients */}
+              {((productTags.protein || 0) > 0 ||
+                (productTags.fat || 0) > 0 ||
+                (productTags.carbs || 0) > 0) && (
+                <div>
+                  <div className="text-sm text-muted-foreground font-medium mb-2">
+                    Wartość odżywcza (na 100g):
+                  </div>
+                  <div className="space-y-2">
+                    {/* Protein */}
+                    {(productTags.protein || 0) > 0 && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs w-16 text-muted-foreground">
+                          Białko
+                        </span>
+                        <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-blue-500 rounded-full"
+                            style={{
+                              width: `${Math.min(productTags.protein || 0, 100)}%`,
+                            }}
+                          />
+                        </div>
+                        <span className="text-xs w-12 text-right">
+                          {(productTags.protein || 0).toFixed(1)}g
+                        </span>
+                      </div>
+                    )}
+                    {/* Fat */}
+                    {(productTags.fat || 0) > 0 && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs w-16 text-muted-foreground">
+                          Tłuszcze
+                        </span>
+                        <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-yellow-500 rounded-full"
+                            style={{
+                              width: `${Math.min(productTags.fat || 0, 100)}%`,
+                            }}
+                          />
+                        </div>
+                        <span className="text-xs w-12 text-right">
+                          {(productTags.fat || 0).toFixed(1)}g
+                        </span>
+                      </div>
+                    )}
+                    {/* Carbs */}
+                    {(productTags.carbs || 0) > 0 && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs w-16 text-muted-foreground">
+                          Węglowodany
+                        </span>
+                        <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-orange-500 rounded-full"
+                            style={{
+                              width: `${Math.min(productTags.carbs || 0, 100)}%`,
+                            }}
+                          />
+                        </div>
+                        <span className="text-xs w-12 text-right">
+                          {(productTags.carbs || 0).toFixed(1)}g
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Warnings */}
+              {(productTags.nutriscore === "D" ||
+                productTags.nutriscore === "E" ||
+                productTags.isHighSalt ||
+                productTags.isHighSugar ||
+                productTags.isHighFat) && (
+                <div className="flex items-start gap-2 text-amber-600 dark:text-amber-400">
+                  <AlertTriangle size={20} className="flex-shrink-0 mt-0.5" />
+                  <div className="text-sm">
+                    {productTags.nutriscore === "D" ||
+                    productTags.nutriscore === "E"
+                      ? "Produkt odradzany w dużych ilościach. "
+                      : ""}
+                    {productTags.isHighSalt && "Wysoka zawartość soli. "}
+                    {productTags.isHighSugar && "Wysoka zawartość cukru. "}
+                    {productTags.isHighFat &&
+                      "Wysoka zawartość tłuszczu nasyconego."}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-muted-foreground text-sm">
+              Brak informacji o produkcie w bazie OpenFoodFacts
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Loading */}
       {loading && (
