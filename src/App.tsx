@@ -6,6 +6,7 @@ import {
   Sun,
   Moon,
   Wallet,
+  Trophy,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "./lib/supabase";
@@ -17,6 +18,7 @@ import ProductPriceHistory from "./components/ProductPriceHistory";
 import Login from "./components/Login";
 import Budgets from "./components/Budgets";
 import BudgetProgress from "./components/BudgetProgress";
+import Achievements from "./components/Achievements";
 
 // Theme Toggle Button Component
 function ThemeToggle() {
@@ -72,7 +74,7 @@ function AppContent() {
     period: "week",
   });
   const [activeTab, setActiveTab] = useState<
-    "receipts" | "priceHistory" | "budgets"
+    "receipts" | "priceHistory" | "budgets" | "achievements"
   >("receipts");
   const [budgetKey, setBudgetKey] = useState(0);
   const handleBudgetChange = () => {
@@ -267,6 +269,15 @@ function AppContent() {
           <span className="mt-4 text-lg font-semibold text-muted-foreground">
             {isAnalyzing ? "ANALIZUJĘ..." : "SKANUJ PARAGON"}
           </span>
+
+          {/* DEV ONLY - Mock Scan Button */}
+          <button
+            onClick={() => scannerRef.current?.triggerMockScan()}
+            disabled={isAnalyzing}
+            className="mt-4 px-4 py-2 text-sm bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-600 dark:text-yellow-400 rounded-lg border border-yellow-500/30 transition-colors"
+          >
+            🔧 DEV: Symuluj skanowanie
+          </button>
         </div>
 
         {/* Capture Message */}
@@ -290,7 +301,7 @@ function AppContent() {
       {/* Navigation Tabs */}
       <nav className="px-6 pb-6">
         <div className="bg-card border border-border rounded-xl">
-          <div className="flex">
+          <div className="flex flex-wrap">
             <button
               onClick={() => setActiveTab("receipts")}
               className={`flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-colors ${
@@ -323,6 +334,17 @@ function AppContent() {
             >
               <BarChart3 size={20} />
               Historia cen
+            </button>
+            <button
+              onClick={() => setActiveTab("achievements")}
+              className={`flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-colors ${
+                activeTab === "achievements"
+                  ? "bg-secondary text-secondary-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
+            >
+              <Trophy size={20} />
+              Osiągnięcia
             </button>
           </div>
         </div>
@@ -487,6 +509,8 @@ function AppContent() {
             dateFilter={dateFilter}
             onBudgetChange={handleBudgetChange}
           />
+        ) : activeTab === "achievements" ? (
+          <Achievements />
         ) : (
           <ProductPriceHistory />
         )}
