@@ -10,6 +10,8 @@ import {
   TrendingUp,
   Calendar,
   ShoppingBag,
+  Leaf,
+  Clover,
 } from "lucide-react";
 
 // Achievement type definitions
@@ -128,6 +130,31 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     requirement: "total_spent",
     threshold: 10000,
   },
+  // Eco achievements
+  {
+    id: "green_leaves_10",
+    name: "Początkujący Zielarz",
+    description: "Zbierz 10 Zielonych Listków",
+    icon: "Leaf",
+    requirement: "green_leaves",
+    threshold: 10,
+  },
+  {
+    id: "green_leaves_50",
+    name: "Eko-Entuzjasta",
+    description: "Zbierz 50 Zielonych Listków",
+    icon: "Leaf",
+    requirement: "green_leaves",
+    threshold: 50,
+  },
+  {
+    id: "green_leaves_100",
+    name: "Bio-Master",
+    description: "Zbierz 100 Zielonych Listków",
+    icon: "Clover",
+    requirement: "green_leaves",
+    threshold: 100,
+  },
 ];
 
 // Map icon names to components
@@ -145,6 +172,8 @@ const iconMap: Record<
   TrendingUp,
   Calendar,
   ShoppingBag,
+  Leaf,
+  Clover,
 };
 
 export function getAchievementIcon(iconName: string) {

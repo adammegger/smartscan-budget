@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
-import ProductPriceHistory from "./ProductPriceHistory";
 import CategoryIcon from "./CategoryIcon";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Clover } from "lucide-react";
+import { isBioProduct } from "../lib/eco";
+import { getItemTags } from "../lib/categories";
 
 interface Category {
   id: number;
@@ -30,6 +31,7 @@ interface Item {
   name: string;
   price: number;
   category: string;
+  tags?: string[];
   created_at?: string;
   receipts?: { date: string }[];
 }
@@ -43,6 +45,7 @@ interface DateFilter {
 interface ReceiptsProps {
   selectedReceiptId: number | null;
   onReceiptSelect: (id: number | null) => void;
+  onProductClick?: (productName: string) => void;
   dateFilter?: DateFilter;
 }
 
@@ -53,9 +56,6 @@ export default function Receipts(props: ReceiptsProps) {
   const [selectedItems, setSelectedItems] = useState<Item[]>([]);
   const [itemsLoading, setItemsLoading] = useState(false);
   const [itemCounts, setItemCounts] = useState<Record<number, number>>({});
-  const [showingPriceHistory, setShowingPriceHistory] = useState<string | null>(
-    null,
-  );
   const [categories, setCategories] = useState<Category[]>([]);
   const [overBudgetCategories, setOverBudgetCategories] = useState<Set<string>>(
     new Set(),
@@ -418,28 +418,55 @@ export default function Receipts(props: ReceiptsProps) {
                                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500 mx-auto"></div>
                                 </div>
                               ) : selectedItems.length > 0 ? (
-                                selectedItems.map((item) => (
-                                  <div
-                                    key={item.id}
-                                    className="flex items-center justify-between bg-card border border-border p-4 rounded-lg hover:bg-muted transition-colors"
-                                  >
-                                    <div className="flex items-center gap-4 flex-1">
-                                      <div
-                                        className="font-medium text-foreground cursor-pointer hover:text-orange-500 transition-colors"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setShowingPriceHistory(item.name);
-                                        }}
-                                      >
-                                        {item.name}
+                                selectedItems.map((item) => {
+                                  const isBio = isBioProduct(item.name);
+                                  const tags = getItemTags(item);
+                                  return (
+                                    <div
+                                      key={item.id}
+                                      className="flex items-center justify-between bg-card border border-border p-4 rounded-lg hover:bg-muted transition-colors"
+                                    >
+                                      <div className="flex flex-col gap-2 flex-1">
+                                        <div className="flex items-center gap-2">
+                                          <div
+                                            className="font-medium text-orange-500 cursor-pointer hover:text-orange-400 hover:underline transition-colors"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              if (props.onProductClick) {
+                                                props.onProductClick(item.name);
+                                              }
+                                            }}
+                                          >
+                                            {item.name}
+                                            {isBio && (
+                                              <Clover
+                                                size={16}
+                                                className="inline-block ml-2 text-green-500"
+                                              />
+                                            )}
+                                          </div>
+                                          {renderCategoryBadge(item.category)}
+                                        </div>
+                                        {/* Tags as small pills */}
+                                        {tags.length > 0 && (
+                                          <div className="flex flex-wrap gap-1">
+                                            {tags.map((tag, idx) => (
+                                              <span
+                                                key={idx}
+                                                className="inline-flex items-center px-2 py-0.5 text-xs bg-muted text-muted-foreground rounded-full"
+                                              >
+                                                {tag}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        )}
                                       </div>
-                                      {renderCategoryBadge(item.category)}
+                                      <div className="font-semibold text-foreground ml-4">
+                                        {item.price.toFixed(2)} PLN
+                                      </div>
                                     </div>
-                                    <div className="font-semibold text-foreground">
-                                      {item.price.toFixed(2)} PLN
-                                    </div>
-                                  </div>
-                                ))
+                                  );
+                                })
                               ) : (
                                 <div className="text-muted-foreground text-center py-4">
                                   Brak pozycji na tym paragonie
@@ -509,13 +536,6 @@ export default function Receipts(props: ReceiptsProps) {
           </table>
         </div>
       </div>
-      {showingPriceHistory && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <ProductPriceHistory />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

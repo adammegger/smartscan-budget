@@ -2,8 +2,18 @@ import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { Camera } from "lucide-react";
 import { processReceipt } from "../lib/gemini";
 import { supabase } from "../lib/supabase";
-import { determineReceiptCategory } from "../lib/categories";
+import {
+  determineReceiptCategory,
+  autoCategorizeItem,
+  getCategoryId,
+} from "../lib/categories";
 import { checkAndTriggerAchievements } from "../lib/achievementUtils";
+import {
+  isBioProduct,
+  calculateGreenLeaves,
+  updateGreenLeaves,
+  processReceiptItems,
+} from "../lib/eco";
 
 // Mock data for testing
 const MOCK_STORES = [
@@ -43,6 +53,12 @@ const MOCK_ITEMS = [
   { name: "Jogurt naturalny", category: "Nabiał", price: 2.49, unit: "400g" },
   { name: "Szynka", category: "Mięso", price: 9.99, unit: "200g" },
   { name: "Bułki", category: "Pieczywo", price: 2.99, unit: "6szt" },
+  // BIO products for testing eco features
+  { name: "Mleko BIO", category: "Nabiał", price: 5.99, unit: "l" },
+  { name: "Jajka EKO", category: "Nabiał", price: 9.99, unit: "6szt" },
+  { name: "Warzywa BIO", category: "Warzywa", price: 7.49, unit: "kg" },
+  { name: "Owoce ORGANIC", category: "Owoce", price: 8.99, unit: "kg" },
+  { name: "Chleb VEGE", category: "Pieczywo", price: 6.49, unit: "szt" },
 ];
 
 export interface ScannerRef {
@@ -157,6 +173,14 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
         throw itemsError;
       }
 
+      // Calculate and update green leaves for eco products
+      const { totalGreenLeaves } = processReceiptItems(
+        selectedItems.map((item) => ({ name: item.name, price: item.price })),
+      );
+      if (totalGreenLeaves > 0) {
+        await updateGreenLeaves(authUser.id, totalGreenLeaves);
+      }
+
       // Check for new achievements
       await checkAndTriggerAchievements();
 
@@ -230,20 +254,27 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
                 (item: {
                   name: string;
                   price: number;
-                  category: string;
+                  category?: string;
                   unit?: string;
                   quantity?: number;
                   brand?: string | null;
-                }) => ({
-                  receipt_id: receiptDataResult.id,
-                  name: item.name,
-                  price: item.price,
-                  category: item.category,
-                  unit: item.unit || "szt",
-                  quantity: item.quantity || 1,
-                  brand: item.brand || null,
-                  user_id: authUser.id,
-                }),
+                }) => {
+                  const itemCategory =
+                    item.category || autoCategorizeItem(item.name);
+                  return {
+                    receipt_id: receiptDataResult.id,
+                    name: item.name,
+                    price: item.price,
+                    // Use provided category or auto-categorize based on name
+                    category: itemCategory,
+                    // Also set category_id for foreign key
+                    category_id: getCategoryId(itemCategory),
+                    unit: item.unit || "szt",
+                    quantity: item.quantity || 1,
+                    brand: item.brand || null,
+                    user_id: authUser.id,
+                  };
+                },
               );
 
               const { error: itemsError } = await supabase

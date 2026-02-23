@@ -81,7 +81,16 @@ function AppContent() {
     setBudgetKey((prev) => prev + 1);
   };
   const [isDateFilterExpanded, setIsDateFilterExpanded] = useState(false);
+  const [selectedProductForHistory, setSelectedProductForHistory] = useState<
+    string | null
+  >(null);
   const scannerRef = useRef<React.ElementRef<typeof Scanner>>(null);
+
+  // Handle clicking on a product name - navigate to price history
+  const handleProductClick = (productName: string) => {
+    setSelectedProductForHistory(productName);
+    setActiveTab("priceHistory");
+  };
 
   const handleLoginSuccess = () => {
     setIsAuthenticated(true);
@@ -498,6 +507,7 @@ function AppContent() {
             <Receipts
               selectedReceiptId={selectedReceiptId}
               onReceiptSelect={setSelectedReceiptId}
+              onProductClick={handleProductClick}
               dateFilter={dateFilter}
             />
             <div className="mt-8">
@@ -512,7 +522,7 @@ function AppContent() {
         ) : activeTab === "achievements" ? (
           <Achievements />
         ) : (
-          <ProductPriceHistory />
+          <ProductPriceHistory initialProduct={selectedProductForHistory} />
         )}
       </section>
 

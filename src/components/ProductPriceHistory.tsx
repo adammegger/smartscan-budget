@@ -25,9 +25,17 @@ interface StorePrice {
   date: string;
 }
 
-export default function ProductPriceHistory() {
+interface ProductPriceHistoryProps {
+  initialProduct?: string | null;
+}
+
+export default function ProductPriceHistory({
+  initialProduct,
+}: ProductPriceHistoryProps) {
   const [productList, setProductList] = useState<string[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<string>("");
+  const [selectedProduct, setSelectedProduct] = useState<string>(
+    initialProduct || "",
+  );
   const [priceHistory, setPriceHistory] = useState<PriceHistoryItem[]>([]);
   const [storePrices, setStorePrices] = useState<StorePrice[]>([]);
   const [loading, setLoading] = useState(false);
@@ -35,6 +43,14 @@ export default function ProductPriceHistory() {
   // Refs to prevent infinite loops
   const productListFetchedRef = useRef(false);
   const priceHistoryFetchedRef = useRef(false);
+
+  // Handle initial product - fetch price history when component mounts with initialProduct
+  useEffect(() => {
+    if (initialProduct && productListFetchedRef.current) {
+      // If we have initial product and product list is already loaded, trigger fetch
+      priceHistoryFetchedRef.current = false;
+    }
+  }, [initialProduct]);
 
   // Helper function to format date
   const formatDate = (dateValue: string | undefined): string => {
