@@ -47,6 +47,7 @@ import {
   Bath,
   Cpu,
   Wine,
+  LayoutGrid,
 } from "lucide-react";
 
 // Map icon names from database to lucide-react components
@@ -75,6 +76,8 @@ export const iconMap: Record<
   Receipt,
   // Health
   Heart,
+  // Multi category (mixed receipts)
+  Multi: LayoutGrid,
   // Default/fallback icons
   Utensils,
   Car,
@@ -122,3 +125,70 @@ export const iconMap: Record<
 export function getIconComponent(iconName: string) {
   return iconMap[iconName] || MoreHorizontal;
 }
+
+// Helper function to determine receipt category based on items
+// This implements the smart categorization logic:
+// 1. If only one item, use that item's category
+// 2. If a category is >= 70% of total, use that category (Domination Rule)
+// 3. If >= 3 categories each have >= 15%, use "Multi"
+// 4. Otherwise, use the category with highest percentage
+export function determineReceiptCategory(
+  items: Array<{ category: string; price: number }>,
+  totalAmount: number,
+): string {
+  if (!items || items.length === 0) {
+    return "Other";
+  }
+
+  // If only one item, use that item's category
+  if (items.length === 1) {
+    return items[0].category || "Other";
+  }
+
+  // Group items by category and sum prices
+  const categoryTotals: Record<string, number> = {};
+  items.forEach((item) => {
+    const cat = item.category || "Other";
+    categoryTotals[cat] = (categoryTotals[cat] || 0) + item.price;
+  });
+
+  // Calculate percentages
+  const categoryPercentages: Array<{ category: string; percentage: number }> =
+    [];
+  Object.entries(categoryTotals).forEach(([category, total]) => {
+    const percentage = (total / totalAmount) * 100;
+    categoryPercentages.push({ category, percentage });
+  });
+
+  // Sort by percentage descending
+  categoryPercentages.sort((a, b) => b.percentage - a.percentage);
+
+  const topCategory = categoryPercentages[0];
+
+  // Domination Rule: if top category >= 70%, use it
+  if (topCategory.percentage >= 70) {
+    return topCategory.category;
+  }
+
+  // Multi Rule: if >= 3 categories each have >= 15%
+  const significantCategories = categoryPercentages.filter(
+    (c) => c.percentage >= 15,
+  );
+  if (significantCategories.length >= 3) {
+    return "Multi";
+  }
+
+  // Otherwise, use the top category
+  return topCategory.category;
+}
+
+// Default categories for receipts
+export const DEFAULT_CATEGORIES = [
+  "Food",
+  "Transport",
+  "Home",
+  "Health",
+  "Entertainment",
+  "Other",
+  "Multi",
+];

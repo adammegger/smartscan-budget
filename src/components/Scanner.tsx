@@ -2,6 +2,7 @@ import { forwardRef, useImperativeHandle, useRef } from "react";
 import { Camera } from "lucide-react";
 import { processReceipt } from "../lib/gemini";
 import { supabase } from "../lib/supabase";
+import { determineReceiptCategory } from "../lib/categories";
 
 export interface ScannerRef {
   triggerCamera: () => void;
@@ -45,6 +46,12 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
             // Process receipt with Gemini AI
             const receiptData = await processReceipt(imageData as string);
 
+            // Determine smart category based on items
+            const smartCategory = determineReceiptCategory(
+              receiptData.items || [],
+              receiptData.total_amount,
+            );
+
             // Save to Supabase - save receipt with user_id
             const { data: receiptDataResult, error: receiptError } =
               await supabase
@@ -53,7 +60,7 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
                   store_name: receiptData.store_name,
                   date: receiptData.date,
                   total_amount: receiptData.total_amount,
-                  category: receiptData.category,
+                  category: smartCategory,
                   user_id: authUser.id,
                   created_at: new Date().toISOString(),
                 })
@@ -66,16 +73,25 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
 
             // Save items to separate table with all new fields
             if (receiptData.items && Array.isArray(receiptData.items)) {
-              const itemsToInsert = receiptData.items.map((item: any) => ({
-                receipt_id: receiptDataResult.id,
-                name: item.name,
-                price: item.price,
-                category: item.category,
-                unit: item.unit || "szt",
-                quantity: item.quantity || 1,
-                brand: item.brand || null,
-                user_id: authUser.id,
-              }));
+              const itemsToInsert = receiptData.items.map(
+                (item: {
+                  name: string;
+                  price: number;
+                  category: string;
+                  unit?: string;
+                  quantity?: number;
+                  brand?: string | null;
+                }) => ({
+                  receipt_id: receiptDataResult.id,
+                  name: item.name,
+                  price: item.price,
+                  category: item.category,
+                  unit: item.unit || "szt",
+                  quantity: item.quantity || 1,
+                  brand: item.brand || null,
+                  user_id: authUser.id,
+                }),
+              );
 
               const { error: itemsError } = await supabase
                 .from("items")
