@@ -224,41 +224,45 @@ export default function CategorySummary(props: CategorySummaryProps) {
   const [totalFromReceipts, setTotalFromReceipts] = useState<number>(0);
 
   const getCategoryColor = (category: string) => {
-    switch (category) {
+    const cat = category?.toLowerCase() || "";
+    switch (cat) {
       // Polish category names
-      case "Jedzenie":
+      case "jedzenie":
         return "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800/50";
-      case "Transport":
+      case "transport":
         return "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800/50";
-      case "Dom":
+      case "dom":
         return "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800/50";
-      case "Zdrowie":
+      case "zdrowie":
         return "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800/50";
-      case "Rozrywka":
+      case "rozrywka":
         return "bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-800/50";
-      case "Ubrania":
+      case "ubrania":
         return "bg-pink-100 dark:bg-pink-900/30 text-pink-800 dark:text-pink-300 border-pink-200 dark:border-pink-800/50";
-      case "Elektronika":
+      case "elektronika":
         return "bg-cyan-100 dark:bg-cyan-900/30 text-cyan-800 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800/50";
-      case "Edukacja":
+      case "edukacja":
         return "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/50";
-      case "Podróże":
-        return "bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300 border-teal-200 dark:border-teal-800/50";
-      case "Sport":
-        return "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 border-orange-200 dark:border-orange-800/50";
-      case "Uroda":
+      case "podróże":
+        return "bg-sky-100 dark:bg-sky-900/30 text-sky-800 dark:text-sky-300 border-sky-200 dark:border-sky-800/50";
+      case "sport":
+        return "bg-lime-100 dark:bg-lime-900/30 text-lime-800 dark:text-lime-300 border-lime-200 dark:border-lime-800/50";
+      case "uroda":
         return "bg-rose-100 dark:bg-rose-900/30 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800/50";
-      case "Zwierzęta":
-        return "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50";
-      case "Prezenty":
-        return "bg-violet-100 dark:bg-violet-900/30 text-violet-800 dark:text-violet-300 border-violet-200 dark:border-violet-800/50";
-      case "Rachunki":
+      case "zwierzęta":
+        return "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 border-orange-200 dark:border-orange-800/50";
+      case "prezenty":
+        return "bg-fuchsia-100 dark:bg-fuchsia-900/30 text-fuchsia-800 dark:text-fuchsia-300 border-fuchsia-200 dark:border-fuchsia-800/50";
+      case "rachunki":
         return "bg-slate-100 dark:bg-slate-900/30 text-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-800/50";
-      case "Inne":
-      case "Mieszane":
-      case "Restauracje":
-      case "Alkohol":
-      case "Apteka":
+      case "restauracje":
+        return "bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-800/50";
+      case "apteka":
+        return "bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300 border-teal-200 dark:border-teal-800/50";
+      case "alkohol":
+        return "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800/50";
+      case "inne":
+      case "mieszane":
         return "bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-800/50";
       default:
         return "bg-muted text-muted-foreground border border-border";
