@@ -65,13 +65,12 @@ function AppContent() {
   }>({
     startDate: (() => {
       const today = new Date();
-      const startOfWeek = new Date(today);
-      startOfWeek.setDate(today.getDate() - today.getDay());
-      startOfWeek.setHours(0, 0, 0, 0);
-      return startOfWeek;
+      const thirtyDaysAgo = new Date(today);
+      thirtyDaysAgo.setDate(today.getDate() - 30);
+      return thirtyDaysAgo;
     })(),
     endDate: new Date(),
-    period: "week",
+    period: "custom",
   });
   const [activeTab, setActiveTab] = useState<
     "receipts" | "priceHistory" | "budgets" | "achievements"
@@ -402,42 +401,79 @@ function AppContent() {
                     { key: "today", label: "Dziś" },
                     { key: "week", label: "Tydzień" },
                     { key: "month", label: "Miesiąc" },
+                    { key: "last30", label: "Ostatnie 30 dni" },
                     { key: "custom", label: "Niestandardowy" },
-                  ].map((period) => (
-                    <button
-                      key={period.key}
-                      onClick={() =>
-                        setDateFilter({
-                          ...dateFilter,
-                          period: period.key as
-                            | "today"
-                            | "week"
-                            | "month"
-                            | "custom",
-                          startDate:
-                            period.key === "custom"
-                              ? null
-                              : (() => {
-                                  const today = new Date();
-                                  const startOfWeek = new Date(today);
-                                  startOfWeek.setDate(
-                                    today.getDate() - today.getDay(),
-                                  );
-                                  startOfWeek.setHours(0, 0, 0, 0);
-                                  return startOfWeek;
-                                })(),
-                          endDate: period.key === "custom" ? null : new Date(),
-                        })
+                  ].map((period) => {
+                    // Calculate dates for each period - simplified to use actual date ranges
+                    const getDatesForPeriod = () => {
+                      const today = new Date();
+                      // Set to end of day
+                      today.setHours(23, 59, 59, 999);
+
+                      if (period.key === "today") {
+                        const startOfDay = new Date(today);
+                        startOfDay.setHours(0, 0, 0, 0);
+                        return { startDate: startOfDay, endDate: today };
                       }
-                      className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 border ${
-                        dateFilter.period === period.key
-                          ? "bg-secondary text-secondary-foreground border-secondary"
-                          : "bg-muted text-muted-foreground border-border hover:bg-secondary"
-                      }`}
-                    >
-                      {period.label}
-                    </button>
-                  ))}
+                      if (period.key === "week") {
+                        // Last 7 days - simple calculation
+                        const sevenDaysAgo = new Date(today);
+                        sevenDaysAgo.setDate(today.getDate() - 7);
+                        sevenDaysAgo.setHours(0, 0, 0, 0);
+                        return { startDate: sevenDaysAgo, endDate: today };
+                      }
+                      if (period.key === "month") {
+                        // Last 30 days - simpler approach
+                        const thirtyDaysAgo = new Date(today);
+                        thirtyDaysAgo.setDate(today.getDate() - 30);
+                        thirtyDaysAgo.setHours(0, 0, 0, 0);
+                        return { startDate: thirtyDaysAgo, endDate: today };
+                      }
+                      if (period.key === "last30") {
+                        const thirtyDaysAgo = new Date(today);
+                        thirtyDaysAgo.setDate(today.getDate() - 30);
+                        thirtyDaysAgo.setHours(0, 0, 0, 0);
+                        return { startDate: thirtyDaysAgo, endDate: today };
+                      }
+                      return { startDate: null, endDate: null };
+                    };
+
+                    const dates = getDatesForPeriod();
+
+                    return (
+                      <button
+                        key={period.key}
+                        onClick={() => {
+                          if (period.key === "custom") {
+                            setDateFilter({
+                              ...dateFilter,
+                              period: "custom",
+                              startDate: null,
+                              endDate: null,
+                            });
+                          } else {
+                            setDateFilter({
+                              ...dateFilter,
+                              period: period.key as
+                                | "today"
+                                | "week"
+                                | "month"
+                                | "custom",
+                              startDate: dates.startDate,
+                              endDate: dates.endDate,
+                            });
+                          }
+                        }}
+                        className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 border ${
+                          dateFilter.period === period.key
+                            ? "bg-secondary text-secondary-foreground border-secondary"
+                            : "bg-muted text-muted-foreground border-border hover:bg-secondary"
+                        }`}
+                      >
+                        {period.label}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* Custom Date Range */}

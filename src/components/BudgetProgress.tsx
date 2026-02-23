@@ -70,41 +70,49 @@ export default function BudgetProgress(props: BudgetProgressProps) {
         return;
       }
 
-      // Get receipts for current month
-      const today = new Date();
-      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      // Build date filter - always use the dateFilter from props
+      const { startDate, endDate, period } = props.dateFilter || {};
 
       let receiptsQuery = supabase
         .from("receipts")
         .select("id")
-        .eq("user_id", user.id)
-        .gte("date", startOfMonth.toISOString().split("T")[0]);
+        .eq("user_id", user.id);
 
-      // Apply date filter if set
-      if (props.dateFilter && props.dateFilter.period !== "month") {
-        const { startDate, endDate, period } = props.dateFilter;
-
-        if (period === "today") {
-          const todayStr = new Date().toISOString().split("T")[0];
-          receiptsQuery = supabase
-            .from("receipts")
-            .select("id")
-            .eq("user_id", user.id)
-            .eq("date", todayStr);
-        } else if (period === "week" && startDate) {
-          receiptsQuery = supabase
-            .from("receipts")
-            .select("id")
-            .eq("user_id", user.id)
-            .gte("date", startDate.toISOString().split("T")[0]);
-        } else if (period === "custom" && startDate && endDate) {
-          receiptsQuery = supabase
-            .from("receipts")
-            .select("id")
-            .eq("user_id", user.id)
-            .gte("date", startDate.toISOString().split("T")[0])
-            .lte("date", endDate.toISOString().split("T")[0]);
-        }
+      // Apply date filter based on period
+      if (period === "today") {
+        const todayStr = new Date().toISOString().split("T")[0];
+        receiptsQuery = receiptsQuery.eq("date", todayStr);
+      } else if (period === "week" && startDate) {
+        receiptsQuery = receiptsQuery.gte(
+          "date",
+          startDate.toISOString().split("T")[0],
+        );
+      } else if (period === "month") {
+        // Default to current month if no dates provided
+        const monthStart =
+          startDate ||
+          new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        const monthEnd = endDate || new Date();
+        receiptsQuery = receiptsQuery
+          .gte("date", monthStart.toISOString().split("T")[0])
+          .lte("date", monthEnd.toISOString().split("T")[0]);
+      } else if (period === "custom" && startDate && endDate) {
+        receiptsQuery = receiptsQuery
+          .gte("date", startDate.toISOString().split("T")[0])
+          .lte("date", endDate.toISOString().split("T")[0]);
+      } else if (startDate && endDate) {
+        // Fallback: if dates are provided but period is not recognized, use dates
+        receiptsQuery = receiptsQuery
+          .gte("date", startDate.toISOString().split("T")[0])
+          .lte("date", endDate.toISOString().split("T")[0]);
+      } else {
+        // No filter - get all receipts (last 30 days as default)
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        receiptsQuery = receiptsQuery.gte(
+          "date",
+          thirtyDaysAgo.toISOString().split("T")[0],
+        );
       }
 
       const { data: receipts } = await receiptsQuery;
