@@ -194,18 +194,14 @@ function AppContent() {
         <div className="flex justify-between items-center">
           {/* Logo and App Name */}
           <div className="flex items-center gap-3">
-            <img
-              src="/logo-light.png"
-              alt="Paragonly"
-              className="h-10 w-auto dark:hidden"
-            />
-            <img
-              src="/logo-dark.png"
-              alt="Paragonly"
-              className="h-10 w-auto hidden dark:block"
-            />
-            <div className="hidden">
-              <h1 className="text-xl font-bold text-orange-500">Paragonly</h1>
+            <img src="/logo-1.svg" alt="Paragonly" className="h-12 w-auto" />
+            <div>
+              <h1
+                className="text-2xl font-bold text-orange-500"
+                style={{ fontFamily: "Montserrat, sans-serif" }}
+              >
+                Paragonly
+              </h1>
               <p className="text-xs text-muted-foreground">Twoje finanse</p>
             </div>
           </div>

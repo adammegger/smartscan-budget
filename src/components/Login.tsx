@@ -44,17 +44,14 @@ export default function Login({ onLoginSuccess }: LoginProps) {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <img
-              src="/logo-light.png"
-              alt="Paragonly"
-              className="h-16 w-auto dark:hidden"
-            />
-            <img
-              src="/logo-dark.png"
-              alt="Paragonly"
-              className="h-16 w-auto hidden dark:block"
-            />
+            <img src="/logo-1.svg" alt="Paragonly" className="h-16 w-auto" />
           </div>
+          <h1
+            className="text-4xl font-bold text-orange-500"
+            style={{ fontFamily: "Montserrat, sans-serif" }}
+          >
+            Paragonly
+          </h1>
           <p className="text-muted-foreground mt-2">
             Zaloguj się do swojego konta
           </p>
