@@ -3,9 +3,10 @@ import { supabase } from "../lib/supabase";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import CategoryIcon from "./CategoryIcon";
-import { AlertTriangle, Clover } from "lucide-react";
+import { AlertTriangle, Clover, Leaf } from "lucide-react";
 import { isBioProduct } from "../lib/eco";
-import { getItemTags } from "../lib/categories";
+import { getItemTags, getMainCategory } from "../lib/categories";
+import { NUTRI_SCORE_COLORS } from "../lib/openfoodfacts";
 
 interface Category {
   id: number;
@@ -421,6 +422,12 @@ export default function Receipts(props: ReceiptsProps) {
                                 selectedItems.map((item) => {
                                   const isBio = isBioProduct(item.name);
                                   const tags = getItemTags(item);
+
+                                  // Extract nutriscore from tags if present (single letter A-E)
+                                  const nutriscore = tags.find((t) =>
+                                    /^[A-E]$/i.test(t),
+                                  );
+
                                   return (
                                     <div
                                       key={item.id}
@@ -438,26 +445,33 @@ export default function Receipts(props: ReceiptsProps) {
                                             }}
                                           >
                                             {item.name}
-                                            {isBio && (
-                                              <Clover
-                                                size={16}
-                                                className="inline-block ml-2 text-green-500"
-                                              />
-                                            )}
                                           </div>
                                           {renderCategoryBadge(item.category)}
                                         </div>
-                                        {/* Tags as small pills */}
-                                        {tags.length > 0 && (
-                                          <div className="flex flex-wrap gap-1">
-                                            {tags.map((tag, idx) => (
+                                        {/* Special tags as icons - only show if they don't match category */}
+                                        {(isBio || nutriscore) && (
+                                          <div className="flex items-center gap-2">
+                                            {/* BIO Icon */}
+                                            {isBio && (
                                               <span
-                                                key={idx}
-                                                className="inline-flex items-center px-2 py-0.5 text-xs bg-muted text-muted-foreground rounded-full"
+                                                className="inline-flex items-center justify-center w-6 h-6 bg-green-100 dark:bg-green-900/30 rounded-full"
+                                                title="Produkt BIO"
                                               >
-                                                {tag}
+                                                <Clover
+                                                  size={14}
+                                                  className="text-green-600 dark:text-green-400"
+                                                />
                                               </span>
-                                            ))}
+                                            )}
+                                            {/* Nutri-Score Icon */}
+                                            {nutriscore && (
+                                              <span
+                                                className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold text-white ${NUTRI_SCORE_COLORS[nutriscore.toLowerCase()] || "bg-gray-400"}`}
+                                                title={`Nutri-Score: ${nutriscore.toUpperCase()}`}
+                                              >
+                                                {nutriscore.toUpperCase()}
+                                              </span>
+                                            )}
                                           </div>
                                         )}
                                       </div>

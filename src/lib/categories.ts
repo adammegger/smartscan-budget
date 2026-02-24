@@ -589,35 +589,47 @@ export function getMainCategory(detailedCategory: string): string {
   return CATEGORY_MAPPING[detailedCategory] || "Inne";
 }
 
-// Get detailed tags from item
+// Get detailed tags from item (for display in receipts list)
+// Now supports JSONB format and filters out category name
 export function getItemTags(item: {
   category?: string;
-  tags?: string[];
+  tags?: string[] | Record<string, unknown>;
 }): string[] {
   const tags: string[] = [];
 
-  // Add the detailed category as a tag (only if it's not a main category)
-  const mainCategories = [
-    "Jedzenie",
-    "Transport",
-    "Dom",
-    "Zdrowie",
-    "Rozrywka",
-    "Inne",
-    "Mieszane",
-  ];
-  if (item.category && !mainCategories.includes(item.category)) {
-    tags.push(item.category);
+  // Handle old array format or new JSONB format
+  let additionalTags: string[] = [];
+
+  if (item.tags) {
+    if (Array.isArray(item.tags)) {
+      // Old format: array of strings
+      additionalTags = item.tags;
+    } else if (typeof item.tags === "object") {
+      // New JSONB format - extract meaningful tags
+      const tagObj = item.tags as Record<string, unknown>;
+
+      // Add nutriscore if present
+      if (tagObj.nutriscore && typeof tagObj.nutriscore === "string") {
+        additionalTags.push(tagObj.nutriscore.toUpperCase());
+      }
+
+      // Add BIO indicator if present
+      if (tagObj.isBio) {
+        additionalTags.push("BIO");
+      }
+    }
   }
 
-  // Add any additional tags from the tags array
-  if (item.tags && Array.isArray(item.tags)) {
-    item.tags.forEach((tag) => {
-      if (!tags.includes(tag)) {
-        tags.push(tag);
-      }
-    });
-  }
+  // Add additional tags that don't match the category name
+  additionalTags.forEach((tag) => {
+    // Filter out tags that match the category (case-insensitive)
+    const tagLower = tag.toLowerCase();
+    const categoryLower = (item.category || "").toLowerCase();
+
+    if (tagLower !== categoryLower && !tags.includes(tag)) {
+      tags.push(tag);
+    }
+  });
 
   return tags;
 }

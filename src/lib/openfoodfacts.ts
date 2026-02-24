@@ -54,11 +54,30 @@ export const NUTRI_SCORE_TEXT_COLORS: Record<string, string> = {
   e: "text-red-600",
 };
 
-// Search for a product by name
+// Search for a product by name using Supabase Edge Function (to avoid CORS)
 export async function searchProduct(
   searchTerm: string,
+  supabaseClient?: any,
 ): Promise<OpenFoodFactsProduct | null> {
   try {
+    // If we have a Supabase client, use the Edge Function
+    if (supabaseClient) {
+      const { data, error } = await supabaseClient.functions.invoke(
+        "get-product-data",
+        {
+          body: { productName: searchTerm },
+        },
+      );
+
+      if (error) {
+        console.error("Edge Function error:", error);
+        return null;
+      }
+
+      return data as OpenFoodFactsProduct;
+    }
+
+    // Fallback to direct API call (for backward compatibility)
     const url = new URL("https://world.openfoodfacts.org/cgi/search.pl");
     url.searchParams.set("search_terms", searchTerm);
     url.searchParams.set("search_simple", "1");
@@ -186,9 +205,9 @@ export async function fetchAndCacheProductTags(
     }
   }
 
-  // Fetch fresh data from API
+  // Fetch fresh data from API using Supabase Edge Function (to avoid CORS)
   console.log("Fetching fresh data from OpenFoodFacts for:", productName);
-  const product = await searchProduct(productName);
+  const product = await searchProduct(productName, supabase);
 
   if (!product) {
     return null;
