@@ -466,7 +466,7 @@ export default function Receipts(props: ReceiptsProps) {
                                             {/* Nutri-Score Icon */}
                                             {nutriscore && (
                                               <span
-                                                className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold text-white ${NUTRI_SCORE_COLORS[nutriscore.toLowerCase()] || "bg-gray-400"}`}
+                                                className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-[10px] font-bold text-white ${NUTRI_SCORE_COLORS[nutriscore.toLowerCase()] || "bg-gray-400"}`}
                                                 title={`Nutri-Score: ${nutriscore.toUpperCase()}`}
                                               >
                                                 {nutriscore.toUpperCase()}

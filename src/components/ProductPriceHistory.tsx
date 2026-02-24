@@ -363,7 +363,7 @@ export default function ProductPriceHistory({
                     Nutri-Score:
                   </div>
                   <div
-                    className={`w-12 h-12 rounded-lg flex items-center justify-center text-2xl font-bold text-white ${
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${
                       NUTRI_SCORE_COLORS[
                         productTags.nutriscore?.toLowerCase() || ""
                       ] || "bg-gray-400"
@@ -394,7 +394,7 @@ export default function ProductPriceHistory({
                     {/* Protein */}
                     {(productTags.protein || 0) > 0 && (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs w-16 text-muted-foreground">
+                        <span className="text-xs min-w-[80px] text-muted-foreground">
                           Białko
                         </span>
                         <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -413,7 +413,7 @@ export default function ProductPriceHistory({
                     {/* Fat */}
                     {(productTags.fat || 0) > 0 && (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs w-16 text-muted-foreground">
+                        <span className="text-xs min-w-[80px] text-muted-foreground">
                           Tłuszcze
                         </span>
                         <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -432,7 +432,7 @@ export default function ProductPriceHistory({
                     {/* Carbs */}
                     {(productTags.carbs || 0) > 0 && (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs w-16 text-muted-foreground">
+                        <span className="text-xs min-w-[80px] text-muted-foreground">
                           Węglowodany
                         </span>
                         <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
