@@ -19,6 +19,14 @@ serve(async (req) => {
     );
     const data = await response.json();
 
+    // Detailed logging for debugging
+    console.log("--- OPEN FOOD FACTS RESPONSE ---");
+    console.log("Product:", productName);
+    console.log(
+      "Full Data Sample:",
+      JSON.stringify(data.products?.[0], null, 2),
+    );
+
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
