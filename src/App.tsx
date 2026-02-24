@@ -7,6 +7,7 @@ import {
   Moon,
   Wallet,
   Trophy,
+  Receipt,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "./lib/supabase";
@@ -73,8 +74,8 @@ function AppContent() {
     period: "custom",
   });
   const [activeTab, setActiveTab] = useState<
-    "receipts" | "priceHistory" | "budgets" | "achievements"
-  >("receipts");
+    "dashboard" | "receipts" | "priceHistory" | "budgets" | "achievements"
+  >("dashboard");
   const [budgetKey, setBudgetKey] = useState(0);
   const handleBudgetChange = () => {
     setBudgetKey((prev) => prev + 1);
@@ -311,6 +312,17 @@ function AppContent() {
         <div className="bg-card border border-border rounded-xl">
           <div className="flex flex-wrap">
             <button
+              onClick={() => setActiveTab("dashboard")}
+              className={`flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-colors ${
+                activeTab === "dashboard"
+                  ? "bg-secondary text-secondary-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
+            >
+              <Calendar size={20} />
+              Dashboard
+            </button>
+            <button
               onClick={() => setActiveTab("receipts")}
               className={`flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-colors ${
                 activeTab === "receipts"
@@ -318,8 +330,8 @@ function AppContent() {
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
-              <Calendar size={20} />
-              Dashboard
+              <Receipt size={20} />
+              Paragony
             </button>
             <button
               onClick={() => setActiveTab("budgets")}
@@ -358,8 +370,8 @@ function AppContent() {
         </div>
       </nav>
 
-      {/* Date Filter Section - only show for receipts tab */}
-      {activeTab === "receipts" && (
+      {/* Date Filter Section - only show for dashboard and receipts tabs */}
+      {(activeTab === "dashboard" || activeTab === "receipts") && (
         <section className="px-6 pb-6">
           <div className="bg-card border border-border rounded-xl">
             <button
@@ -535,21 +547,22 @@ function AppContent() {
 
       {/* Main Content */}
       <section className="px-6 pb-8">
-        {activeTab === "receipts" ? (
+        {activeTab === "dashboard" ? (
           <>
             <div className="mb-8">
               <BudgetProgress dateFilter={dateFilter} key={budgetKey} />
             </div>
-            <Receipts
-              selectedReceiptId={selectedReceiptId}
-              onReceiptSelect={setSelectedReceiptId}
-              onProductClick={handleProductClick}
-              dateFilter={dateFilter}
-            />
             <div className="mt-8">
               <CategorySummary dateFilter={dateFilter} />
             </div>
           </>
+        ) : activeTab === "receipts" ? (
+          <Receipts
+            selectedReceiptId={selectedReceiptId}
+            onReceiptSelect={setSelectedReceiptId}
+            onProductClick={handleProductClick}
+            dateFilter={dateFilter}
+          />
         ) : activeTab === "budgets" ? (
           <Budgets
             dateFilter={dateFilter}

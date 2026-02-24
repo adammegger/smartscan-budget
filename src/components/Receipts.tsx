@@ -488,42 +488,6 @@ export default function Receipts(props: ReceiptsProps) {
                               )}
                             </div>
                           </div>
-                          {selectedItems.length > 0 && (
-                            <div className="pt-4 border-t border-border">
-                              <h5 className="font-semibold text-foreground text-lg mb-4">
-                                Podsumowanie według kategorii
-                              </h5>
-                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                {(() => {
-                                  const categoryTotals = new Map<
-                                    string,
-                                    number
-                                  >();
-                                  selectedItems.forEach((item) => {
-                                    const current =
-                                      categoryTotals.get(item.category) || 0;
-                                    categoryTotals.set(
-                                      item.category,
-                                      current + item.price,
-                                    );
-                                  });
-                                  return Array.from(categoryTotals.entries())
-                                    .sort((a, b) => b[1] - a[1])
-                                    .map(([category, total]) => (
-                                      <div
-                                        key={category}
-                                        className="bg-card border border-border p-4 rounded-lg"
-                                      >
-                                        {renderCategoryBadge(category)}
-                                        <div className="text-xl font-bold text-foreground mt-2">
-                                          {total.toFixed(2)} PLN
-                                        </div>
-                                      </div>
-                                    ));
-                                })()}
-                              </div>
-                            </div>
-                          )}
                           <div className="flex justify-between items-center pt-4 border-t border-border">
                             <span className="text-sm text-muted-foreground">
                               Zapisano:{" "}
