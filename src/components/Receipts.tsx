@@ -413,7 +413,7 @@ export default function Receipts(props: ReceiptsProps) {
                             <h4 className="font-semibold text-foreground text-lg mb-4">
                               Pozycje na paragonie ({selectedItems.length})
                             </h4>
-                            <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+                            <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-orange-300 scrollbar-track-transparent">
                               {itemsLoading ? (
                                 <div className="text-center py-6 text-muted-foreground">
                                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500 mx-auto"></div>
