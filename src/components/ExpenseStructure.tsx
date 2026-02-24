@@ -1,0 +1,349 @@
+import React, { useEffect, useState, useMemo } from "react";
+import { supabase } from "../lib/supabase";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import CategoryIcon from "./CategoryIcon";
+
+interface CategoryData {
+  category: string;
+  total: number;
+  count: number;
+}
+
+interface ExpenseStructureProps {
+  dateFilter?: {
+    startDate: Date | null;
+    endDate: Date | null;
+    period: "today" | "week" | "month" | "custom";
+  };
+}
+
+// Color palette matching the UI
+const CATEGORY_COLORS: Record<string, string> = {
+  Jedzenie: "#22c55e",
+  Transport: "#3b82f6",
+  Dom: "#eab308",
+  Zdrowie: "#ef4444",
+  Rozrywka: "#a855f7",
+  Ubrania: "#ec4899",
+  Elektronika: "#06b6d4",
+  Edukacja: "#6366f1",
+  Podróże: "#0ea5e9",
+  Sport: "#84cc16",
+  Uroda: "#f43f5e",
+  Zwierzęta: "#f97316",
+  Prezenty: "#d946ef",
+  Rachunki: "#64748b",
+  Restauracje: "#8b5cf6",
+  Apteka: "#14b8a6",
+  Alkohol: "#dc2626",
+  Inne: "#6b7280",
+};
+
+export default function ExpenseStructure(props: ExpenseStructureProps) {
+  const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchCategoryData();
+  }, [
+    props.dateFilter?.startDate,
+    props.dateFilter?.endDate,
+    props.dateFilter?.period,
+  ]);
+
+  const fetchCategoryData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+
+      if (!authUser) {
+        setCategoryData([]);
+        setLoading(false);
+        return;
+      }
+
+      let receiptsQuery = supabase
+        .from("receipts")
+        .select("id, total_amount")
+        .eq("user_id", authUser.id);
+
+      const { startDate, endDate, period } = props.dateFilter || {};
+      const toDateString = (date: Date) => {
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      };
+
+      const today = new Date();
+      const todayStr = toDateString(today);
+
+      if (period === "today") {
+        receiptsQuery = receiptsQuery.eq("date", todayStr);
+      } else if (period === "week") {
+        const sevenDaysAgo = new Date(today);
+        sevenDaysAgo.setDate(today.getDate() - 7);
+        receiptsQuery = receiptsQuery
+          .gte("date", toDateString(sevenDaysAgo))
+          .lte("date", todayStr);
+      } else if (period === "month") {
+        const thirtyDaysAgo = new Date(today);
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+        receiptsQuery = receiptsQuery
+          .gte("date", toDateString(thirtyDaysAgo))
+          .lte("date", todayStr);
+      } else if (period === "custom" && startDate && endDate) {
+        receiptsQuery = receiptsQuery
+          .gte("date", startDate.toISOString().split("T")[0])
+          .lte("date", endDate.toISOString().split("T")[0]);
+      } else if (startDate && endDate) {
+        receiptsQuery = receiptsQuery
+          .gte("date", startDate.toISOString().split("T")[0])
+          .lte("date", endDate.toISOString().split("T")[0]);
+      } else {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        receiptsQuery = receiptsQuery.gte(
+          "date",
+          thirtyDaysAgo.toISOString().split("T")[0],
+        );
+      }
+
+      const { data: filteredReceipts, error: receiptsError } =
+        await receiptsQuery;
+
+      if (receiptsError) throw receiptsError;
+
+      const receiptIds = filteredReceipts.map((receipt) => receipt.id);
+
+      if (receiptIds.length === 0) {
+        setCategoryData([]);
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("items")
+        .select("name, price, category")
+        .eq("user_id", authUser.id)
+        .in("receipt_id", receiptIds);
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        setCategoryData([]);
+        setLoading(false);
+        return;
+      }
+
+      const categoryTotals = new Map<
+        string,
+        { total: number; count: number }
+      >();
+
+      data.forEach((item) => {
+        const itemCategory = item.category;
+        const price =
+          typeof item.price === "number"
+            ? item.price
+            : parseFloat(String(item.price).replace(",", "."));
+
+        const currentData = categoryTotals.get(itemCategory) || {
+          total: 0,
+          count: 0,
+        };
+        categoryTotals.set(itemCategory, {
+          total: currentData.total + price,
+          count: currentData.count + 1,
+        });
+      });
+
+      const sortedCategories = Array.from(categoryTotals.entries())
+        .map(([category, data]) => ({
+          category,
+          total: data.total,
+          count: data.count,
+        }))
+        .sort((a, b) => b.total - a.total);
+
+      setCategoryData(sortedCategories);
+    } catch (err) {
+      console.error("Error fetching category data:", err);
+      setError("Wystąpił błąd podczas pobierania danych");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Calculate totals
+  const totalSpent = useMemo(
+    () => categoryData.reduce((sum, cat) => sum + cat.total, 0),
+    [categoryData],
+  );
+
+  const totalItems = useMemo(
+    () => categoryData.reduce((sum, cat) => sum + cat.count, 0),
+    [categoryData],
+  );
+
+  // Prepare chart data
+  const chartData = useMemo(
+    () =>
+      categoryData.map((cat) => ({
+        name: cat.category,
+        value: cat.total,
+        color: CATEGORY_COLORS[cat.category] || CATEGORY_COLORS["Inne"],
+      })),
+    [categoryData],
+  );
+
+  if (loading) {
+    return (
+      <div className="bg-card border border-border rounded-xl p-6">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
+        <p className="text-center text-muted-foreground mt-2">
+          Ładowanie struktury wydatków...
+        </p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+        <p className="text-red-600 dark:text-red-400">{error}</p>
+        <button
+          onClick={fetchCategoryData}
+          className="mt-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm"
+        >
+          Spróbuj ponownie
+        </button>
+      </div>
+    );
+  }
+
+  if (categoryData.length === 0) {
+    return (
+      <div className="bg-card border border-border rounded-xl p-6 text-center">
+        <p className="text-muted-foreground">
+          Brak danych do wyświetlenia struktury wydatków
+        </p>
+        <p className="text-sm text-muted-foreground mt-1">
+          Zeskanuj paragony, aby zobaczyć swoje wydatki
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-card border border-border rounded-xl p-6">
+      {/* Header */}
+      <div className="mb-6">
+        <h3 className="text-foreground font-semibold text-lg">
+          Struktura Wydatków
+        </h3>
+        <p className="text-muted-foreground text-sm">
+          Podsumowanie Twoich wydatków według kategorii
+        </p>
+      </div>
+
+      {/* Total Summary */}
+      <div className="mb-6 flex items-baseline gap-2">
+        <span className="text-4xl font-bold text-orange-500">
+          {totalSpent.toFixed(2)} PLN
+        </span>
+        <span className="text-muted-foreground text-sm">
+          z {totalItems} produktów
+        </span>
+      </div>
+
+      {/* Chart and Table Container */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Donut Chart */}
+        <div className="flex items-center justify-center">
+          <ResponsiveContainer width="100%" height={280}>
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={100}
+                paddingAngle={2}
+                dataKey="value"
+                strokeWidth={0}
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip
+                formatter={(value, name) => [
+                  `${Number(value).toFixed(2)} PLN`,
+                  name,
+                ]}
+                labelFormatter={(label) => label}
+                contentStyle={{
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "8px",
+                  color: "#1e293b",
+                }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Category Table */}
+        <div className="overflow-hidden">
+          <div className="space-y-2 max-h-[320px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-orange-300 scrollbar-track-transparent">
+            {categoryData.map((category) => {
+              const percentage =
+                totalSpent > 0 ? (category.total / totalSpent) * 100 : 0;
+              const color =
+                CATEGORY_COLORS[category.category] || CATEGORY_COLORS["Inne"];
+
+              return (
+                <div
+                  key={category.category}
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors border border-border"
+                >
+                  {/* Left side: Category name with item count */}
+                  <div className="flex items-center gap-2">
+                    <CategoryIcon
+                      icon={category.category}
+                      color={color}
+                      size={16}
+                    />
+                    <span className="font-medium text-foreground text-sm">
+                      {category.category}
+                    </span>
+                    <span className="text-muted-foreground text-xs">
+                      ({category.count})
+                    </span>
+                  </div>
+
+                  {/* Right side: Amount and percentage */}
+                  <div className="text-right">
+                    <span className="font-bold text-foreground text-sm">
+                      {category.total.toFixed(2)} PLN
+                    </span>
+                    <span className="text-muted-foreground text-xs ml-2">
+                      ({percentage.toFixed(1)}%)
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

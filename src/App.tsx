@@ -14,7 +14,7 @@ import { supabase } from "./lib/supabase";
 import { ThemeProvider, useTheme } from "./lib/theme";
 import Scanner from "./components/Scanner";
 import Receipts from "./components/Receipts";
-import CategorySummary from "./components/CategorySummary";
+import ExpenseStructure from "./components/ExpenseStructure";
 import ProductPriceHistory from "./components/ProductPriceHistory";
 import Login from "./components/Login";
 import Budgets from "./components/Budgets";
@@ -553,7 +553,7 @@ function AppContent() {
               <BudgetProgress dateFilter={dateFilter} key={budgetKey} />
             </div>
             <div className="mt-8">
-              <CategorySummary dateFilter={dateFilter} />
+              <ExpenseStructure dateFilter={dateFilter} />
             </div>
           </>
         ) : activeTab === "receipts" ? (
