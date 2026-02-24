@@ -74,7 +74,13 @@ export async function searchProduct(
         return null;
       }
 
-      return data as OpenFoodFactsProduct;
+      // Edge Function returns full response with products array
+      // Extract first product from the array
+      if (data && data.products && data.products.length > 0) {
+        return data.products[0] as OpenFoodFactsProduct;
+      }
+
+      return null;
     }
 
     // Fallback to direct API call (for backward compatibility)
