@@ -319,7 +319,7 @@ function AppContent() {
               }`}
             >
               <Calendar size={20} />
-              Paragony
+              Dashboard
             </button>
             <button
               onClick={() => setActiveTab("budgets")}
