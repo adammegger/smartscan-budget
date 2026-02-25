@@ -408,14 +408,23 @@ export default function DashboardTiles(props: DashboardTilesProps) {
                     key={category.category}
                     className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors border border-border"
                   >
-                    {/* Left side: Category name with item count */}
-                    <div className="flex items-center gap-2">
+                    {/* Left side: Category badge */}
+                    <div
+                      className="flex items-center gap-2 px-3 py-1 rounded-full border-2"
+                      style={{
+                        backgroundColor: color + "15", // 15% opacity background
+                        borderColor: color,
+                      }}
+                    >
                       <CategoryIcon
                         icon={category.category}
                         color={color}
                         size={16}
                       />
-                      <span className="font-medium text-foreground text-sm">
+                      <span
+                        className="font-medium text-sm"
+                        style={{ color: color }}
+                      >
                         {category.category}
                       </span>
                       <span className="text-muted-foreground text-xs">
@@ -424,7 +433,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
                     </div>
 
                     {/* Right side: Amount and percentage */}
-                    <div className="text-right">
+                    <div className="text-right gap-2">
                       <span className="font-bold text-foreground text-sm">
                         {category.total.toFixed(2)} PLN
                       </span>
