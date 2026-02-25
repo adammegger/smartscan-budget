@@ -204,9 +204,9 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pt-12 px-4">
+    <div className="min-h-screen bg-background text-foreground pt-12">
       {/* Header */}
-      <header className="px-6 py-8">
+      <header className="px-6 lg:px-12 xl:px-16 2xl:px-24 py-8">
         <div className="flex justify-between items-center">
           {/* Logo and App Name */}
           <div className="flex items-center gap-3">
@@ -255,7 +255,7 @@ function AppContent() {
       </header>
 
       {/* Scan Button */}
-      <section className="px-6 py-8">
+      <section className="px-6 lg:px-12 xl:px-16 2xl:px-24 py-8">
         <div className="flex flex-col items-center">
           <button
             onClick={triggerScan}
@@ -303,7 +303,7 @@ function AppContent() {
       </section>
 
       {/* Navigation Tabs */}
-      <nav className="px-6 pb-6">
+      <nav className="px-6 lg:px-12 xl:px-16 2xl:px-24 pb-6">
         <div className="bg-card border border-border rounded-xl">
           <div className="flex flex-wrap">
             <button
@@ -367,7 +367,7 @@ function AppContent() {
 
       {/* Date Filter Section - only show for dashboard and receipts tabs */}
       {(activeTab === "dashboard" || activeTab === "receipts") && (
-        <section className="px-6 pb-6">
+        <section className="px-6 lg:px-12 xl:px-16 2xl:px-24 pb-6">
           <div className="bg-card border border-border rounded-xl">
             <button
               onClick={() => setIsDateFilterExpanded(!isDateFilterExpanded)}
@@ -559,7 +559,7 @@ function AppContent() {
       )}
 
       {/* Main Content */}
-      <section className="px-6 pb-8">
+      <section className="px-6 lg:px-12 xl:px-16 2xl:px-24 pb-8">
         {activeTab === "dashboard" ? (
           <DashboardTiles dateFilter={dateFilter} />
         ) : activeTab === "receipts" ? (

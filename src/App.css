@@ -5,6 +5,28 @@
   text-align: center;
 }
 
+/* Responsive padding for larger screens */
+@media (min-width: 1400px) {
+  #root {
+    padding-left: 6rem;
+    padding-right: 6rem;
+  }
+}
+
+@media (min-width: 1600px) {
+  #root {
+    padding-left: 8rem;
+    padding-right: 8rem;
+  }
+}
+
+@media (min-width: 1920px) {
+  #root {
+    padding-left: 12rem;
+    padding-right: 12rem;
+  }
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
