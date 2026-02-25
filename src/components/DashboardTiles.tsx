@@ -25,7 +25,7 @@ const BudgetMonitor: React.FC<BudgetMonitorProps> = ({ dateFilter }) => {
 
   useEffect(() => {
     fetchBudgetData();
-  }, [dateFilter]);
+  }, []); // Removed dateFilter dependency to make it independent
 
   const fetchBudgetData = async () => {
     try {
@@ -56,13 +56,25 @@ const BudgetMonitor: React.FC<BudgetMonitorProps> = ({ dateFilter }) => {
         return;
       }
 
-      // Build date filter
+      // Build fixed monthly date filter (independent of global filters)
       let receiptsQuery = supabase
         .from("receipts")
         .select("id")
         .eq("user_id", authUser.id);
 
-      const { startDate, endDate, period } = dateFilter || {};
+      // Calculate current month range
+      const today = new Date();
+      const firstDayOfMonth = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        1,
+      );
+      const lastDayOfMonth = new Date(
+        today.getFullYear(),
+        today.getMonth() + 1,
+        0,
+      );
+
       const toDateString = (date: Date) => {
         const d = new Date(date);
         const year = d.getFullYear();
@@ -71,39 +83,10 @@ const BudgetMonitor: React.FC<BudgetMonitorProps> = ({ dateFilter }) => {
         return `${year}-${month}-${day}`;
       };
 
-      const today = new Date();
-      const todayStr = toDateString(today);
-
-      if (period === "today") {
-        receiptsQuery = receiptsQuery.eq("date", todayStr);
-      } else if (period === "week") {
-        const sevenDaysAgo = new Date(today);
-        sevenDaysAgo.setDate(today.getDate() - 7);
-        receiptsQuery = receiptsQuery
-          .gte("date", toDateString(sevenDaysAgo))
-          .lte("date", todayStr);
-      } else if (period === "month") {
-        const thirtyDaysAgo = new Date(today);
-        thirtyDaysAgo.setDate(today.getDate() - 30);
-        receiptsQuery = receiptsQuery
-          .gte("date", toDateString(thirtyDaysAgo))
-          .lte("date", todayStr);
-      } else if (period === "custom" && startDate && endDate) {
-        receiptsQuery = receiptsQuery
-          .gte("date", startDate.toISOString().split("T")[0])
-          .lte("date", endDate.toISOString().split("T")[0]);
-      } else if (startDate && endDate) {
-        receiptsQuery = receiptsQuery
-          .gte("date", startDate.toISOString().split("T")[0])
-          .lte("date", endDate.toISOString().split("T")[0]);
-      } else {
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        receiptsQuery = receiptsQuery.gte(
-          "date",
-          thirtyDaysAgo.toISOString().split("T")[0],
-        );
-      }
+      // Always use current month range regardless of global date filter
+      receiptsQuery = receiptsQuery
+        .gte("date", toDateString(firstDayOfMonth))
+        .lte("date", toDateString(lastDayOfMonth));
 
       const { data: filteredReceipts, error: receiptsError } =
         await receiptsQuery;
@@ -207,8 +190,22 @@ const BudgetMonitor: React.FC<BudgetMonitorProps> = ({ dateFilter }) => {
     );
   }
 
+  // Get current month name for display
+  const currentMonth = new Date().toLocaleDateString("pl-PL", {
+    month: "long",
+    year: "numeric",
+  });
+
   return (
     <div className="bg-[#1a1a1a] border border-border rounded-xl p-6 shadow-lg">
+      {/* Header with month information */}
+      <div className="text-center mb-4">
+        <h3 className="text-lg font-semibold text-muted-foreground">
+          Budżet na{" "}
+          {currentMonth.charAt(0).toUpperCase() + currentMonth.slice(1)}
+        </h3>
+      </div>
+
       {/* Upper Section - Overall Budget */}
       <div className="text-center mb-6">
         {remaining < 0 ? (
