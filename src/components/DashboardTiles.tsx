@@ -7,6 +7,10 @@ interface DashboardStats {
   totalSpent: number;
   receiptCount: number;
   averageNutriScore: string;
+  mostPopularProduct: {
+    name: string;
+    count: number;
+  } | null;
 }
 
 interface CategoryData {
@@ -50,6 +54,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
     totalSpent: 0,
     receiptCount: 0,
     averageNutriScore: "A",
+    mostPopularProduct: null,
   });
   const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,7 +78,12 @@ export default function DashboardTiles(props: DashboardTilesProps) {
       } = await supabase.auth.getUser();
 
       if (!authUser) {
-        setStats({ totalSpent: 0, receiptCount: 0, averageNutriScore: "A" });
+        setStats({
+          totalSpent: 0,
+          receiptCount: 0,
+          averageNutriScore: "A",
+          mostPopularProduct: null,
+        });
         setCategoryData([]);
         setLoading(false);
         return;
@@ -136,7 +146,12 @@ export default function DashboardTiles(props: DashboardTilesProps) {
       const receiptIds = filteredReceipts.map((receipt) => receipt.id);
 
       if (receiptIds.length === 0) {
-        setStats({ totalSpent: 0, receiptCount: 0, averageNutriScore: "A" });
+        setStats({
+          totalSpent: 0,
+          receiptCount: 0,
+          averageNutriScore: "A",
+          mostPopularProduct: null,
+        });
         setCategoryData([]);
         setLoading(false);
         return;
@@ -161,10 +176,44 @@ export default function DashboardTiles(props: DashboardTilesProps) {
       // Calculate average Nutri-Score (placeholder - column doesn't exist yet)
       const averageNutriScore = "A";
 
+      // Calculate most popular product
+      let mostPopularProduct = null;
+      if (items && items.length > 0) {
+        const productCounts = new Map<string, number>();
+
+        items.forEach((item) => {
+          const productName = item.name?.trim();
+          if (productName) {
+            productCounts.set(
+              productName,
+              (productCounts.get(productName) || 0) + 1,
+            );
+          }
+        });
+
+        if (productCounts.size > 0) {
+          let maxCount = 0;
+          let mostPopularName = "";
+
+          productCounts.forEach((count, name) => {
+            if (count > maxCount) {
+              maxCount = count;
+              mostPopularName = name;
+            }
+          });
+
+          mostPopularProduct = {
+            name: mostPopularName,
+            count: maxCount,
+          };
+        }
+      }
+
       setStats({
         totalSpent,
         receiptCount,
         averageNutriScore,
+        mostPopularProduct,
       });
 
       // Calculate category data
@@ -268,7 +317,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
       {/* Top Stats Tiles */}
       <div className="bg-card border border-border rounded-xl p-6 shadow-lg">
         <div className="text-center">
-          <div className="text-4xl font-bold text-white mb-2">
+          <div className="text-4xl font-bold text-green-400 mb-2">
             {stats.totalSpent.toFixed(0)} PLN
           </div>
           <div className="text-sm text-muted-foreground">W tym miesiącu</div>
@@ -277,12 +326,33 @@ export default function DashboardTiles(props: DashboardTilesProps) {
 
       <div className="bg-card border border-border rounded-xl p-6 shadow-lg">
         <div className="text-center">
-          <div className="text-4xl font-bold text-white mb-2">
+          <div className="text-4xl font-bold text-blue-400 mb-2">
             {stats.receiptCount}
           </div>
           <div className="text-sm text-muted-foreground">
             Zeskanowane paragony
           </div>
+        </div>
+      </div>
+
+      {/* Most Popular Product Tile */}
+      <div className="bg-card border border-border rounded-xl p-6 shadow-lg">
+        <div className="text-center">
+          {stats.mostPopularProduct ? (
+            <>
+              <div className="text-3xl font-bold text-purple-400 mb-1">
+                {stats.mostPopularProduct.name}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Najczęściej kupowany produkt ({stats.mostPopularProduct.count}{" "}
+                razy)
+              </div>
+            </>
+          ) : (
+            <div className="text-sm text-muted-foreground">
+              Brak danych dla tego okresu
+            </div>
+          )}
         </div>
       </div>
 
