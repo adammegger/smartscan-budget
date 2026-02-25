@@ -320,7 +320,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
           <div className="text-4xl font-bold text-green-400 mb-2">
             {stats.totalSpent.toFixed(0)} PLN
           </div>
-          <div className="text-sm text-muted-foreground">W tym miesiącu</div>
+          <div className="text-sm text-green-400">W tym miesiącu</div>
         </div>
       </div>
 
@@ -329,9 +329,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
           <div className="text-4xl font-bold text-blue-400 mb-2">
             {stats.receiptCount}
           </div>
-          <div className="text-sm text-muted-foreground">
-            Zeskanowane paragony
-          </div>
+          <div className="text-sm text-blue-400">Zeskanowane paragony</div>
         </div>
       </div>
 
@@ -343,7 +341,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
               <div className="text-3xl font-bold text-purple-400 mb-1">
                 {stats.mostPopularProduct.name}
               </div>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm text-purple-400">
                 Najczęściej kupowany produkt ({stats.mostPopularProduct.count}{" "}
                 razy)
               </div>
