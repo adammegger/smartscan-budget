@@ -393,11 +393,16 @@ export default function Budgets(props: BudgetsProps) {
                               type="number"
                               value={editAmount}
                               onChange={(e) => setEditAmount(e.target.value)}
-                              className="w-24 px-2 py-1 bg-background border border-border rounded text-sm"
+                              className="w-24 px-2 py-1 bg-background rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                               autoFocus
                               onKeyDown={(e) =>
                                 e.key === "Enter" && handleSave()
                               }
+                              style={{
+                                border: "none",
+                                appearance: "textfield",
+                                MozAppearance: "textfield",
+                              }}
                             />
                             <span className="text-xs text-muted-foreground">
                               PLN
@@ -508,11 +513,16 @@ export default function Budgets(props: BudgetsProps) {
                               value={editAmount}
                               onChange={(e) => setEditAmount(e.target.value)}
                               placeholder="0"
-                              className="w-24 px-2 py-1 bg-background border border-border rounded text-sm"
+                              className="w-24 px-2 py-1 bg-background rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                               autoFocus
                               onKeyDown={(e) =>
                                 e.key === "Enter" && handleSave()
                               }
+                              style={{
+                                border: "none",
+                                appearance: "textfield",
+                                MozAppearance: "textfield",
+                              }}
                             />
                             <span className="text-xs text-muted-foreground">
                               PLN

@@ -3,6 +3,353 @@ import { supabase } from "../lib/supabase";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import CategoryIcon from "./CategoryIcon";
 
+// Budget Monitor Component
+interface BudgetMonitorProps {
+  dateFilter?: {
+    startDate: Date | null;
+    endDate: Date | null;
+    period: "today" | "week" | "month" | "last30" | "custom";
+  };
+}
+
+interface BudgetData {
+  category_name: string;
+  amount: number;
+  spent: number;
+}
+
+const BudgetMonitor: React.FC<BudgetMonitorProps> = ({ dateFilter }) => {
+  const [budgets, setBudgets] = useState<BudgetData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchBudgetData();
+  }, [dateFilter]);
+
+  const fetchBudgetData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+
+      if (!authUser) {
+        setBudgets([]);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch budgets
+      const { data: budgetsData, error: budgetsError } = await supabase
+        .from("budgets")
+        .select("*")
+        .eq("user_id", authUser.id);
+
+      if (budgetsError) throw budgetsError;
+
+      if (!budgetsData || budgetsData.length === 0) {
+        setBudgets([]);
+        setLoading(false);
+        return;
+      }
+
+      // Build date filter
+      let receiptsQuery = supabase
+        .from("receipts")
+        .select("id")
+        .eq("user_id", authUser.id);
+
+      const { startDate, endDate, period } = dateFilter || {};
+      const toDateString = (date: Date) => {
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      };
+
+      const today = new Date();
+      const todayStr = toDateString(today);
+
+      if (period === "today") {
+        receiptsQuery = receiptsQuery.eq("date", todayStr);
+      } else if (period === "week") {
+        const sevenDaysAgo = new Date(today);
+        sevenDaysAgo.setDate(today.getDate() - 7);
+        receiptsQuery = receiptsQuery
+          .gte("date", toDateString(sevenDaysAgo))
+          .lte("date", todayStr);
+      } else if (period === "month") {
+        const thirtyDaysAgo = new Date(today);
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+        receiptsQuery = receiptsQuery
+          .gte("date", toDateString(thirtyDaysAgo))
+          .lte("date", todayStr);
+      } else if (period === "custom" && startDate && endDate) {
+        receiptsQuery = receiptsQuery
+          .gte("date", startDate.toISOString().split("T")[0])
+          .lte("date", endDate.toISOString().split("T")[0]);
+      } else if (startDate && endDate) {
+        receiptsQuery = receiptsQuery
+          .gte("date", startDate.toISOString().split("T")[0])
+          .lte("date", endDate.toISOString().split("T")[0]);
+      } else {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        receiptsQuery = receiptsQuery.gte(
+          "date",
+          thirtyDaysAgo.toISOString().split("T")[0],
+        );
+      }
+
+      const { data: filteredReceipts, error: receiptsError } =
+        await receiptsQuery;
+
+      if (receiptsError) throw receiptsError;
+
+      const receiptIds = filteredReceipts?.map((receipt) => receipt.id) || [];
+
+      if (receiptIds.length === 0) {
+        // No receipts in period, set all spent to 0
+        const budgetsWithSpent = budgetsData.map((budget) => ({
+          category_name: budget.category_name,
+          amount: budget.amount || 0,
+          spent: 0,
+        }));
+        setBudgets(budgetsWithSpent);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch spending for each budget category
+      const { data: items, error: itemsError } = await supabase
+        .from("items")
+        .select("price, category")
+        .eq("user_id", authUser.id)
+        .in("receipt_id", receiptIds);
+
+      if (itemsError) throw itemsError;
+
+      // Calculate spending per category
+      const spendingMap = new Map<string, number>();
+      items?.forEach((item) => {
+        const price =
+          typeof item.price === "number"
+            ? item.price
+            : parseFloat(String(item.price || 0).replace(",", "."));
+        spendingMap.set(
+          item.category,
+          (spendingMap.get(item.category) || 0) + price,
+        );
+      });
+
+      // Combine budgets with spending
+      const budgetsWithSpent = budgetsData.map((budget) => ({
+        category_name: budget.category_name,
+        amount: budget.amount || 0,
+        spent: spendingMap.get(budget.category_name) || 0,
+      }));
+
+      setBudgets(budgetsWithSpent);
+    } catch (err) {
+      console.error("Error fetching budget data:", err);
+      setError("Wystąpił błąd podczas pobierania danych budżetowych");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const totalBudget = useMemo(
+    () => budgets.reduce((sum, budget) => sum + (budget.amount || 0), 0),
+    [budgets],
+  );
+  const totalSpent = useMemo(
+    () => budgets.reduce((sum, budget) => sum + (budget.spent || 0), 0),
+    [budgets],
+  );
+  const remaining = totalBudget - totalSpent;
+  const overallPercentage =
+    totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+
+  if (loading) {
+    return (
+      <div className="bg-[#1a1a1a] border border-border rounded-xl p-6 shadow-lg">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
+        <p className="text-center text-muted-foreground mt-2">Ładowanie...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-[#1a1a1a] border border-border rounded-xl p-6 shadow-lg">
+        <p className="text-red-500 text-center">{error}</p>
+      </div>
+    );
+  }
+
+  if (budgets.length === 0) {
+    return (
+      <div className="bg-[#1a1a1a] border border-border rounded-xl p-6 shadow-lg">
+        <div className="text-center">
+          <p className="text-muted-foreground mb-4">
+            Nie masz jeszcze ustawionych budżetów. Przejdź do sekcji Budżet, aby
+            zacząć planowanie.
+          </p>
+          <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
+            <span className="text-2xl">💰</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-[#1a1a1a] border border-border rounded-xl p-6 shadow-lg">
+      {/* Upper Section - Overall Budget */}
+      <div className="text-center mb-6">
+        {remaining < 0 ? (
+          <div className="text-3xl font-bold text-red-400 mb-2">
+            Przekroczono budżet o {Math.abs(remaining).toFixed(0)} PLN
+          </div>
+        ) : remaining === 0 ? (
+          <div className="text-3xl font-bold text-yellow-400 mb-2">
+            Jesteśmy na równi z budżetem
+          </div>
+        ) : (
+          <div className="text-3xl font-bold text-green-400 mb-2">
+            Pozostało: {remaining.toFixed(0)} PLN
+          </div>
+        )}
+        <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
+          <div
+            className={`h-full transition-all duration-300 ${
+              overallPercentage >= 100 ? "bg-red-500" : "bg-green-500"
+            }`}
+            style={{ width: `${Math.min(overallPercentage, 100)}%` }}
+          />
+        </div>
+        <div className="text-sm text-muted-foreground mt-2">
+          {totalSpent.toFixed(0)} / {totalBudget.toFixed(0)} PLN (
+          {overallPercentage.toFixed(0)}%)
+        </div>
+      </div>
+
+      {/* Lower Section - Categories */}
+      <div className="space-y-4">
+        <div className="text-sm font-medium text-muted-foreground border-b border-border pb-2">
+          Kategorie z budżetem
+        </div>
+        <div className="space-y-3">
+          {budgets.map((budget) => {
+            const percentage =
+              (budget.amount || 0) > 0
+                ? ((budget.spent || 0) / (budget.amount || 0)) * 100
+                : 0;
+            const isOverBudget = percentage > 100;
+            const categoryColor = getCategoryColor(budget.category_name);
+
+            return (
+              <div
+                key={budget.category_name}
+                className="p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors border border-border"
+              >
+                {/* Top Row: Category name and amount */}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="font-medium text-sm"
+                      style={{ color: categoryColor }}
+                    >
+                      {budget.category_name}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span
+                      className={`font-bold text-sm ${
+                        isOverBudget ? "text-red-500" : "text-foreground"
+                      }`}
+                    >
+                      {(budget.spent || 0).toFixed(0)} /{" "}
+                      {(budget.amount || 0).toFixed(0)} PLN
+                    </span>
+                  </div>
+                </div>
+
+                {/* Bottom Row: Progress bar */}
+                <div className="w-full">
+                  <div
+                    className="h-2 rounded-full overflow-hidden"
+                    style={{
+                      backgroundColor: categoryColor + "30", // 30% opacity
+                    }}
+                  >
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${
+                        isOverBudget ? "bg-red-500" : "bg-green-500"
+                      }`}
+                      style={{ width: `${Math.min(percentage, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const getCategoryColor = (categoryName: string) => {
+  const CATEGORY_COLORS: Record<string, string> = {
+    Jedzenie: "#22c55e",
+    Transport: "#3b82f6",
+    Dom: "#eab308",
+    Zdrowie: "#ef4444",
+    Rozrywka: "#a855f7",
+    Ubrania: "#ec4899",
+    Elektronika: "#06b6d4",
+    Edukacja: "#6366f1",
+    Podróże: "#0ea5e9",
+    Sport: "#84cc16",
+    Uroda: "#f43f5e",
+    Zwierzęta: "#f97316",
+    Prezenty: "#d946ef",
+    Rachunki: "#64748b",
+    Restauracje: "#8b5cf6",
+    Apteka: "#14b8a6",
+    Alkohol: "#dc2626",
+    Inne: "#6b7280",
+  };
+  return CATEGORY_COLORS[categoryName] || "#6b7280";
+};
+
+// Color palette for categories
+const CATEGORY_COLORS: Record<string, string> = {
+  Jedzenie: "#22c55e",
+  Transport: "#3b82f6",
+  Dom: "#eab308",
+  Zdrowie: "#ef4444",
+  Rozrywka: "#a855f7",
+  Ubrania: "#ec4899",
+  Elektronika: "#06b6d4",
+  Edukacja: "#6366f1",
+  Podróże: "#0ea5e9",
+  Sport: "#84cc16",
+  Uroda: "#f43f5e",
+  Zwierzęta: "#f97316",
+  Prezenty: "#d946ef",
+  Rachunki: "#64748b",
+  Restauracje: "#8b5cf6",
+  Apteka: "#14b8a6",
+  Alkohol: "#dc2626",
+  Inne: "#6b7280",
+};
+
 interface DashboardStats {
   totalSpent: number;
   receiptCount: number;
@@ -26,28 +373,6 @@ interface DashboardTilesProps {
     period: "today" | "week" | "month" | "last30" | "custom";
   };
 }
-
-// Color palette for categories
-const CATEGORY_COLORS: Record<string, string> = {
-  Jedzenie: "#22c55e",
-  Transport: "#3b82f6",
-  Dom: "#eab308",
-  Zdrowie: "#ef4444",
-  Rozrywka: "#a855f7",
-  Ubrania: "#ec4899",
-  Elektronika: "#06b6d4",
-  Edukacja: "#6366f1",
-  Podróże: "#0ea5e9",
-  Sport: "#84cc16",
-  Uroda: "#f43f5e",
-  Zwierzęta: "#f97316",
-  Prezenty: "#d946ef",
-  Rachunki: "#64748b",
-  Restauracje: "#8b5cf6",
-  Apteka: "#14b8a6",
-  Alkohol: "#dc2626",
-  Inne: "#6b7280",
-};
 
 export default function DashboardTiles(props: DashboardTilesProps) {
   const [stats, setStats] = useState<DashboardStats>({
@@ -314,6 +639,11 @@ export default function DashboardTiles(props: DashboardTilesProps) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Budget Monitor Tile */}
+      <div className="lg:col-span-3">
+        <BudgetMonitor dateFilter={props.dateFilter} />
+      </div>
+
       {/* Top Stats Tiles */}
       <div className="bg-card border border-border rounded-xl p-6 shadow-lg">
         <div className="text-center">
