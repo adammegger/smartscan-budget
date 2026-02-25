@@ -73,6 +73,9 @@ export default function Achievements({
         } = await supabase.auth.getUser();
 
         if (user) {
+          // Check and award any achievements that should be earned
+          await checkAchievements(user.id);
+
           const achievements = await fetchUserAchievements(user.id);
           setUserAchievements(achievements);
           setEarnedIds(new Set(achievements.map((a) => a.type)));
@@ -201,6 +204,21 @@ export default function Achievements({
     return currentValue;
   };
 
+  // Format badge value for display
+  const formatBadgeValue = (value: number, requirement: string): string => {
+    if (requirement === "total_spent") {
+      // Format currency with 2 decimal places
+      return `${value.toFixed(0)} PLN`;
+    }
+    // For other achievements, show whole number
+    return Math.round(value).toString();
+  };
+
+  // Check if this is a spending achievement (needs wider badge)
+  const isSpendingAchievement = (requirement: string): boolean => {
+    return requirement === "total_spent";
+  };
+
   // Check if this is a countable achievement (should show badge)
   const isCountableAchievement = (
     achievement: AchievementDefinition,
@@ -288,9 +306,21 @@ export default function Achievements({
 
                 {/* Progress badge - shows current count */}
                 {showBadge && (
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center shadow-lg border-2 border-background">
-                    <span className="text-[10px] font-bold text-white leading-none">
-                      {badgeValue}
+                  <div
+                    className={`absolute -bottom-2 left-1/2 -translate-x-1/2 ${
+                      isSpendingAchievement(achievement.requirement)
+                        ? "px-3 py-1 min-w-[72px] rounded-full"
+                        : "w-6 h-6 rounded-full"
+                    } bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-lg border-2 border-background`}
+                  >
+                    <span
+                      className={`font-bold text-white leading-none text-center ${
+                        isSpendingAchievement(achievement.requirement)
+                          ? "text-[10px]"
+                          : "text-[10px]"
+                      }`}
+                    >
+                      {formatBadgeValue(badgeValue, achievement.requirement)}
                     </span>
                   </div>
                 )}
@@ -309,13 +339,6 @@ export default function Achievements({
               <p className="text-xs text-muted-foreground text-center">
                 {achievement.description}
               </p>
-
-              {/* Earned indicator */}
-              {isEarned && (
-                <div className="absolute top-2 right-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-                </div>
-              )}
 
               {/* Hover tooltip with progress */}
               <div className="absolute inset-x-0 bottom-0 h-1 bg-muted rounded-b-xl overflow-hidden">
