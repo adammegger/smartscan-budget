@@ -14,11 +14,10 @@ import { supabase } from "./lib/supabase";
 import { ThemeProvider, useTheme } from "./lib/theme";
 import Scanner from "./components/Scanner";
 import Receipts from "./components/Receipts";
-import ExpenseStructure from "./components/ExpenseStructure";
+import DashboardTiles from "./components/DashboardTiles";
 import ProductPriceHistory from "./components/ProductPriceHistory";
 import Login from "./components/Login";
 import Budgets from "./components/Budgets";
-import BudgetProgress from "./components/BudgetProgress";
 import Achievements from "./components/Achievements";
 
 // Theme Toggle Button Component
@@ -76,10 +75,6 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState<
     "dashboard" | "receipts" | "priceHistory" | "budgets" | "achievements"
   >("dashboard");
-  const [budgetKey, setBudgetKey] = useState(0);
-  const handleBudgetChange = () => {
-    setBudgetKey((prev) => prev + 1);
-  };
   const [isDateFilterExpanded, setIsDateFilterExpanded] = useState(false);
   const [selectedProductForHistory, setSelectedProductForHistory] = useState<
     string | null
@@ -548,14 +543,7 @@ function AppContent() {
       {/* Main Content */}
       <section className="px-6 pb-8">
         {activeTab === "dashboard" ? (
-          <>
-            <div className="mb-8">
-              <BudgetProgress dateFilter={dateFilter} key={budgetKey} />
-            </div>
-            <div className="mt-8">
-              <ExpenseStructure dateFilter={dateFilter} />
-            </div>
-          </>
+          <DashboardTiles dateFilter={dateFilter} />
         ) : activeTab === "receipts" ? (
           <Receipts
             selectedReceiptId={selectedReceiptId}
@@ -564,10 +552,7 @@ function AppContent() {
             dateFilter={dateFilter}
           />
         ) : activeTab === "budgets" ? (
-          <Budgets
-            dateFilter={dateFilter}
-            onBudgetChange={handleBudgetChange}
-          />
+          <Budgets dateFilter={dateFilter} />
         ) : activeTab === "achievements" ? (
           <Achievements />
         ) : (
