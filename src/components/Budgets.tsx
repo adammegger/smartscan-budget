@@ -39,7 +39,7 @@ export default function Budgets(props: BudgetsProps) {
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editAmount, setEditAmount] = useState<string>("");
   const [saving, setSaving] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   // Fetch initial data
   useEffect(() => {
@@ -305,7 +305,7 @@ export default function Budgets(props: BudgetsProps) {
   return (
     <div className="space-y-6">
       {/* Summary */}
-      <div className="bg-card border-2 border-orange-500/20 dark:border-orange-500/30 rounded-xl p-4 shadow-sm">
+      <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Wallet className="w-5 h-5 text-orange-500" />
