@@ -9,16 +9,21 @@ import {
   Award,
   TrendingUp,
   ShoppingBag,
+  Leaf,
+  Clover,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import {
   ACHIEVEMENTS,
   fetchUserAchievements,
   checkAchievements,
+  fetchUserProgressData,
+  getProgressValue,
 } from "../lib/achievements";
 import type {
   AchievementDefinition,
   UserAchievement,
+  UserProgressData,
 } from "../lib/achievements";
 import { supabase } from "../lib/supabase";
 
@@ -36,6 +41,8 @@ const iconMap: Record<
   Award,
   TrendingUp,
   ShoppingBag,
+  Leaf,
+  Clover,
 };
 
 interface AchievementsProps {
@@ -48,6 +55,14 @@ export default function Achievements({
   const [, setUserAchievements] = useState<UserAchievement[]>([]);
   const [earnedIds, setEarnedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [progressData, setProgressData] = useState<UserProgressData>({
+    totalReceipts: 0,
+    totalSpent: 0,
+    uniqueCategories: 0,
+    budgetsCreated: 0,
+    streak: 0,
+    greenLeaves: 0,
+  });
 
   // Fetch user achievements on mount
   useEffect(() => {
@@ -61,6 +76,10 @@ export default function Achievements({
           const achievements = await fetchUserAchievements(user.id);
           setUserAchievements(achievements);
           setEarnedIds(new Set(achievements.map((a) => a.type)));
+
+          // Fetch progress data for badges
+          const progress = await fetchUserProgressData(user.id);
+          setProgressData(progress);
         }
       } catch (error) {
         console.error("Error loading achievements:", error);
@@ -152,9 +171,51 @@ export default function Achievements({
   const getProgress = (achievement: AchievementDefinition): number => {
     if (earnedIds.has(achievement.id)) return 100;
 
-    // For now, return 0 for locked achievements
-    // In a full implementation, we'd calculate actual progress
-    return 0;
+    const currentValue = getProgressValue(
+      achievement.requirement,
+      progressData,
+    );
+    const percentage = Math.min(
+      (currentValue / achievement.threshold) * 100,
+      100,
+    );
+    return percentage;
+  };
+
+  // Get badge display value for an achievement
+  const getBadgeValue = (achievement: AchievementDefinition): number | null => {
+    // Don't show badge if achievement is earned
+    if (earnedIds.has(achievement.id)) return null;
+
+    const currentValue = getProgressValue(
+      achievement.requirement,
+      progressData,
+    );
+
+    // Don't show badge if no progress yet
+    if (currentValue <= 0) return null;
+
+    // Don't show badge if already reached threshold (should be earned)
+    if (currentValue >= achievement.threshold) return null;
+
+    return currentValue;
+  };
+
+  // Check if this is a countable achievement (should show badge)
+  const isCountableAchievement = (
+    achievement: AchievementDefinition,
+  ): boolean => {
+    const countableRequirements = [
+      "total_receipts",
+      "total_spent",
+      "unique_categories",
+      "budgets_created",
+      "streak_7_days",
+      "streak_30_days",
+      "green_leaves",
+      "first_receipt",
+    ];
+    return countableRequirements.includes(achievement.requirement);
   };
 
   if (loading) {
@@ -200,6 +261,9 @@ export default function Achievements({
         {ACHIEVEMENTS.map((achievement) => {
           const isEarned = earnedIds.has(achievement.id);
           const Icon = getIcon(achievement.icon);
+          const badgeValue = getBadgeValue(achievement);
+          const showBadge =
+            isCountableAchievement(achievement) && badgeValue !== null;
 
           return (
             <div
@@ -210,15 +274,26 @@ export default function Achievements({
                   : "border-border opacity-60"
               }`}
             >
-              {/* Badge icon */}
-              <div
-                className={`flex items-center justify-center w-16 h-16 mx-auto mb-3 rounded-full transition-all duration-300 ${
-                  isEarned
-                    ? "bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg"
-                    : "bg-muted text-muted-foreground"
-                }`}
-              >
-                <Icon size={32} className={isEarned ? "animate-pulse" : ""} />
+              {/* Badge icon with progress counter */}
+              <div className="relative w-16 h-16 mx-auto mb-3">
+                <div
+                  className={`flex items-center justify-center w-16 h-16 rounded-full transition-all duration-300 ${
+                    isEarned
+                      ? "bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  <Icon size={32} className={isEarned ? "animate-pulse" : ""} />
+                </div>
+
+                {/* Progress badge - shows current count */}
+                {showBadge && (
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center shadow-lg border-2 border-background">
+                    <span className="text-[10px] font-bold text-white leading-none">
+                      {badgeValue}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Badge name */}
