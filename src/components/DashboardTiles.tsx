@@ -23,7 +23,7 @@ interface DashboardTilesProps {
   dateFilter?: {
     startDate: Date | null;
     endDate: Date | null;
-    period: "today" | "week" | "month" | "custom";
+    period: "today" | "week" | "month" | "last30" | "custom";
   };
 }
 
@@ -320,7 +320,24 @@ export default function DashboardTiles(props: DashboardTilesProps) {
           <div className="text-4xl font-bold text-green-400 mb-2">
             {stats.totalSpent.toFixed(0)} PLN
           </div>
-          <div className="text-sm text-green-400">W tym miesiącu</div>
+          <div className="text-sm text-green-400">
+            {(() => {
+              switch (props.dateFilter?.period) {
+                case "today":
+                  return "W tym dniu";
+                case "week":
+                  return "W tym tygodniu";
+                case "month":
+                  return "W tym miesiącu";
+                case "last30":
+                  return "W ostatnich 30 dniach";
+                case "custom":
+                  return "W tym okresie";
+                default:
+                  return "W tym miesiącu";
+              }
+            })()}
+          </div>
         </div>
       </div>
 
