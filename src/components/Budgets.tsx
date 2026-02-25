@@ -1,7 +1,8 @@
 import { useEffect, useState, useTransition } from "react";
 import { supabase } from "../lib/supabase";
-import { Wallet, TrendingUp, AlertTriangle, Check, X } from "lucide-react";
+import { Wallet, Pencil, AlertTriangle, Check, X } from "lucide-react";
 import CategoryIcon from "./CategoryIcon";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Budget {
   id: number;
@@ -353,165 +354,207 @@ export default function Budgets(props: BudgetsProps) {
           </div>
         ) : (
           <div className="divide-y divide-border">
-            {/* Existing budgets with inline edit */}
-            {budgets.map((budget) => {
-              const percentage =
-                budget.amount > 0 ? (budget.spent / budget.amount) * 100 : 0;
-              const isOverBudget = percentage > 100;
-              const isEditing = editingCategory === budget.category_name;
+            {/* Active Budgets Section */}
+            {budgets.length > 0 && (
+              <div className="space-y-3 p-3">
+                <div className="text-sm font-medium text-muted-foreground border-b border-border pb-2">
+                  Aktywne budżety
+                </div>
+                <AnimatePresence mode="popLayout">
+                  {budgets.map((budget) => {
+                    const percentage =
+                      budget.amount > 0
+                        ? (budget.spent / budget.amount) * 100
+                        : 0;
+                    const isOverBudget = percentage > 100;
+                    const isEditing = editingCategory === budget.category_name;
 
-              return (
-                <div
-                  key={budget.id}
-                  className="p-3 hover:bg-muted/30 transition-colors"
-                >
-                  {isEditing ? (
-                    <div className="flex items-center gap-2 animate-in slide-in-from-top-2 duration-200">
-                      <CategoryIcon
-                        icon={getCategoryIcon(budget.category_name)}
-                        color={getCategoryColor(budget.category_name)}
-                        size={20}
-                      />
-                      <span className="font-medium flex-1">
-                        {budget.category_name}
-                      </span>
-                      <input
-                        type="number"
-                        value={editAmount}
-                        onChange={(e) => setEditAmount(e.target.value)}
-                        className="w-24 px-2 py-1 bg-background border border-border rounded text-sm"
-                        autoFocus
-                        onKeyDown={(e) => e.key === "Enter" && handleSave()}
-                      />
-                      <span className="text-xs text-muted-foreground">PLN</span>
-                      <button
-                        onClick={handleSave}
-                        disabled={saving}
-                        className="p-1.5 text-green-500 hover:bg-green-500/10 rounded transition-colors"
+                    return (
+                      <motion.div
+                        key={budget.id}
+                        layoutId={`budget-${budget.category_name}`}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="p-3 hover:bg-muted/30 transition-colors border border-border rounded-lg"
                       >
-                        <Check size={16} />
-                      </button>
-                      <button
-                        onClick={handleCancel}
-                        className="p-1.5 text-muted-foreground hover:bg-muted rounded transition-colors"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-3">
-                      <CategoryIcon
-                        icon={getCategoryIcon(budget.category_name)}
-                        color={getCategoryColor(budget.category_name)}
-                        size={20}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium truncate">
-                            {budget.category_name}
-                          </span>
-                          {isOverBudget && (
-                            <AlertTriangle
-                              size={14}
-                              className="text-red-500 shrink-0"
+                        {isEditing ? (
+                          <div className="flex items-center gap-2">
+                            <CategoryIcon
+                              icon={getCategoryIcon(budget.category_name)}
+                              color={getCategoryColor(budget.category_name)}
+                              size={20}
                             />
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                            <div
-                              className={`h-full ${getProgressColor(percentage)} transition-all duration-300`}
-                              style={{ width: `${Math.min(percentage, 100)}%` }}
+                            <span className="font-medium flex-1">
+                              {budget.category_name}
+                            </span>
+                            <input
+                              type="number"
+                              value={editAmount}
+                              onChange={(e) => setEditAmount(e.target.value)}
+                              className="w-24 px-2 py-1 bg-background border border-border rounded text-sm"
+                              autoFocus
+                              onKeyDown={(e) =>
+                                e.key === "Enter" && handleSave()
+                              }
                             />
+                            <span className="text-xs text-muted-foreground">
+                              PLN
+                            </span>
+                            <button
+                              onClick={handleSave}
+                              disabled={saving}
+                              className="p-1.5 text-green-500 hover:bg-green-500/10 rounded transition-colors"
+                            >
+                              <Check size={16} />
+                            </button>
+                            <button
+                              onClick={handleCancel}
+                              className="p-1.5 text-muted-foreground hover:bg-muted rounded transition-colors"
+                            >
+                              <X size={16} />
+                            </button>
                           </div>
-                          <span
-                            className={`text-xs whitespace-nowrap ${getProgressTextColor(percentage)}`}
-                          >
-                            {budget.spent.toFixed(0)}/{budget.amount.toFixed(0)}{" "}
-                            PLN
-                          </span>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => handleStartEdit(budget)}
-                        className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
-                      >
-                        <TrendingUp size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(budget.id)}
-                        className="p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                        ) : (
+                          <div className="flex items-center gap-3">
+                            <CategoryIcon
+                              icon={getCategoryIcon(budget.category_name)}
+                              color={getCategoryColor(budget.category_name)}
+                              size={20}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium truncate">
+                                  {budget.category_name}
+                                </span>
+                                {isOverBudget && (
+                                  <AlertTriangle
+                                    size={14}
+                                    className="text-red-500 shrink-0"
+                                  />
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 mt-1">
+                                <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                                  <div
+                                    className={`h-full ${getProgressColor(percentage)} transition-all duration-300`}
+                                    style={{
+                                      width: `${Math.min(percentage, 100)}%`,
+                                    }}
+                                  />
+                                </div>
+                                <span
+                                  className={`text-xs whitespace-nowrap ${getProgressTextColor(percentage)}`}
+                                >
+                                  {budget.spent.toFixed(0)}/
+                                  {budget.amount.toFixed(0)} PLN
+                                </span>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => handleStartEdit(budget)}
+                              className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(budget.id)}
+                              className="p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        )}
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
+            )}
 
-            {/* Categories without budgets - inline add */}
-            {categoriesWithoutBudget.map((cat) => {
-              const isAdding = editingCategory === cat.name;
-
-              return (
-                <div
-                  key={cat.id}
-                  className="p-3 hover:bg-muted/30 transition-colors"
-                >
-                  {isAdding ? (
-                    <div className="flex items-center gap-2 animate-in slide-in-from-top-2 duration-200">
-                      <CategoryIcon
-                        icon={cat.icon}
-                        color={cat.color}
-                        size={20}
-                      />
-                      <span className="font-medium flex-1">{cat.name}</span>
-                      <input
-                        type="number"
-                        value={editAmount}
-                        onChange={(e) => setEditAmount(e.target.value)}
-                        placeholder="0"
-                        className="w-24 px-2 py-1 bg-background border border-border rounded text-sm"
-                        autoFocus
-                        onKeyDown={(e) => e.key === "Enter" && handleSave()}
-                      />
-                      <span className="text-xs text-muted-foreground">PLN</span>
-                      <button
-                        onClick={handleSave}
-                        disabled={saving}
-                        className="p-1.5 text-green-500 hover:bg-green-500/10 rounded transition-colors"
-                      >
-                        <Check size={16} />
-                      </button>
-                      <button
-                        onClick={handleCancel}
-                        className="p-1.5 text-muted-foreground hover:bg-muted rounded transition-colors"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-3">
-                      <CategoryIcon
-                        icon={cat.icon}
-                        color={cat.color}
-                        size={20}
-                      />
-                      <span className="font-medium flex-1 text-muted-foreground">
-                        {cat.name}
-                      </span>
-                      <button
-                        onClick={() => handleStartAdd(cat.name)}
-                        className="px-3 py-1 text-xs bg-orange-500 hover:bg-orange-600 text-white rounded-full transition-colors"
-                      >
-                        + Dodaj
-                      </button>
-                    </div>
-                  )}
+            {/* Available Budgets Section */}
+            {categoriesWithoutBudget.length > 0 && (
+              <div className="space-y-3 p-3">
+                <div className="text-sm font-medium text-muted-foreground border-b border-border pb-2">
+                  Dostępne budżety
                 </div>
-              );
-            })}
+                <AnimatePresence mode="popLayout">
+                  {categoriesWithoutBudget.map((cat) => {
+                    const isAdding = editingCategory === cat.name;
+
+                    return (
+                      <motion.div
+                        key={cat.id}
+                        layoutId={`available-${cat.name}`}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="p-3 hover:bg-muted/30 transition-colors border border-border rounded-lg"
+                      >
+                        {isAdding ? (
+                          <div className="flex items-center gap-2">
+                            <CategoryIcon
+                              icon={cat.icon}
+                              color={cat.color}
+                              size={20}
+                            />
+                            <span className="font-medium flex-1">
+                              {cat.name}
+                            </span>
+                            <input
+                              type="number"
+                              value={editAmount}
+                              onChange={(e) => setEditAmount(e.target.value)}
+                              placeholder="0"
+                              className="w-24 px-2 py-1 bg-background border border-border rounded text-sm"
+                              autoFocus
+                              onKeyDown={(e) =>
+                                e.key === "Enter" && handleSave()
+                              }
+                            />
+                            <span className="text-xs text-muted-foreground">
+                              PLN
+                            </span>
+                            <button
+                              onClick={handleSave}
+                              disabled={saving}
+                              className="p-1.5 text-green-500 hover:bg-green-500/10 rounded transition-colors"
+                            >
+                              <Check size={16} />
+                            </button>
+                            <button
+                              onClick={handleCancel}
+                              className="p-1.5 text-muted-foreground hover:bg-muted rounded transition-colors"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-3">
+                            <CategoryIcon
+                              icon={cat.icon}
+                              color={cat.color}
+                              size={20}
+                            />
+                            <span className="font-medium flex-1 text-muted-foreground">
+                              {cat.name}
+                            </span>
+                            <button
+                              onClick={() => handleStartAdd(cat.name)}
+                              className="px-3 py-1 text-xs bg-orange-500 hover:bg-orange-600 text-white rounded-full transition-colors"
+                            >
+                              + Dodaj
+                            </button>
+                          </div>
+                        )}
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
+            )}
           </div>
         )}
       </div>
