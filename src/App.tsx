@@ -402,14 +402,22 @@ function AppContent() {
               }`}
             >
               <div className="p-6 border-t border-border">
-                {/* Quick Period Buttons */}
+                {/* Quick Period Buttons - Badge Style */}
                 <div className="flex flex-wrap gap-2 mb-4">
                   {[
-                    { key: "today", label: "Dziś" },
-                    { key: "week", label: "Tydzień" },
-                    { key: "month", label: "Miesiąc" },
-                    { key: "last30", label: "Ostatnie 30 dni" },
-                    { key: "custom", label: "Niestandardowy" },
+                    { key: "today", label: "Dziś", color: "#86efac" }, // Pastel Green
+                    { key: "week", label: "Tydzień", color: "#93c5fd" }, // Pastel Blue
+                    { key: "month", label: "Miesiąc", color: "#fde047" }, // Pastel Yellow
+                    {
+                      key: "last30",
+                      label: "Ostatnie 30 dni",
+                      color: "#c084fc",
+                    }, // Pastel Purple
+                    {
+                      key: "custom",
+                      label: "Niestandardowy",
+                      color: "#f472b6",
+                    }, // Pastel Pink
                   ].map((period) => {
                     // Calculate dates for each period - simplified to use actual date ranges
                     const getDatesForPeriod = () => {
@@ -446,6 +454,7 @@ function AppContent() {
                     };
 
                     const dates = getDatesForPeriod();
+                    const isActive = dateFilter.period === period.key;
 
                     return (
                       <button
@@ -471,11 +480,20 @@ function AppContent() {
                             });
                           }
                         }}
-                        className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 border ${
-                          dateFilter.period === period.key
-                            ? "bg-secondary text-secondary-foreground border-secondary"
-                            : "bg-muted text-muted-foreground border-border hover:bg-secondary"
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                          isActive
+                            ? "font-bold border-2"
+                            : "bg-[#1a1a1a] text-muted-foreground border-2"
                         }`}
+                        style={{
+                          backgroundColor: "transparent",
+                          borderColor: period.color,
+                          color: period.color,
+                          boxShadow: isActive
+                            ? `0 0 15px ${period.color}40`
+                            : "none",
+                          cursor: "pointer",
+                        }}
                       >
                         {period.label}
                       </button>

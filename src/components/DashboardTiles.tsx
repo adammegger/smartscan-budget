@@ -335,7 +335,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
 
       {/* Most Popular Product Tile */}
       <div className="bg-card border border-border rounded-xl p-6 shadow-lg">
-        <div className="text-center">
+        <div className="text-center flex flex-col justify-center h-full">
           {stats.mostPopularProduct ? (
             <>
               <div className="text-3xl font-bold text-purple-400 mb-1">
@@ -347,7 +347,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
               </div>
             </>
           ) : (
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-purple-400 font-medium">
               Brak danych dla tego okresu
             </div>
           )}
