@@ -250,7 +250,7 @@ function AppContent() {
               <Register onRegisterSuccess={() => setAuthMode("login")} />
             )}
 
-            <div className="text-center mt-6 pt-6 border-t border-border">
+            <div className="text-center mt-6">
               <button
                 onClick={() =>
                   setAuthMode(authMode === "login" ? "register" : "login")
