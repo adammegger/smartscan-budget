@@ -26,7 +26,10 @@ export default function Login({ onLoginSuccess }: LoginProps) {
         throw signInError;
       }
 
+      // Successful login - redirect to dashboard
       onLoginSuccess();
+      // Navigate to dashboard after successful login
+      window.location.href = "/dashboard";
     } catch (err) {
       console.error("Login error:", err);
       setError(

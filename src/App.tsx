@@ -161,14 +161,20 @@ function AppContent() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      if (session) {
-        setIsAuthenticated(true);
-        setUserEmail(session.user.email || "");
-      } else {
+        if (session) {
+          setIsAuthenticated(true);
+          setUserEmail(session.user.email || "");
+        } else {
+          setIsAuthenticated(false);
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        // Don't throw - just log and continue
         setIsAuthenticated(false);
       }
     };
@@ -177,13 +183,32 @@ function AppContent() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state change:", event, session);
+
+      // Handle refresh token errors gracefully
+      if (event === "SIGNED_IN" && session) {
         setIsAuthenticated(true);
         setUserEmail(session.user.email || "");
-      } else {
+      } else if (event === "SIGNED_OUT" || !session) {
         setIsAuthenticated(false);
         setUserEmail("");
+      } else if (event === "TOKEN_REFRESHED" && session) {
+        // Token refresh successful
+        setIsAuthenticated(true);
+        setUserEmail(session.user.email || "");
+      } else if (event === "INITIAL_SESSION" && session) {
+        // Initial session loaded
+        setIsAuthenticated(true);
+        setUserEmail(session.user.email || "");
+      } else if (event === "PASSWORD_RECOVERY") {
+        // Password recovery event - don't change auth state
+        console.log("Password recovery event");
+      } else if (event === "USER_UPDATED") {
+        // User updated - refresh session data
+        if (session) {
+          setUserEmail(session.user.email || "");
+        }
       }
     });
 
