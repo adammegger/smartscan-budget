@@ -54,6 +54,7 @@ function AppContent() {
   >("loading");
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [, setUserEmail] = useState<string>("");
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [captureMessage, setCaptureMessage] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedReceiptId, setSelectedReceiptId] = useState<number | null>(
@@ -239,7 +240,36 @@ function AppContent() {
 
   // For other routes, require authentication
   if (!isAuthenticated) {
-    return <Login onLoginSuccess={handleLoginSuccess} />;
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-4">
+        <div className="w-full max-w-md">
+          <div className="bg-card border border-border rounded-xl p-6">
+            {authMode === "login" ? (
+              <Login onLoginSuccess={handleLoginSuccess} />
+            ) : (
+              <Register onRegisterSuccess={() => setAuthMode("login")} />
+            )}
+          </div>
+
+          <div className="text-center mt-6">
+            <button
+              onClick={() =>
+                setAuthMode(authMode === "login" ? "register" : "login")
+              }
+              className="text-orange-500 hover:text-orange-600 font-medium"
+            >
+              {authMode === "login"
+                ? "Nie masz konta? Zarejestruj się"
+                : "Masz już konto? Zaloguj się"}
+            </button>
+          </div>
+
+          <p className="text-center text-muted-foreground text-sm mt-6">
+            Witaj w aplikacji Paragonly - Twoim osobistym asystencie zakupowym
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
