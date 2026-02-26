@@ -120,7 +120,7 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-primary-foreground font-bold py-3 px-4 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-primary-foreground font-bold py-3 px-4 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -134,10 +134,6 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
           </form>
         )}
       </div>
-
-      <p className="text-center text-muted-foreground text-sm mt-6">
-        Witaj w aplikacji Paragonly - Twoim osobistym asystencie zakupowym
-      </p>
     </div>
   );
 }

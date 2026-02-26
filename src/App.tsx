@@ -249,24 +249,24 @@ function AppContent() {
             ) : (
               <Register onRegisterSuccess={() => setAuthMode("login")} />
             )}
-          </div>
 
-          <div className="text-center mt-6">
-            <button
-              onClick={() =>
-                setAuthMode(authMode === "login" ? "register" : "login")
-              }
-              className="text-orange-500 hover:text-orange-600 font-medium"
-            >
-              {authMode === "login"
-                ? "Nie masz konta? Zarejestruj się"
-                : "Masz już konto? Zaloguj się"}
-            </button>
-          </div>
+            <div className="text-center mt-6 pt-6 border-t border-border">
+              <button
+                onClick={() =>
+                  setAuthMode(authMode === "login" ? "register" : "login")
+                }
+                className="text-orange-500 hover:text-orange-600 font-medium cursor-pointer"
+              >
+                {authMode === "login"
+                  ? "Nie masz konta? Zarejestruj się"
+                  : "Masz już konto? Zaloguj się"}
+              </button>
+            </div>
 
-          <p className="text-center text-muted-foreground text-sm mt-6">
-            Witaj w aplikacji Paragonly - Twoim osobistym asystencie zakupowym
-          </p>
+            <p className="text-center text-muted-foreground text-sm mt-6">
+              Witaj w aplikacji Paragonly - Twoim osobistym asystencie zakupowym
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -314,7 +314,7 @@ function AppContent() {
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors cursor-pointer"
             >
               <LogOut size={16} />
               Wyloguj
