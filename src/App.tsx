@@ -17,6 +17,7 @@ import Receipts from "./components/Receipts";
 import DashboardTiles from "./components/DashboardTiles";
 import ProductPriceHistory from "./components/ProductPriceHistory";
 import Login from "./components/Login";
+import Register from "./components/Register";
 import Budgets from "./components/Budgets";
 import Achievements from "./components/Achievements";
 
@@ -198,7 +199,20 @@ function AppContent() {
     );
   }
 
-  // Show login if not authenticated
+  // Check current path for auth-protected routes
+  const currentPath = window.location.pathname;
+
+  // For /login and /register routes, always show the respective components
+  if (currentPath === "/login" || currentPath === "/register") {
+    if (currentPath === "/register") {
+      return (
+        <Register onRegisterSuccess={() => (window.location.href = "/login")} />
+      );
+    }
+    return <Login onLoginSuccess={handleLoginSuccess} />;
+  }
+
+  // For other routes, require authentication
   if (!isAuthenticated) {
     return <Login onLoginSuccess={handleLoginSuccess} />;
   }
