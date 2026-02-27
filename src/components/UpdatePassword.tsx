@@ -138,11 +138,13 @@ export default function UpdatePassword() {
             />
           </div>
 
-          {error && (
-            <div className="bg-destructive/10 border border-destructive/50 rounded-md p-3">
-              <p className="text-destructive text-sm">{error}</p>
-            </div>
-          )}
+          <div className="min-h-[20px]">
+            {error && (
+              <div className="bg-destructive/10 border border-destructive/50 rounded-md p-3">
+                <p className="text-destructive text-sm">{error}</p>
+              </div>
+            )}
+          </div>
 
           <button
             type="submit"
@@ -160,6 +162,19 @@ export default function UpdatePassword() {
           </button>
         </form>
       )}
+
+      <div className="absolute bottom-8 left-0 right-0 text-center">
+        <div className="text-center space-y-2">
+          <div>
+            <button
+              onClick={() => (window.location.href = "/dashboard")}
+              className="text-orange-500 hover:text-orange-600 font-medium cursor-pointer"
+            >
+              Przejdź do dashboardu
+            </button>
+          </div>
+        </div>
+      </div>
     </AuthLayout>
   );
 }

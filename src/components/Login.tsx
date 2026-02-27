@@ -82,11 +82,13 @@ export default function Login({ onLoginSuccess }: LoginProps) {
           />
         </div>
 
-        {error && (
-          <div className="bg-destructive/10 border border-destructive/50 rounded-md p-3">
-            <p className="text-destructive text-sm">{error}</p>
-          </div>
-        )}
+        <div className="min-h-[20px]">
+          {error && (
+            <div className="bg-destructive/10 border border-destructive/50 rounded-md p-3">
+              <p className="text-destructive text-sm">{error}</p>
+            </div>
+          )}
+        </div>
 
         <button
           type="submit"
@@ -104,22 +106,24 @@ export default function Login({ onLoginSuccess }: LoginProps) {
         </button>
       </form>
 
-      <div className="text-center mt-4 space-y-2">
-        <div>
-          <button
-            onClick={() => (window.location.href = "/reset-password")}
-            className="text-orange-500 hover:text-orange-600 font-medium cursor-pointer"
-          >
-            Zapomniałeś hasła?
-          </button>
-        </div>
-        <div>
-          <button
-            onClick={() => (window.location.href = "/register")}
-            className="text-orange-500 hover:text-orange-600 font-medium cursor-pointer"
-          >
-            Nie masz konta? Zarejestruj się
-          </button>
+      <div className="absolute bottom-8 left-0 right-0 text-center">
+        <div className="text-center space-y-2">
+          <div>
+            <button
+              onClick={() => (window.location.href = "/reset-password")}
+              className="text-orange-500 hover:text-orange-600 font-medium cursor-pointer"
+            >
+              Zapomniałeś hasła?
+            </button>
+          </div>
+          <div>
+            <button
+              onClick={() => (window.location.href = "/register")}
+              className="text-orange-500 hover:text-orange-600 font-medium cursor-pointer"
+            >
+              Nie masz konta? Zarejestruj się
+            </button>
+          </div>
         </div>
       </div>
     </AuthLayout>
