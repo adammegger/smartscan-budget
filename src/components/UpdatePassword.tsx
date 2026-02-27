@@ -1,96 +1,136 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import AuthLayout from "./AuthLayout";
 
-interface RegisterProps {
-  onRegisterSuccess: () => void;
-}
-
-export default function Register({ onRegisterSuccess }: RegisterProps) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+export default function UpdatePassword() {
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [recoverySession, setRecoverySession] = useState<unknown>(null);
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state change:", event, session);
+
+      if (event === "PASSWORD_RECOVERY" && session) {
+        // User returned from password reset link, temporarily authenticated
+        setRecoverySession(session);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
+    // Validate passwords match
+    if (newPassword !== confirmPassword) {
+      setError("Hasła nie są identyczne");
+      setLoading(false);
+      return;
+    }
+
+    // Validate password length
+    if (newPassword.length < 6) {
+      setError("Hasło musi mieć co najmniej 6 znaków");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const { error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
       });
 
-      if (signUpError) {
-        throw signUpError;
+      if (updateError) {
+        throw updateError;
       }
 
       setSuccess(true);
-      // Wait a moment then redirect to login
+      // Redirect to dashboard after success
       setTimeout(() => {
-        onRegisterSuccess();
+        window.location.href = "/dashboard";
       }, 2000);
     } catch (err) {
-      console.error("Registration error:", err);
+      console.error("Update password error:", err);
       setError(
         err instanceof Error
           ? err.message
-          : "Błąd rejestracji. Spróbuj ponownie.",
+          : "Błąd podczas zmiany hasła. Spróbuj ponownie.",
       );
     } finally {
       setLoading(false);
     }
   };
 
+  // If no recovery session, user shouldn't be here
+  if (!recoverySession) {
+    return (
+      <AuthLayout title="Błąd">
+        <div className="text-center py-4">
+          <h2 className="text-2xl font-bold text-destructive mb-4">Błąd</h2>
+          <p className="text-muted-foreground">
+            Nie masz uprawnień do zmiany hasła. Wróć do strony logowania.
+          </p>
+        </div>
+      </AuthLayout>
+    );
+  }
+
   return (
-    <AuthLayout title="Załóż nowe konto">
+    <AuthLayout title="Ustaw nowe hasło">
       {success ? (
         <div className="text-center py-4">
           <div className="bg-green-500/10 border border-green-500/50 rounded-md p-4 mb-4">
             <p className="text-green-600 dark:text-green-400 font-medium">
-              Konto utworzone! Teraz możesz się zalogować.
+              Hasło zostało zmienione! Możesz się teraz zalogować.
             </p>
           </div>
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
           <p className="text-sm text-muted-foreground mt-2">
-            Przekierowanie do logowania...
+            Przekierowanie do dashboardu...
           </p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label
-              htmlFor="email"
+              htmlFor="newPassword"
               className="block text-sm font-medium text-muted-foreground mb-1"
             >
-              Adres e-mail
+              Nowe hasło
             </label>
             <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="newPassword"
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
               required
+              minLength={6}
               className="w-full px-3 py-2 bg-muted border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-input"
-              placeholder="twoj@email.com"
+              placeholder="••••••••"
             />
           </div>
 
           <div>
             <label
-              htmlFor="password"
+              htmlFor="confirmPassword"
               className="block text-sm font-medium text-muted-foreground mb-1"
             >
-              Hasło
+              Potwierdź nowe hasło
             </label>
             <input
-              id="password"
+              id="confirmPassword"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength={6}
               className="w-full px-3 py-2 bg-muted border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-input"
@@ -112,25 +152,14 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground"></div>
-                Tworzenie konta...
+                Ustawianie hasła...
               </span>
             ) : (
-              "Załóż konto"
+              "Ustaw nowe hasło"
             )}
           </button>
         </form>
       )}
-
-      <div className="text-center mt-4 space-y-2">
-        <div>
-          <button
-            onClick={() => (window.location.href = "/login")}
-            className="text-orange-500 hover:text-orange-600 font-medium cursor-pointer"
-          >
-            Masz już konto? Zaloguj się
-          </button>
-        </div>
-      </div>
     </AuthLayout>
   );
 }

@@ -18,6 +18,8 @@ import DashboardTiles from "./components/DashboardTiles";
 import ProductPriceHistory from "./components/ProductPriceHistory";
 import Login from "./components/Login";
 import Register from "./components/Register";
+import ResetPassword from "./components/ResetPassword";
+import UpdatePassword from "./components/UpdatePassword";
 import Budgets from "./components/Budgets";
 import Achievements from "./components/Achievements";
 
@@ -228,12 +230,27 @@ function AppContent() {
   // Check current path for auth-protected routes
   const currentPath = window.location.pathname;
 
-  // For /login and /register routes, always show the respective components
-  if (currentPath === "/login" || currentPath === "/register") {
+  // For /login, /register, /reset-password, and /update-password routes, always show the respective components
+  if (
+    currentPath === "/login" ||
+    currentPath === "/register" ||
+    currentPath === "/reset-password" ||
+    currentPath === "/update-password"
+  ) {
     if (currentPath === "/register") {
       return (
         <Register onRegisterSuccess={() => (window.location.href = "/login")} />
       );
+    }
+    if (currentPath === "/reset-password") {
+      return (
+        <ResetPassword
+          onResetSuccess={() => (window.location.href = "/login")}
+        />
+      );
+    }
+    if (currentPath === "/update-password") {
+      return <UpdatePassword />;
     }
     return <Login onLoginSuccess={handleLoginSuccess} />;
   }
@@ -241,32 +258,13 @@ function AppContent() {
   // For other routes, require authentication
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-4">
-        <div className="w-full max-w-md">
-          <div className="bg-card border border-border rounded-xl p-6">
-            {authMode === "login" ? (
-              <Login onLoginSuccess={handleLoginSuccess} />
-            ) : (
-              <Register onRegisterSuccess={() => setAuthMode("login")} />
-            )}
-
-            <div className="text-center mt-6">
-              <button
-                onClick={() =>
-                  setAuthMode(authMode === "login" ? "register" : "login")
-                }
-                className="text-orange-500 hover:text-orange-600 font-medium cursor-pointer"
-              >
-                {authMode === "login"
-                  ? "Nie masz konta? Zarejestruj się"
-                  : "Masz już konto? Zaloguj się"}
-              </button>
-            </div>
-
-            <p className="text-center text-muted-foreground text-sm mt-6">
-              Witaj w aplikacji Paragonly - Twoim osobistym asystencie zakupowym
-            </p>
-          </div>
+      <div className="min-h-screen w-full bg-[#0a0a0a] flex items-center justify-center p-4 overflow-y-auto">
+        <div className="max-w-md w-full">
+          {authMode === "login" ? (
+            <Login onLoginSuccess={handleLoginSuccess} />
+          ) : (
+            <Register onRegisterSuccess={() => setAuthMode("login")} />
+          )}
         </div>
       </div>
     );
