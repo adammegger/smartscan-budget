@@ -212,15 +212,15 @@ const BudgetMonitor: React.FC<BudgetMonitorProps> = ({ dateFilter }) => {
       {/* Upper Section - Overall Budget */}
       <div className="text-center mb-4">
         {remaining < 0 ? (
-          <div className="text-3xl font-bold text-red-400 mb-1">
+          <div className="text-3xl font-bold text-red-400 mb-6">
             Przekroczono budżet o {Math.abs(remaining).toFixed(0)} PLN
           </div>
         ) : remaining === 0 ? (
-          <div className="text-3xl font-bold text-yellow-400 mb-1">
+          <div className="text-3xl font-bold text-yellow-400 mb-6">
             Jesteśmy na równi z budżetem
           </div>
         ) : (
-          <div className="text-3xl font-bold text-green-400 mb-1">
+          <div className="text-3xl font-bold text-green-400 mb-6">
             Pozostało: {remaining.toFixed(0)} PLN
           </div>
         )}
