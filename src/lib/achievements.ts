@@ -136,7 +136,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     name: "Początkujący Zielarz",
     description: "Zbierz 10 Zielonych Listków",
     icon: "Leaf",
-    requirement: "green_leaves",
+    requirement: "green_leaves_count",
     threshold: 10,
   },
   {
@@ -144,7 +144,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     name: "Eko-Entuzjasta",
     description: "Zbierz 50 Zielonych Listków",
     icon: "Leaf",
-    requirement: "green_leaves",
+    requirement: "green_leaves_count",
     threshold: 50,
   },
   {
@@ -152,7 +152,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     name: "Bio-Master",
     description: "Zbierz 100 Zielonych Listków",
     icon: "Clover",
-    requirement: "green_leaves",
+    requirement: "green_leaves_count",
     threshold: 100,
   },
 ];
@@ -414,7 +414,7 @@ export async function fetchUserProgressData(
     // Get green leaves from profile
     const { data: profile } = await supabase
       .from("profiles")
-      .select("green_leaves")
+      .select("green_leaves_count")
       .eq("id", userId)
       .single();
 
@@ -424,7 +424,7 @@ export async function fetchUserProgressData(
       uniqueCategories,
       budgetsCreated: budgetsCreated || 0,
       streak,
-      greenLeaves: profile?.green_leaves || 0,
+      greenLeaves: profile?.green_leaves_count || 0,
     };
   } catch (err) {
     console.error("Error fetching user progress:", err);
@@ -449,7 +449,7 @@ export function getProgressValue(
     case "streak_7_days":
     case "streak_30_days":
       return progressData.streak;
-    case "green_leaves":
+    case "green_leaves_count":
       return progressData.greenLeaves;
     case "first_receipt":
       return progressData.totalReceipts;

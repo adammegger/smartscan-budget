@@ -230,7 +230,7 @@ export default function Achievements({
       "budgets_created",
       "streak_7_days",
       "streak_30_days",
-      "green_leaves",
+      "green_leaves_count",
       "first_receipt",
     ];
     return countableRequirements.includes(achievement.requirement);

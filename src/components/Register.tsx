@@ -60,7 +60,7 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
           </p>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="mt-10 space-y-4">
           <div>
             <label
               htmlFor="email"
@@ -109,7 +109,7 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-primary-foreground font-bold py-3 px-4 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-primary-foreground font-bold py-3 px-4 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mb-8"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
@@ -124,7 +124,7 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
       )}
 
       <div className="absolute bottom-8 left-0 right-0 text-center">
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-3">
           <div>
             <button
               onClick={() => (window.location.href = "/login")}
