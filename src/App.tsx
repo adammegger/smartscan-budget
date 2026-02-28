@@ -399,9 +399,18 @@ function AppContent() {
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() =>
+                  setActiveTab(
+                    tab.id as
+                      | "dashboard"
+                      | "receipts"
+                      | "budgets"
+                      | "priceHistory"
+                      | "achievements",
+                  )
+                }
                 // ODPINAMY hover:bg-muted i shadow! Dodajemy style w locie.
-                className="flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-all duration-200 outline-none ring-0 border-none bg-transparent"
+                className="cursor-pointer flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-all duration-200 outline-none ring-0 border-none bg-transparent"
                 style={{
                   // Ten styl wymusza tło i tekst tylko na podstawie stanu activeTab
                   backgroundColor:
@@ -441,7 +450,7 @@ function AppContent() {
           <div className="bg-card border border-border rounded-xl">
             <button
               onClick={() => setIsDateFilterExpanded(!isDateFilterExpanded)}
-              className={`w-full flex items-center justify-between p-6 hover:bg-muted transition-colors ${isDateFilterExpanded ? "rounded-t-xl" : "rounded-xl"}`}
+              className={`w-full flex items-center justify-between p-6 hover:bg-muted transition-colors cursor-pointer ${isDateFilterExpanded ? "rounded-t-xl" : "rounded-xl"}`}
             >
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <Calendar size={20} />
