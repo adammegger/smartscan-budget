@@ -210,21 +210,21 @@ const BudgetMonitor: React.FC<BudgetMonitorProps> = ({ dateFilter }) => {
       </div>
 
       {/* Upper Section - Overall Budget */}
-      <div className="text-center mb-6">
+      <div className="text-center mb-4">
         {remaining < 0 ? (
-          <div className="text-3xl font-bold text-red-400 mb-2">
+          <div className="text-3xl font-bold text-red-400 mb-1">
             Przekroczono budżet o {Math.abs(remaining).toFixed(0)} PLN
           </div>
         ) : remaining === 0 ? (
-          <div className="text-3xl font-bold text-yellow-400 mb-2">
+          <div className="text-3xl font-bold text-yellow-400 mb-1">
             Jesteśmy na równi z budżetem
           </div>
         ) : (
-          <div className="text-3xl font-bold text-green-400 mb-2">
+          <div className="text-3xl font-bold text-green-400 mb-1">
             Pozostało: {remaining.toFixed(0)} PLN
           </div>
         )}
-        <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
+        <div className="w-full bg-muted rounded-full h-3 overflow-hidden mb-1">
           <div
             className={`h-full transition-all duration-300 ${
               overallPercentage >= 100 ? "bg-red-500" : "bg-green-500"
@@ -232,7 +232,7 @@ const BudgetMonitor: React.FC<BudgetMonitorProps> = ({ dateFilter }) => {
             style={{ width: `${Math.min(overallPercentage, 100)}%` }}
           />
         </div>
-        <div className="text-sm text-muted-foreground mt-2">
+        <div className="text-sm text-muted-foreground">
           {totalSpent.toFixed(0)} / {totalBudget.toFixed(0)} PLN (
           {overallPercentage.toFixed(0)}%)
         </div>
@@ -752,11 +752,11 @@ export default function DashboardTiles(props: DashboardTilesProps) {
       </Card>
 
       {/* Main Chart Tile */}
-      <Card className="lg:col-span-3 hover:border-primary/50 transition-colors">
+      <Card className="lg:col-span-4 hover:border-primary/50 transition-colors">
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="flex flex-col md:flex-row gap-6">
             {/* Donut Chart */}
-            <div className="flex items-center justify-center">
+            <div className="flex-1 flex items-center justify-center">
               <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
                   <Pie
@@ -791,7 +791,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
             </div>
 
             {/* Category List */}
-            <div className="overflow-hidden">
+            <div className="flex-1 overflow-hidden">
               <div className="space-y-2 max-h-[320px] overflow-y-auto pr-2">
                 {categoryData.map((category) => {
                   const percentage =
