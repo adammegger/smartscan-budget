@@ -381,6 +381,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
   const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [greenLeavesCount, setGreenLeavesCount] = useState<number>(0);
 
   useEffect(() => {
     fetchData();
@@ -531,6 +532,15 @@ export default function DashboardTiles(props: DashboardTilesProps) {
         }
       }
 
+      // Fetch green leaves count from profile
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("green_leaves_count")
+        .eq("id", authUser.id)
+        .single();
+
+      setGreenLeavesCount(profile?.green_leaves_count || 0);
+
       setStats({
         totalSpent,
         receiptCount,
@@ -674,6 +684,17 @@ export default function DashboardTiles(props: DashboardTilesProps) {
             {stats.receiptCount}
           </div>
           <div className="text-sm text-blue-400">Zeskanowane paragony</div>
+        </div>
+      </div>
+
+      {/* Green Leaves Count Tile */}
+      <div className="bg-card border border-border rounded-xl p-6 shadow-lg">
+        <div className="text-center">
+          <div className="text-4xl font-bold text-green-500 mb-2">🌿</div>
+          <div className="text-3xl font-bold text-green-500 mb-1">
+            {greenLeavesCount}
+          </div>
+          <div className="text-sm text-green-500">Zielone Listki</div>
         </div>
       </div>
 

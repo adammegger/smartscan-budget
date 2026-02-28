@@ -288,7 +288,7 @@ export default function Achievements({
               key={achievement.id}
               className={`relative group bg-card border rounded-xl p-4 transition-all duration-300 ${
                 isEarned
-                  ? "border-orange-500/50 shadow-lg shadow-orange-500/10"
+                  ? "border-orange-500/50 shadow-lg shadow-orange-500/10 bg-gradient-to-br from-orange-500/10 to-red-500/10"
                   : "border-border opacity-60"
               }`}
             >

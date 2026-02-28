@@ -238,7 +238,7 @@ export async function checkAchievements(userId: string): Promise<string[]> {
       }
     }
 
-    // Get green leaves from profile
+    // Get green leaves from profile - this is now automatically updated by database trigger
     const { data: profile } = await supabase
       .from("profiles")
       .select("green_leaves_count")
