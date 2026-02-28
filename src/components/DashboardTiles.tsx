@@ -674,10 +674,10 @@ export default function DashboardTiles(props: DashboardTilesProps) {
       {/* Top Stats Tiles */}
       <div className="bg-card border border-border rounded-xl p-6 shadow-lg h-full">
         <div className="text-center">
-          <div className="text-4xl font-bold text-green-400 mb-2">
+          <div className="text-4xl font-bold text-green-500 mb-2">
             {stats.totalSpent.toFixed(0)} PLN
           </div>
-          <div className="text-sm text-green-400">
+          <div className="text-sm text-green-500">
             {(() => {
               switch (props.dateFilter?.period) {
                 case "today":
@@ -700,17 +700,16 @@ export default function DashboardTiles(props: DashboardTilesProps) {
 
       <div className="bg-card border border-border rounded-xl p-6 shadow-lg h-full">
         <div className="text-center">
-          <div className="text-4xl font-bold text-blue-400 mb-2">
+          <div className="text-4xl font-bold text-blue-500 mb-2">
             {stats.receiptCount}
           </div>
-          <div className="text-sm text-blue-400">Zeskanowane paragony</div>
+          <div className="text-sm text-blue-500">Zeskanowane paragony</div>
         </div>
       </div>
 
       {/* Green Leaves Count Tile */}
       <div className="bg-card border border-border rounded-xl p-6 shadow-lg h-full">
         <div className="text-center">
-          <div className="text-4xl font-bold text-green-500 mb-2">🌿</div>
           <div className="text-3xl font-bold text-green-500 mb-1">
             {greenLeavesCount}
           </div>
@@ -721,7 +720,6 @@ export default function DashboardTiles(props: DashboardTilesProps) {
       {/* BIO Products Percentage Tile */}
       <div className="bg-card border border-border rounded-xl p-6 shadow-lg h-full">
         <div className="text-center">
-          <div className="text-4xl font-bold text-green-500 mb-2">🌱</div>
           <div className="text-3xl font-bold text-green-500 mb-1">
             {bioPercentage}%
           </div>
