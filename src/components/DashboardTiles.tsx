@@ -382,6 +382,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [greenLeavesCount, setGreenLeavesCount] = useState<number>(0);
+  const [bioPercentage, setBioPercentage] = useState<number>(0);
 
   useEffect(() => {
     fetchData();
@@ -541,6 +542,25 @@ export default function DashboardTiles(props: DashboardTilesProps) {
 
       setGreenLeavesCount(profile?.green_leaves_count || 0);
 
+      // Calculate BIO products percentage
+      const { count: totalProductsCount } = await supabase
+        .from("items")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", authUser.id);
+
+      const { count: bioProductsCount } = await supabase
+        .from("items")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", authUser.id)
+        .eq("is_bio", true);
+
+      const bioPercentage =
+        totalProductsCount && totalProductsCount > 0
+          ? Math.round(((bioProductsCount || 0) / totalProductsCount) * 100)
+          : 0;
+
+      setBioPercentage(bioPercentage);
+
       setStats({
         totalSpent,
         receiptCount,
@@ -645,14 +665,14 @@ export default function DashboardTiles(props: DashboardTilesProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       {/* Budget Monitor Tile */}
-      <div className="lg:col-span-3">
+      <div className="lg:col-span-4">
         <BudgetMonitor dateFilter={props.dateFilter} />
       </div>
 
       {/* Top Stats Tiles */}
-      <div className="bg-card border border-border rounded-xl p-6 shadow-lg">
+      <div className="bg-card border border-border rounded-xl p-6 shadow-lg h-full">
         <div className="text-center">
           <div className="text-4xl font-bold text-green-400 mb-2">
             {stats.totalSpent.toFixed(0)} PLN
@@ -678,7 +698,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-xl p-6 shadow-lg">
+      <div className="bg-card border border-border rounded-xl p-6 shadow-lg h-full">
         <div className="text-center">
           <div className="text-4xl font-bold text-blue-400 mb-2">
             {stats.receiptCount}
@@ -688,7 +708,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
       </div>
 
       {/* Green Leaves Count Tile */}
-      <div className="bg-card border border-border rounded-xl p-6 shadow-lg">
+      <div className="bg-card border border-border rounded-xl p-6 shadow-lg h-full">
         <div className="text-center">
           <div className="text-4xl font-bold text-green-500 mb-2">🌿</div>
           <div className="text-3xl font-bold text-green-500 mb-1">
@@ -698,8 +718,19 @@ export default function DashboardTiles(props: DashboardTilesProps) {
         </div>
       </div>
 
+      {/* BIO Products Percentage Tile */}
+      <div className="bg-card border border-border rounded-xl p-6 shadow-lg h-full">
+        <div className="text-center">
+          <div className="text-4xl font-bold text-green-500 mb-2">🌱</div>
+          <div className="text-3xl font-bold text-green-500 mb-1">
+            {bioPercentage}%
+          </div>
+          <div className="text-sm text-green-500">Twoje eko-wybory</div>
+        </div>
+      </div>
+
       {/* Most Popular Product Tile */}
-      <div className="bg-card border border-border rounded-xl p-6 shadow-lg">
+      <div className="lg:col-span-4 bg-card border border-border rounded-xl p-6 shadow-lg">
         <div className="text-center flex flex-col justify-center h-full">
           {stats.mostPopularProduct ? (
             <>
