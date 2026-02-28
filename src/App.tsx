@@ -371,63 +371,66 @@ function AppContent() {
 
       {/* Navigation Tabs */}
       <nav className="px-6 lg:px-12 xl:px-16 2xl:px-24 pb-6">
-        <div className="bg-card border border-border rounded-xl">
-          <div className="flex flex-wrap">
-            <button
-              onClick={() => setActiveTab("dashboard")}
-              className={`flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-colors ${
-                activeTab === "dashboard"
-                  ? "bg-secondary text-secondary-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
-            >
-              <Calendar size={20} />
-              Dashboard
-            </button>
-            <button
-              onClick={() => setActiveTab("receipts")}
-              className={`flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-colors ${
-                activeTab === "receipts"
-                  ? "bg-secondary text-secondary-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
-            >
-              <Receipt size={20} />
-              Paragony
-            </button>
-            <button
-              onClick={() => setActiveTab("budgets")}
-              className={`flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-colors ${
-                activeTab === "budgets"
-                  ? "bg-secondary text-secondary-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
-            >
-              <Wallet size={20} />
-              Budżety
-            </button>
-            <button
-              onClick={() => setActiveTab("priceHistory")}
-              className={`flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-colors ${
-                activeTab === "priceHistory"
-                  ? "bg-secondary text-secondary-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
-            >
-              <BarChart3 size={20} />
-              Historia cen
-            </button>
-            <button
-              onClick={() => setActiveTab("achievements")}
-              className={`flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-colors ${
-                activeTab === "achievements"
-                  ? "bg-secondary text-secondary-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
-            >
-              <Trophy size={20} />
-              Osiągnięcia
-            </button>
+        {/* Kontener tylko z ramką, zero paddingu, twarde cięcie */}
+        <div className="bg-card border border-border/50 rounded-xl overflow-hidden shadow-sm">
+          <div className="flex">
+            {[
+              {
+                id: "dashboard",
+                icon: <Calendar size={20} />,
+                label: "Dashboard",
+              },
+              {
+                id: "receipts",
+                icon: <Receipt size={20} />,
+                label: "Paragony",
+              },
+              { id: "budgets", icon: <Wallet size={20} />, label: "Budżety" },
+              {
+                id: "priceHistory",
+                icon: <BarChart3 size={20} />,
+                label: "Historia cen",
+              },
+              {
+                id: "achievements",
+                icon: <Trophy size={20} />,
+                label: "Osiągnięcia",
+              },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                // ODPINAMY hover:bg-muted i shadow! Dodajemy style w locie.
+                className="flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-all duration-200 outline-none ring-0 border-none bg-transparent"
+                style={{
+                  // Ten styl wymusza tło i tekst tylko na podstawie stanu activeTab
+                  backgroundColor:
+                    activeTab === tab.id ? "var(--secondary)" : "transparent",
+                  color:
+                    activeTab === tab.id
+                      ? "var(--secondary-foreground)"
+                      : "var(--muted-foreground)",
+                  // Wyłączamy domyślny promień ramki przycisku całkowicie, bo kontener rodzica i tak to zetnie.
+                  borderRadius: "0px",
+                }}
+                // Wymuszamy zmiane tła z palca - zadna inna klasa tailwind w to nie wejdzie
+                onMouseEnter={(e) => {
+                  if (activeTab !== tab.id) {
+                    e.currentTarget.style.backgroundColor = "var(--muted)";
+                    e.currentTarget.style.color = "var(--foreground)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== tab.id) {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = "var(--muted-foreground)";
+                  }
+                }}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
       </nav>
