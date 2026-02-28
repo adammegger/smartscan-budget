@@ -50,7 +50,9 @@ export default function AuthenticatedLayout() {
     return "";
   };
 
-  const currentActiveTab = getActiveTab(location.pathname);
+  const [activeTab, setActiveTab] = useState(() =>
+    getActiveTab(location.pathname),
+  );
 
   // Check Supabase connection status
   useEffect(() => {
@@ -146,7 +148,7 @@ export default function AuthenticatedLayout() {
   return (
     <div className="min-h-screen bg-background text-foreground pt-12">
       {/* Header */}
-      <header className="px-6 lg:px-12 xl:px-16 2xl:px-24 py-8 fixed top-0 left-0 right-0 bg-background border-b border-border z-50">
+      <header className="px-6 lg:px-12 xl:px-16 2xl:px-24 py-8 fixed top-0 left-0 right-0 bg-background border-b border-border/50 z-50">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <img src="/logo-1.svg" alt="Paragonly" className="h-12 w-auto" />
@@ -242,12 +244,12 @@ export default function AuthenticatedLayout() {
 
       {/* Navigation Tabs */}
       <nav className="px-6 lg:px-12 xl:px-16 2xl:px-24 pb-6">
-        <div className="bg-card border border-border rounded-xl">
+        <div className="bg-card border border-border/50 rounded-xl">
           <div className="flex flex-wrap">
             <button
               onClick={() => setActiveTab("dashboard")}
               className={`flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-colors ${
-                currentActiveTab === "dashboard"
+                activeTab === "dashboard"
                   ? "bg-secondary text-secondary-foreground"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
@@ -258,7 +260,7 @@ export default function AuthenticatedLayout() {
             <button
               onClick={() => setActiveTab("receipts")}
               className={`flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-colors ${
-                currentActiveTab === "receipts"
+                activeTab === "receipts"
                   ? "bg-secondary text-secondary-foreground"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
@@ -269,7 +271,7 @@ export default function AuthenticatedLayout() {
             <button
               onClick={() => setActiveTab("budgets")}
               className={`flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-colors ${
-                currentActiveTab === "budgets"
+                activeTab === "budgets"
                   ? "bg-secondary text-secondary-foreground"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
@@ -280,7 +282,7 @@ export default function AuthenticatedLayout() {
             <button
               onClick={() => setActiveTab("priceHistory")}
               className={`flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-colors ${
-                currentActiveTab === "priceHistory"
+                activeTab === "priceHistory"
                   ? "bg-secondary text-secondary-foreground"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
@@ -291,7 +293,7 @@ export default function AuthenticatedLayout() {
             <button
               onClick={() => setActiveTab("achievements")}
               className={`flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-colors ${
-                currentActiveTab === "achievements"
+                activeTab === "achievements"
                   ? "bg-secondary text-secondary-foreground"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}

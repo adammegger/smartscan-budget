@@ -7,6 +7,16 @@ import { AlertTriangle, Clover, Leaf } from "lucide-react";
 import { isBioProduct } from "../lib/eco";
 import { getItemTags, getMainCategory } from "../lib/categories";
 import { NUTRI_SCORE_COLORS } from "../lib/openfoodfacts";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableCaption,
+} from "./ui/table";
+import { Badge } from "./ui/badge";
 
 interface Category {
   id: number;
@@ -351,169 +361,168 @@ export default function Receipts(props: ReceiptsProps) {
 
   return (
     <div className="space-y-4">
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-muted">
-              <tr>
-                {["Data", "Sklep", "Ilość pozycji", "Kategoria", "Kwota"].map(
-                  (h) => (
-                    <th
-                      key={h}
-                      className="text-left px-4 py-3 text-muted-foreground font-medium text-sm"
-                    >
-                      {h}
-                    </th>
-                  ),
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {receipts.map((receipt) => (
-                <React.Fragment key={receipt.id}>
-                  <tr
-                    onClick={() =>
-                      props.onReceiptSelect(
-                        props.selectedReceiptId === receipt.id
-                          ? null
-                          : receipt.id,
-                      )
-                    }
-                    className={`border-t border-border hover:bg-muted cursor-pointer transition-colors ${props.selectedReceiptId === receipt.id ? "bg-muted" : ""}`}
-                  >
-                    <td className="px-4 py-3">
-                      <div className="text-muted-foreground">
-                        {formatDate(receipt.date)}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-foreground">
-                        {receipt.store_name}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="font-semibold text-foreground">
-                        {itemCounts[receipt.id] || 0}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      {renderCategoryBadge(receipt.category)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="font-semibold text-foreground">
-                        {receipt.total_amount.toFixed(2)} PLN
-                      </div>
-                    </td>
-                  </tr>
-                  {props.selectedReceiptId === receipt.id && (
-                    <tr className="bg-muted/50">
-                      <td colSpan={5} className="p-0">
-                        <div className="w-full p-6 space-y-6">
-                          <div>
-                            <h4 className="font-semibold text-foreground text-lg mb-4">
-                              Pozycje na paragonie ({selectedItems.length})
-                            </h4>
-                            <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-orange-300 scrollbar-track-transparent">
-                              {itemsLoading ? (
-                                <div className="text-center py-6 text-muted-foreground">
-                                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500 mx-auto"></div>
-                                </div>
-                              ) : selectedItems.length > 0 ? (
-                                selectedItems.map((item) => {
-                                  const isBio = isBioProduct(item.name);
-                                  const tags = getItemTags(item);
+      <Table className="bg-card border border-border/50 rounded-xl">
+        <TableHeader className="bg-muted">
+          <TableRow>
+            <TableHead className="text-muted-foreground font-medium text-sm">
+              Data
+            </TableHead>
+            <TableHead className="text-muted-foreground font-medium text-sm">
+              Sklep
+            </TableHead>
+            <TableHead className="text-muted-foreground font-medium text-sm">
+              Ilość pozycji
+            </TableHead>
+            <TableHead className="text-muted-foreground font-medium text-sm">
+              Kategoria
+            </TableHead>
+            <TableHead className="text-muted-foreground font-medium text-sm">
+              Kwota
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {receipts.map((receipt) => (
+            <React.Fragment key={receipt.id}>
+              <TableRow
+                onClick={() =>
+                  props.onReceiptSelect(
+                    props.selectedReceiptId === receipt.id ? null : receipt.id,
+                  )
+                }
+                className={`border-t border-border hover:bg-muted cursor-pointer transition-colors ${props.selectedReceiptId === receipt.id ? "bg-muted" : ""}`}
+              >
+                <TableCell className="px-4 py-3">
+                  <div className="text-muted-foreground">
+                    {formatDate(receipt.date)}
+                  </div>
+                </TableCell>
+                <TableCell className="px-4 py-3">
+                  <div className="font-medium text-foreground">
+                    {receipt.store_name}
+                  </div>
+                </TableCell>
+                <TableCell className="px-4 py-3">
+                  <div className="font-semibold text-foreground">
+                    {itemCounts[receipt.id] || 0}
+                  </div>
+                </TableCell>
+                <TableCell className="px-4 py-3">
+                  {renderCategoryBadge(receipt.category)}
+                </TableCell>
+                <TableCell className="px-4 py-3">
+                  <div className="font-semibold text-foreground">
+                    {receipt.total_amount.toFixed(2)} PLN
+                  </div>
+                </TableCell>
+              </TableRow>
+              {props.selectedReceiptId === receipt.id && (
+                <TableRow className="bg-muted/50">
+                  <TableCell colSpan={5} className="p-0">
+                    <div className="w-full p-6 space-y-6">
+                      <div>
+                        <h4 className="font-semibold text-foreground text-lg mb-4">
+                          Pozycje na paragonie ({selectedItems.length})
+                        </h4>
+                        <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-orange-300 scrollbar-track-transparent">
+                          {itemsLoading ? (
+                            <div className="text-center py-6 text-muted-foreground">
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500 mx-auto"></div>
+                            </div>
+                          ) : selectedItems.length > 0 ? (
+                            selectedItems.map((item) => {
+                              const isBio = isBioProduct(item.name);
+                              const tags = getItemTags(item);
 
-                                  // Extract nutriscore from tags if present (single letter A-E)
-                                  const nutriscore = tags.find((t) =>
-                                    /^[A-E]$/i.test(t),
-                                  );
+                              // Extract nutriscore from tags if present (single letter A-E)
+                              const nutriscore = tags.find((t) =>
+                                /^[A-E]$/i.test(t),
+                              );
 
-                                  return (
-                                    <div
-                                      key={item.id}
-                                      className="flex items-center justify-between bg-card border border-border p-4 rounded-lg hover:bg-muted transition-colors"
-                                    >
-                                      <div className="flex flex-col gap-2 flex-1">
-                                        <div className="flex items-center gap-2">
-                                          <div
-                                            className="font-medium text-orange-500 cursor-pointer hover:text-orange-400 hover:underline transition-colors"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              if (props.onProductClick) {
-                                                props.onProductClick(item.name);
-                                              }
-                                            }}
+                              return (
+                                <div
+                                  key={item.id}
+                                  className="flex items-center justify-between bg-card border border-border/50 p-4 rounded-lg hover:bg-muted transition-colors"
+                                >
+                                  <div className="flex flex-col gap-2 flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <div
+                                        className="font-medium text-orange-500 cursor-pointer hover:text-orange-400 hover:underline transition-colors"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (props.onProductClick) {
+                                            props.onProductClick(item.name);
+                                          }
+                                        }}
+                                      >
+                                        {item.name}
+                                      </div>
+                                      {renderCategoryBadge(item.category)}
+                                    </div>
+                                    {/* Special tags as icons - only show if they don't match category */}
+                                    {(isBio || nutriscore) && (
+                                      <div className="flex items-center gap-2">
+                                        {/* BIO Icon */}
+                                        {isBio && (
+                                          <span
+                                            className="inline-flex items-center justify-center w-6 h-6 bg-green-100 dark:bg-green-900/30 rounded-full"
+                                            title="Produkt BIO"
                                           >
-                                            {item.name}
-                                          </div>
-                                          {renderCategoryBadge(item.category)}
-                                        </div>
-                                        {/* Special tags as icons - only show if they don't match category */}
-                                        {(isBio || nutriscore) && (
-                                          <div className="flex items-center gap-2">
-                                            {/* BIO Icon */}
-                                            {isBio && (
-                                              <span
-                                                className="inline-flex items-center justify-center w-6 h-6 bg-green-100 dark:bg-green-900/30 rounded-full"
-                                                title="Produkt BIO"
-                                              >
-                                                <Clover
-                                                  size={14}
-                                                  className="text-green-600 dark:text-green-400"
-                                                />
-                                              </span>
-                                            )}
-                                            {/* Nutri-Score Icon */}
-                                            {nutriscore && (
-                                              <span
-                                                className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-[10px] font-bold text-white ${NUTRI_SCORE_COLORS[nutriscore.toLowerCase()] || "bg-gray-400"}`}
-                                                title={`Nutri-Score: ${nutriscore.toUpperCase()}`}
-                                              >
-                                                {nutriscore.toUpperCase()}
-                                              </span>
-                                            )}
-                                          </div>
+                                            <Clover
+                                              size={14}
+                                              className="text-green-600 dark:text-green-400"
+                                            />
+                                          </span>
+                                        )}
+                                        {/* Nutri-Score Icon */}
+                                        {nutriscore && (
+                                          <span
+                                            className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-[10px] font-bold text-white ${NUTRI_SCORE_COLORS[nutriscore.toLowerCase()] || "bg-gray-400"}`}
+                                            title={`Nutri-Score: ${nutriscore.toUpperCase()}`}
+                                          >
+                                            {nutriscore.toUpperCase()}
+                                          </span>
                                         )}
                                       </div>
-                                      <div className="font-semibold text-foreground ml-4">
-                                        {item.price.toFixed(2)} PLN
-                                      </div>
-                                    </div>
-                                  );
-                                })
-                              ) : (
-                                <div className="text-muted-foreground text-center py-4">
-                                  Brak pozycji na tym paragonie
+                                    )}
+                                  </div>
+                                  <div className="font-semibold text-foreground ml-4">
+                                    {item.price.toFixed(2)} PLN
+                                  </div>
                                 </div>
-                              )}
+                              );
+                            })
+                          ) : (
+                            <div className="text-muted-foreground text-center py-4">
+                              Brak pozycji na tym paragonie
                             </div>
-                          </div>
-                          <div className="flex justify-between items-center pt-4 border-t border-border">
-                            <span className="text-sm text-muted-foreground">
-                              Zapisano:{" "}
-                              {format(
-                                new Date(receipt.created_at),
-                                "dd.MM.yyyy HH:mm",
-                                { locale: pl },
-                              )}
-                            </span>
-                            <button
-                              onClick={() => props.onReceiptSelect(null)}
-                              className="text-orange-500 hover:text-orange-400 text-sm font-medium"
-                            >
-                              Ukryj szczegóły
-                            </button>
-                          </div>
+                          )}
                         </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                      </div>
+                      <div className="flex justify-between items-center pt-4 border-t border-border">
+                        <span className="text-sm text-muted-foreground">
+                          Zapisano:{" "}
+                          {format(
+                            new Date(receipt.created_at),
+                            "dd.MM.yyyy HH:mm",
+                            { locale: pl },
+                          )}
+                        </span>
+                        <button
+                          onClick={() => props.onReceiptSelect(null)}
+                          className="text-orange-500 hover:text-orange-400 text-sm font-medium"
+                        >
+                          Ukryj szczegóły
+                        </button>
+                      </div>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </React.Fragment>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }

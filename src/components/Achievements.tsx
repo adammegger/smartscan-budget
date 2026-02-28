@@ -169,7 +169,7 @@ export default function Achievements({
   return (
     <div className="space-y-6">
       {/* Header with progress */}
-      <div className="bg-card border border-border rounded-xl p-6">
+      <div className="bg-card border border-border/50 rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold flex items-center gap-2">
             <Trophy className="text-orange-500" size={24} />

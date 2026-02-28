@@ -2,6 +2,9 @@ import React, { useEffect, useState, useMemo } from "react";
 import { supabase } from "../lib/supabase";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import CategoryIcon from "./CategoryIcon";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Badge } from "./ui/badge";
+import { cn } from "../lib/utils";
 
 // Budget Monitor Component
 interface BudgetMonitorProps {
@@ -159,7 +162,7 @@ const BudgetMonitor: React.FC<BudgetMonitorProps> = ({ dateFilter }) => {
 
   if (loading) {
     return (
-      <div className="bg-[#1a1a1a] border border-border rounded-xl p-6 shadow-lg">
+      <div className="bg-[#1a1a1a] border border-border/50 rounded-xl p-6 shadow-lg">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
         <p className="text-center text-muted-foreground mt-2">Ładowanie...</p>
       </div>
@@ -168,7 +171,7 @@ const BudgetMonitor: React.FC<BudgetMonitorProps> = ({ dateFilter }) => {
 
   if (error) {
     return (
-      <div className="bg-[#1a1a1a] border border-border rounded-xl p-6 shadow-lg">
+      <div className="bg-[#1a1a1a] border border-border/50 rounded-xl p-6 shadow-lg">
         <p className="text-red-500 text-center">{error}</p>
       </div>
     );
@@ -176,7 +179,7 @@ const BudgetMonitor: React.FC<BudgetMonitorProps> = ({ dateFilter }) => {
 
   if (budgets.length === 0) {
     return (
-      <div className="bg-[#1a1a1a] border border-border rounded-xl p-6 shadow-lg">
+      <div className="bg-[#1a1a1a] border border-border/50 rounded-xl p-6 shadow-lg">
         <div className="text-center">
           <p className="text-muted-foreground mb-4">
             Nie masz jeszcze ustawionych budżetów. Przejdź do sekcji Budżet, aby
@@ -197,7 +200,7 @@ const BudgetMonitor: React.FC<BudgetMonitorProps> = ({ dateFilter }) => {
   });
 
   return (
-    <div className="bg-[#1a1a1a] border border-border rounded-xl p-6 shadow-lg">
+    <div className="bg-[#1a1a1a] border border-border/50 rounded-xl p-6 shadow-lg">
       {/* Header with month information */}
       <div className="text-center mb-4">
         <h3 className="text-lg font-semibold text-muted-foreground">
@@ -634,15 +637,15 @@ export default function DashboardTiles(props: DashboardTilesProps) {
   if (loading) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-card border border-border rounded-xl p-6 shadow-lg">
+        <div className="bg-card border border-border/50 rounded-xl p-6 shadow-lg">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
           <p className="text-center text-muted-foreground mt-2">Ładowanie...</p>
         </div>
-        <div className="bg-card border border-border rounded-xl p-6 shadow-lg">
+        <div className="bg-card border border-border/50 rounded-xl p-6 shadow-lg">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
           <p className="text-center text-muted-foreground mt-2">Ładowanie...</p>
         </div>
-        <div className="bg-card border border-border rounded-xl p-6 shadow-lg">
+        <div className="bg-card border border-border/50 rounded-xl p-6 shadow-lg">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
           <p className="text-center text-muted-foreground mt-2">Ładowanie...</p>
         </div>
@@ -672,8 +675,8 @@ export default function DashboardTiles(props: DashboardTilesProps) {
       </div>
 
       {/* Top Stats Tiles */}
-      <div className="bg-card border border-border rounded-xl p-6 shadow-lg h-full">
-        <div className="text-center">
+      <Card className="hover:border-primary/50 transition-colors">
+        <CardHeader className="text-center">
           <div className="text-4xl font-bold text-green-500 mb-2">
             {stats.totalSpent.toFixed(0)} PLN
           </div>
@@ -695,41 +698,41 @@ export default function DashboardTiles(props: DashboardTilesProps) {
               }
             })()}
           </div>
-        </div>
-      </div>
+        </CardHeader>
+      </Card>
 
-      <div className="bg-card border border-border rounded-xl p-6 shadow-lg h-full">
-        <div className="text-center">
+      <Card className="hover:border-primary/50 transition-colors">
+        <CardHeader className="text-center">
           <div className="text-4xl font-bold text-blue-500 mb-2">
             {stats.receiptCount}
           </div>
           <div className="text-sm text-blue-500">Zeskanowane paragony</div>
-        </div>
-      </div>
+        </CardHeader>
+      </Card>
 
       {/* Green Leaves Count Tile */}
-      <div className="bg-card border border-border rounded-xl p-6 shadow-lg h-full">
-        <div className="text-center">
+      <Card className="hover:border-primary/50 transition-colors">
+        <CardHeader className="text-center">
           <div className="text-3xl font-bold text-green-500 mb-1">
             {greenLeavesCount}
           </div>
           <div className="text-sm text-green-500">Zielone Listki</div>
-        </div>
-      </div>
+        </CardHeader>
+      </Card>
 
       {/* BIO Products Percentage Tile */}
-      <div className="bg-card border border-border rounded-xl p-6 shadow-lg h-full">
-        <div className="text-center">
+      <Card className="hover:border-primary/50 transition-colors">
+        <CardHeader className="text-center">
           <div className="text-3xl font-bold text-green-500 mb-1">
             {bioPercentage}%
           </div>
           <div className="text-sm text-green-500">Twoje eko-wybory</div>
-        </div>
-      </div>
+        </CardHeader>
+      </Card>
 
       {/* Most Popular Product Tile */}
-      <div className="lg:col-span-4 bg-card border border-border rounded-xl p-6 shadow-lg">
-        <div className="text-center flex flex-col justify-center h-full">
+      <Card className="lg:col-span-4 hover:border-primary/50 transition-colors">
+        <CardHeader className="text-center flex flex-col justify-center h-full">
           {stats.mostPopularProduct ? (
             <>
               <div className="text-3xl font-bold text-purple-400 mb-1">
@@ -745,101 +748,104 @@ export default function DashboardTiles(props: DashboardTilesProps) {
               Brak danych dla tego okresu
             </div>
           )}
-        </div>
-      </div>
+        </CardHeader>
+      </Card>
 
       {/* Main Chart Tile */}
-      <div className="lg:col-span-3 bg-card border border-border rounded-xl p-6 shadow-lg">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Donut Chart */}
-          <div className="flex items-center justify-center">
-            <ResponsiveContainer width="100%" height={280}>
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={2}
-                  dataKey="value"
-                  strokeWidth={0}
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value, name) => [
-                    `${Number(value).toFixed(2)} PLN`,
-                    name,
-                  ]}
-                  labelFormatter={(label) => label}
-                  contentStyle={{
-                    backgroundColor: "rgba(255, 255, 255, 0.95)",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "8px",
-                    color: "#1e293b",
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Category List */}
-          <div className="overflow-hidden">
-            <div className="space-y-2 max-h-[320px] overflow-y-auto pr-2">
-              {categoryData.map((category) => {
-                const percentage =
-                  totalSpent > 0 ? (category.total / totalSpent) * 100 : 0;
-                const color =
-                  CATEGORY_COLORS[category.category] || CATEGORY_COLORS["Inne"];
-
-                return (
-                  <div
-                    key={category.category}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors border border-border"
+      <Card className="lg:col-span-3 hover:border-primary/50 transition-colors">
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Donut Chart */}
+            <div className="flex items-center justify-center">
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={2}
+                    dataKey="value"
+                    strokeWidth={0}
                   >
-                    {/* Left side: Category badge */}
-                    <div
-                      className="flex items-center gap-2 px-3 py-1 rounded-full border-2"
-                      style={{
-                        backgroundColor: color + "15", // 15% opacity background
-                        borderColor: color,
-                      }}
-                    >
-                      <CategoryIcon
-                        icon={category.category}
-                        color={color}
-                        size={16}
-                      />
-                      <span
-                        className="font-medium text-sm"
-                        style={{ color: color }}
-                      >
-                        {category.category}
-                      </span>
-                      <span className="text-muted-foreground text-xs">
-                        ({category.count})
-                      </span>
-                    </div>
+                    {chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value, name) => [
+                      `${Number(value).toFixed(2)} PLN`,
+                      name,
+                    ]}
+                    labelFormatter={(label) => label}
+                    contentStyle={{
+                      backgroundColor: "rgba(255, 255, 255, 0.95)",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "8px",
+                      color: "#1e293b",
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
 
-                    {/* Right side: Amount and percentage */}
-                    <div className="text-right gap-2">
-                      <span className="font-bold text-foreground text-sm">
-                        {category.total.toFixed(2)} PLN
-                      </span>
-                      <span className="text-muted-foreground text-xs ml-2">
-                        ({percentage.toFixed(1)}%)
-                      </span>
+            {/* Category List */}
+            <div className="overflow-hidden">
+              <div className="space-y-2 max-h-[320px] overflow-y-auto pr-2">
+                {categoryData.map((category) => {
+                  const percentage =
+                    totalSpent > 0 ? (category.total / totalSpent) * 100 : 0;
+                  const color =
+                    CATEGORY_COLORS[category.category] ||
+                    CATEGORY_COLORS["Inne"];
+
+                  return (
+                    <div
+                      key={category.category}
+                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors border border-border"
+                    >
+                      {/* Left side: Category badge */}
+                      <div
+                        className="flex items-center gap-2 px-3 py-1 rounded-full border-2"
+                        style={{
+                          backgroundColor: color + "15", // 15% opacity background
+                          borderColor: color,
+                        }}
+                      >
+                        <CategoryIcon
+                          icon={category.category}
+                          color={color}
+                          size={16}
+                        />
+                        <span
+                          className="font-medium text-sm"
+                          style={{ color: color }}
+                        >
+                          {category.category}
+                        </span>
+                        <span className="text-muted-foreground text-xs">
+                          ({category.count})
+                        </span>
+                      </div>
+
+                      {/* Right side: Amount and percentage */}
+                      <div className="text-right gap-2">
+                        <span className="font-bold text-foreground text-sm">
+                          {category.total.toFixed(2)} PLN
+                        </span>
+                        <span className="text-muted-foreground text-xs ml-2">
+                          ({percentage.toFixed(1)}%)
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

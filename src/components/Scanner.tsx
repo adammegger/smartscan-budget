@@ -14,6 +14,7 @@ import {
   updateGreenLeaves,
   processReceiptItems,
 } from "../lib/eco";
+import { Button } from "@/components/ui/button";
 
 // Mock data for testing
 const MOCK_STORES = [

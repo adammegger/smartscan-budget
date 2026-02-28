@@ -306,7 +306,7 @@ export default function Budgets(props: BudgetsProps) {
   return (
     <div className="space-y-6">
       {/* Summary */}
-      <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
+      <div className="bg-card border border-border/50 rounded-xl p-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Wallet className="w-5 h-5 text-orange-500" />
@@ -340,8 +340,8 @@ export default function Budgets(props: BudgetsProps) {
       </div>
 
       {/* Budget List - All in one list with inline editing */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
-        <div className="p-3 border-b border-border bg-muted/50">
+      <div className="bg-card border border-border/50 rounded-xl overflow-hidden">
+        <div className="p-3 border-b border-border/50 bg-muted/50">
           <span className="text-sm font-medium text-muted-foreground">
             Twoje budżety
           </span>
@@ -357,7 +357,7 @@ export default function Budgets(props: BudgetsProps) {
             {/* Active Budgets Section */}
             {budgets.length > 0 && (
               <div className="space-y-3 p-3">
-                <div className="text-sm font-medium text-muted-foreground border-b border-border pb-2">
+                <div className="text-sm font-medium text-muted-foreground border-b border-border/50 pb-2">
                   Aktywne budżety
                 </div>
                 <AnimatePresence mode="popLayout">
@@ -377,7 +377,7 @@ export default function Budgets(props: BudgetsProps) {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10, height: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="p-3 hover:bg-muted/30 transition-colors border border-border rounded-lg"
+                        className="p-3 hover:bg-muted/30 transition-colors border border-border/50 rounded-lg"
                       >
                         {isEditing ? (
                           <div className="flex items-center gap-2">
@@ -481,7 +481,7 @@ export default function Budgets(props: BudgetsProps) {
             {/* Available Budgets Section */}
             {categoriesWithoutBudget.length > 0 && (
               <div className="space-y-3 p-3">
-                <div className="text-sm font-medium text-muted-foreground border-b border-border pb-2">
+                <div className="text-sm font-medium text-muted-foreground border-b border-border/50 pb-2">
                   Dostępne budżety
                 </div>
                 <AnimatePresence mode="popLayout">
@@ -496,7 +496,7 @@ export default function Budgets(props: BudgetsProps) {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10, height: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="p-3 hover:bg-muted/30 transition-colors border border-border rounded-lg"
+                        className="p-3 hover:bg-muted/30 transition-colors border border-border/50 rounded-lg"
                       >
                         {isAdding ? (
                           <div className="flex items-center gap-2">

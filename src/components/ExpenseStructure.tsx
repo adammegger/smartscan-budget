@@ -205,7 +205,7 @@ export default function ExpenseStructure(props: ExpenseStructureProps) {
 
   if (loading) {
     return (
-      <div className="bg-card border border-border rounded-xl p-6">
+      <div className="bg-card border border-border/50 rounded-xl p-6">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
         <p className="text-center text-muted-foreground mt-2">
           Ładowanie struktury wydatków...
@@ -216,7 +216,7 @@ export default function ExpenseStructure(props: ExpenseStructureProps) {
 
   if (error) {
     return (
-      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/20 rounded-lg p-4">
         <p className="text-red-600 dark:text-red-400">{error}</p>
         <button
           onClick={fetchCategoryData}
@@ -230,7 +230,7 @@ export default function ExpenseStructure(props: ExpenseStructureProps) {
 
   if (categoryData.length === 0) {
     return (
-      <div className="bg-card border border-border rounded-xl p-6 text-center">
+      <div className="bg-card border border-border/50 rounded-xl p-6 text-center">
         <p className="text-muted-foreground">
           Brak danych do wyświetlenia struktury wydatków
         </p>
@@ -242,7 +242,7 @@ export default function ExpenseStructure(props: ExpenseStructureProps) {
   }
 
   return (
-    <div className="bg-card border border-border rounded-xl p-6">
+    <div className="bg-card border border-border/50 rounded-xl p-6">
       {/* Header */}
       <div className="mb-6">
         <h3 className="text-foreground font-semibold text-lg">
@@ -312,7 +312,7 @@ export default function ExpenseStructure(props: ExpenseStructureProps) {
               return (
                 <div
                   key={category.category}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors border border-border"
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors border border-border/50"
                 >
                   {/* Left side: Category name with item count */}
                   <div className="flex items-center gap-2">

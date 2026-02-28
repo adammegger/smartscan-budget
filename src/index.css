@@ -23,6 +23,18 @@
   --color-ring: var(--ring);
 }
 
+/* Paragonly Brand Colors */
+:root {
+  --background: #0a0a0a; /* Ciemne tło */
+  --primary: #ff4d00; /* Pomarańczowy */
+  --accent: #22c55e; /* Zielony listek */
+}
+
+/* Ensure body uses the dark background */
+body {
+  background-color: #0a0a0a;
+}
+
 /* Light Theme (default) */
 :root,
 .light {
@@ -42,7 +54,7 @@
   --accent-foreground: #18181b;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: #e2e8f0;
+  --border: #262626;
   --input: #e2e8f0;
   --ring: #ff7043;
 

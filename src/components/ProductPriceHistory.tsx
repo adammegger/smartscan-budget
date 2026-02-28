@@ -11,11 +11,10 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { Leaf, AlertTriangle, Info } from "lucide-react";
+import { Leaf, AlertTriangle } from "lucide-react";
 import {
   fetchAndCacheProductTags,
   NUTRI_SCORE_COLORS,
-  NUTRI_SCORE_TEXT_COLORS,
 } from "../lib/openfoodfacts";
 import type { ProductTags } from "../lib/openfoodfacts";
 
@@ -322,7 +321,7 @@ export default function ProductPriceHistory({
   };
 
   return (
-    <div className="bg-card border border-border rounded-xl p-6">
+    <div className="bg-card border border-border/50 rounded-xl p-6">
       <h3 className="text-lg font-semibold text-foreground mb-4">
         Analiza Cen
       </h3>
