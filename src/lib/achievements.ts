@@ -238,6 +238,15 @@ export async function checkAchievements(userId: string): Promise<string[]> {
       }
     }
 
+    // Get green leaves from profile
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("green_leaves_count")
+      .eq("id", userId)
+      .single();
+
+    const greenLeavesCount = profile?.green_leaves_count || 0;
+
     // Check each achievement
     const checks = [
       {
@@ -287,6 +296,18 @@ export async function checkAchievements(userId: string): Promise<string[]> {
       {
         id: "spending_10000",
         condition: totalSpent >= 10000,
+      },
+      {
+        id: "green_leaves_10",
+        condition: greenLeavesCount >= 10,
+      },
+      {
+        id: "green_leaves_50",
+        condition: greenLeavesCount >= 50,
+      },
+      {
+        id: "green_leaves_100",
+        condition: greenLeavesCount >= 100,
       },
     ];
 
