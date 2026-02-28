@@ -438,7 +438,7 @@ function AppContent() {
           <div className="bg-card border border-border rounded-xl">
             <button
               onClick={() => setIsDateFilterExpanded(!isDateFilterExpanded)}
-              className="w-full flex items-center justify-between p-6 hover:bg-muted transition-colors"
+              className={`w-full flex items-center justify-between p-6 hover:bg-muted transition-colors ${isDateFilterExpanded ? "rounded-t-xl" : "rounded-xl"}`}
             >
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <Calendar size={20} />
