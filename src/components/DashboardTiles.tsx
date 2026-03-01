@@ -1,6 +1,12 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { supabase } from "../lib/supabase";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip as RechartsTooltip,
+} from "recharts";
 import CategoryIcon from "./CategoryIcon";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import {
@@ -816,6 +822,20 @@ export default function DashboardTiles(props: DashboardTilesProps) {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
+                  <RechartsTooltip
+                    formatter={(value, name) => [
+                      `${Number(value || 0).toFixed(2)} PLN`,
+                      name || "",
+                    ]}
+                    labelFormatter={(label) => label || ""}
+                    contentStyle={{
+                      backgroundColor: "rgba(255, 255, 255, 0.95)",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "8px",
+                      color: "#1e293b",
+                    }}
+                    wrapperStyle={{ zIndex: 100 }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
