@@ -83,6 +83,8 @@ export default function Receipts(props: ReceiptsProps) {
   const [overBudgetCategories, setOverBudgetCategories] = useState<Set<string>>(
     new Set(),
   );
+  // Stan do zarządzania otwartym modalem
+  const [receiptToDelete, setReceiptToDelete] = useState<number | null>(null);
 
   // Fetch budgets and check which categories are over budget
   useEffect(() => {
@@ -473,40 +475,13 @@ export default function Receipts(props: ReceiptsProps) {
                     </div>
                   </TableCell>
                   <TableCell className="px-4 py-3 text-center">
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <button
-                          onClick={(e) => e.stopPropagation()}
-                          className="inline-flex items-center justify-center w-8 h-8 rounded-full text-destructive hover:bg-destructive/10 transition-colors"
-                          title="Usuń paragon"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            Czy na pewno chcesz usunąć ten paragon?
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Tej operacji nie można cofnąć. Spowoduje to trwałe
-                            usunięcie paragonu z {receipt.store_name} (
-                            {receipt.total_amount} zł) oraz wszystkich
-                            powiązanych z nim wydatków i produktów z bazy
-                            danych.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Anuluj</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDeleteReceipt(receipt.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Tak, usuń paragon
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <button
+                      onClick={() => setReceiptToDelete(receipt.id)}
+                      className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors cursor-pointer"
+                      title="Usuń paragon"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </TableCell>
                 </TableRow>
                 {props.selectedReceiptId === receipt.id && (
@@ -612,6 +587,67 @@ export default function Receipts(props: ReceiptsProps) {
           </TableBody>
         </Table>
       </div>
+
+      {/* Modal usuwania paragonu */}
+      {receiptToDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setReceiptToDelete(null)} // Zamykanie kliknięciem w tło
+        >
+          <div
+            className="bg-card border border-border/50 rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()} // Zapobiega zamykaniu po kliknięciu w sam modal
+          >
+            {/* Górny kolorowy akcent (opcjonalny, dla lepszego wyglądu) */}
+            <div className="h-2 w-full bg-red-500"></div>
+
+            <div className="p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="bg-red-500/10 p-3 rounded-full text-red-500">
+                  <Trash2 size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-foreground">
+                    Usuń paragon
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Tej operacji nie można cofnąć
+                  </p>
+                </div>
+              </div>
+
+              <p className="text-foreground/80 mb-6 mt-2">
+                Czy na pewno chcesz usunąć ten paragon? Spowoduje to również
+                usunięcie
+                <span className="font-semibold text-red-400">
+                  {" "}
+                  wszystkich wydatków{" "}
+                </span>
+                z nim powiązanych, co wpłynie na Twoje statystyki i stan
+                budżetów.
+              </p>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  onClick={() => setReceiptToDelete(null)}
+                  className="px-4 py-2 rounded-lg font-medium text-muted-foreground hover:bg-muted transition-colors cursor-pointer"
+                >
+                  Anuluj
+                </button>
+                <button
+                  onClick={() => {
+                    handleDeleteReceipt(receiptToDelete);
+                    setReceiptToDelete(null); // Zamknij modal po akcji
+                  }}
+                  className="px-4 py-2 rounded-lg font-medium bg-red-500 text-white hover:bg-red-600 shadow-md shadow-red-500/20 transition-all cursor-pointer"
+                >
+                  Tak, usuń paragon
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
