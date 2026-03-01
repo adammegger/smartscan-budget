@@ -106,6 +106,7 @@ export default function ReceiptVerification({
       }
 
       setCategories(categoriesToUse || []);
+      console.log("Pobrane kategorie do modala:", categoriesToUse);
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
@@ -113,7 +114,7 @@ export default function ReceiptVerification({
 
   const handleInputChange = (
     field: keyof ReceiptData,
-    value: string | number,
+    value: string | number | null,
   ) => {
     setEditedData((prev) => ({
       ...prev,
@@ -280,18 +281,28 @@ export default function ReceiptVerification({
               </Label>
               <select
                 id="category"
-                value={editedData.category}
+                value={editedData.category_id || ""}
                 onChange={(e) => {
-                  const selectedCategory = categories.find(
-                    (cat) => cat.name === e.target.value,
+                  const selectedId = e.target.value;
+                  const matchedCategory = categories.find(
+                    (c) => c.id === selectedId,
                   );
-                  handleInputChange("category", e.target.value);
-                  handleInputChange("category_id", selectedCategory?.id || "");
+
+                  handleInputChange("category_id", selectedId);
+                  handleInputChange(
+                    "category",
+                    matchedCategory
+                      ? matchedCategory.name
+                      : editedData.category,
+                  );
                 }}
                 className="w-full px-3 py-2 bg-background border border-border/50 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
               >
+                <option value="" disabled>
+                  Wybierz kategorię...
+                </option>
                 {categories.map((category) => (
-                  <option key={category.id} value={category.name}>
+                  <option key={category.id} value={category.id}>
                     {category.name}
                   </option>
                 ))}
@@ -372,14 +383,36 @@ export default function ReceiptVerification({
                       </TableCell>
                       <TableCell>
                         <select
-                          value={item.category}
-                          onChange={(e) =>
-                            handleItemChange(index, "category", e.target.value)
-                          }
+                          value={item.category_id || ""}
+                          onChange={(e) => {
+                            const selectedId = e.target.value;
+                            const matchedCategory = categories.find(
+                              (c) => c.id === selectedId,
+                            );
+
+                            // Update the specific item in the array
+                            setEditedData((prev) => {
+                              const newItems = [...prev.items];
+                              newItems[index] = {
+                                ...newItems[index],
+                                category_id: selectedId,
+                                category: matchedCategory
+                                  ? matchedCategory.name
+                                  : newItems[index].category,
+                              };
+                              return {
+                                ...prev,
+                                items: newItems,
+                              };
+                            });
+                          }}
                           className="w-full px-3 py-2 bg-background border border-border/50 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
                         >
+                          <option value="" disabled>
+                            Wybierz...
+                          </option>
                           {categories.map((category) => (
-                            <option key={category.id} value={category.name}>
+                            <option key={category.id} value={category.id}>
                               {category.name}
                             </option>
                           ))}

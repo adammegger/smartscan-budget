@@ -23,6 +23,19 @@ export interface ReceiptData {
 
 export const saveReceiptToSupabase = async (receiptData: ReceiptData) => {
   try {
+    // Log data before saving to verify UUIDs are present
+    console.log("Dane do zapisu do bazy:", {
+      store_name: receiptData.store_name,
+      category: receiptData.category,
+      category_id: receiptData.category_id,
+      items: receiptData.items.map((item) => ({
+        name: item.name,
+        category: item.category,
+        category_id: item.category_id,
+        is_bio: item.is_bio,
+      })),
+    });
+
     // Get current authenticated user
     const {
       data: { user: authUser },
