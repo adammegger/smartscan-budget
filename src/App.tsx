@@ -22,6 +22,7 @@ import ResetPassword from "./components/ResetPassword";
 import UpdatePassword from "./components/UpdatePassword";
 import Budgets from "./components/Budgets";
 import Achievements from "./components/Achievements";
+import { TooltipProvider } from "./components/ui/tooltip";
 
 // Theme Toggle Button Component
 function ThemeToggle() {
@@ -671,7 +672,9 @@ function AppContent() {
 function App() {
   return (
     <ThemeProvider>
-      <AppContent />
+      <TooltipProvider>
+        <AppContent />
+      </TooltipProvider>
     </ThemeProvider>
   );
 }

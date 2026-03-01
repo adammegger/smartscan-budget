@@ -3,6 +3,12 @@ import { supabase } from "../lib/supabase";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import CategoryIcon from "./CategoryIcon";
 import { Card, CardContent, CardHeader } from "./ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip";
 
 // Budget Monitor Component
 interface BudgetMonitorProps {
@@ -699,14 +705,23 @@ export default function DashboardTiles(props: DashboardTilesProps) {
         </CardHeader>
       </Card>
 
-      <Card className="transition-colors cursor-pointer">
-        <CardHeader className="text-center">
-          <div className="text-4xl font-bold text-blue-500 mb-2">
-            {stats.receiptCount}
-          </div>
-          <div className="text-sm text-blue-500">Zeskanowane paragony</div>
-        </CardHeader>
-      </Card>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Card className="transition-colors cursor-pointer">
+            <CardHeader className="text-center">
+              <div className="text-4xl font-bold text-blue-500 mb-2">
+                {stats.receiptCount}
+              </div>
+              <div className="text-sm text-blue-500">Zeskanowane paragony</div>
+            </CardHeader>
+          </Card>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-xs text-sm">
+          <p>
+            Liczba paragonów, które zostały dodane do Paragonly w tym okresie.
+          </p>
+        </TooltipContent>
+      </Tooltip>
 
       {/* Green Leaves Count Tile */}
       <Card className="transition-colors cursor-pointer">
@@ -771,19 +786,6 @@ export default function DashboardTiles(props: DashboardTilesProps) {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip
-                    formatter={(value: number, name: string) => [
-                      `${Number(value).toFixed(2)} PLN`,
-                      name,
-                    ]}
-                    labelFormatter={(label: string) => label}
-                    contentStyle={{
-                      backgroundColor: "rgba(255, 255, 255, 0.95)",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "8px",
-                      color: "#1e293b",
-                    }}
-                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
