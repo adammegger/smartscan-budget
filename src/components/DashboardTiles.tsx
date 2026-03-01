@@ -1,10 +1,8 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { supabase } from "../lib/supabase";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import CategoryIcon from "./CategoryIcon";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Badge } from "./ui/badge";
-import { cn } from "../lib/utils";
+import { Card, CardContent, CardHeader } from "./ui/card";
 
 // Budget Monitor Component
 interface BudgetMonitorProps {
@@ -21,7 +19,7 @@ interface BudgetData {
   spent: number;
 }
 
-const BudgetMonitor: React.FC<BudgetMonitorProps> = ({ dateFilter }) => {
+const BudgetMonitor: React.FC<BudgetMonitorProps> = ({}) => {
   const [budgets, setBudgets] = useState<BudgetData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -774,11 +772,11 @@ export default function DashboardTiles(props: DashboardTilesProps) {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value, name) => [
+                    formatter={(value: number, name: string) => [
                       `${Number(value).toFixed(2)} PLN`,
                       name,
                     ]}
-                    labelFormatter={(label) => label}
+                    labelFormatter={(label: string) => label}
                     contentStyle={{
                       backgroundColor: "rgba(255, 255, 255, 0.95)",
                       border: "1px solid #e2e8f0",
