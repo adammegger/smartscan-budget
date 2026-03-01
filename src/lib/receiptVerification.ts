@@ -97,7 +97,10 @@ export const saveReceiptToSupabase = async (receiptData: ReceiptData) => {
     }
 
     // Check for new achievements
-    await checkAndTriggerAchievements();
+    await checkAndTriggerAchievements(
+      receiptData.total_amount,
+      receiptData.date,
+    );
 
     return receiptDataResult;
   } catch (error) {

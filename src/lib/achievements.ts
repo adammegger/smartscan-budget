@@ -12,6 +12,11 @@ import {
   ShoppingBag,
   Leaf,
   Clover,
+  Wallet,
+  Coins,
+  Moon,
+  CalendarHeart,
+  PartyPopper,
 } from "lucide-react";
 
 // Achievement type definitions
@@ -34,6 +39,7 @@ export interface UserAchievement {
 
 // Achievement definitions
 export const ACHIEVEMENTS: AchievementDefinition[] = [
+  // First Receipt
   {
     id: "first_receipt",
     name: "Pierwszy krok",
@@ -42,21 +48,15 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     requirement: "first_receipt",
     threshold: 1,
   },
+
+  // Receipts Count (Skanowanie paragonów)
   {
-    id: "streak_7_days",
-    name: "Seria tygodniowa",
-    description: "Skanuj paragony 7 dni z rzędu",
-    icon: "Flame",
-    requirement: "streak_7_days",
-    threshold: 7,
-  },
-  {
-    id: "streak_30_days",
-    name: "Miesięczna seria",
-    description: "Skanuj paragony 30 dni z rzędu",
-    icon: "Flame",
-    requirement: "streak_30_days",
-    threshold: 30,
+    id: "receipts_1",
+    name: "Pierwszy krok",
+    description: "Zeskanuj swój pierwszy paragon",
+    icon: "Trophy",
+    requirement: "total_receipts",
+    threshold: 1,
   },
   {
     id: "receipts_10",
@@ -65,6 +65,14 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     icon: "ShoppingBag",
     requirement: "total_receipts",
     threshold: 10,
+  },
+  {
+    id: "receipts_25",
+    name: "Ćwierć setki",
+    description: "Zeskanuj 25 paragonów",
+    icon: "Award",
+    requirement: "total_receipts",
+    threshold: 25,
   },
   {
     id: "receipts_50",
@@ -83,37 +91,23 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     threshold: 100,
   },
   {
-    id: "budget_set",
-    name: "Planista",
-    description: "Ustaw pierwszy budżet",
-    icon: "Target",
-    requirement: "budgets_created",
-    threshold: 1,
+    id: "receipts_500",
+    name: "Weteran Skanowania",
+    description: "Zeskanuj 500 paragonów",
+    icon: "Flame",
+    requirement: "total_receipts",
+    threshold: 500,
   },
   {
-    id: "budgets_5",
-    name: "Menedżer finansów",
-    description: "Ustaw 5 budżetów",
-    icon: "ShieldCheck",
-    requirement: "budgets_created",
-    threshold: 5,
-  },
-  {
-    id: "categories_5",
-    name: "Eksplorator",
-    description: "Wydaj pieniądze w 5 kategoriach",
-    icon: "Star",
-    requirement: "unique_categories",
-    threshold: 5,
-  },
-  {
-    id: "categories_all",
-    name: "Wszechstronny",
-    description: "Wydaj pieniądze we wszystkich kategoriach",
+    id: "receipts_1000",
+    name: "Król Paragonów",
+    description: "Zeskanuj 1000 paragonów",
     icon: "Zap",
-    requirement: "unique_categories",
-    threshold: 14,
+    requirement: "total_receipts",
+    threshold: 1000,
   },
+
+  // Spending (Wydatki)
   {
     id: "spending_1000",
     name: "Tysiącznik",
@@ -130,7 +124,94 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     requirement: "total_spent",
     threshold: 10000,
   },
-  // Eco achievements
+  {
+    id: "spending_20000",
+    name: "Hojny Klient",
+    description: "Wydaj łącznie 20 000 PLN",
+    icon: "TrendingUp",
+    requirement: "total_spent",
+    threshold: 20000,
+  },
+  {
+    id: "spending_50000",
+    name: "Złota Karta",
+    description: "Wydaj łącznie 50 000 PLN",
+    icon: "Award",
+    requirement: "total_spent",
+    threshold: 50000,
+  },
+  {
+    id: "spending_100000",
+    name: "Krezus",
+    description: "Wydaj łącznie 100 000 PLN",
+    icon: "Zap",
+    requirement: "total_spent",
+    threshold: 100000,
+  },
+
+  // Budgets
+  {
+    id: "budget_set",
+    name: "Planista",
+    description: "Ustaw pierwszy budżet",
+    icon: "Target",
+    requirement: "budgets_created",
+    threshold: 1,
+  },
+  {
+    id: "budgets_5",
+    name: "Menedżer finansów",
+    description: "Ustaw 5 budżetów",
+    icon: "ShieldCheck",
+    requirement: "budgets_created",
+    threshold: 5,
+  },
+
+  // Categories
+  {
+    id: "categories_5",
+    name: "Eksplorator",
+    description: "Wydaj pieniądze w 5 kategoriach",
+    icon: "Star",
+    requirement: "unique_categories",
+    threshold: 5,
+  },
+  {
+    id: "categories_all",
+    name: "Wszechstronny",
+    description: "Wydaj pieniądze we wszystkich kategoriach",
+    icon: "Zap",
+    requirement: "unique_categories",
+    threshold: 14,
+  },
+
+  // Streaks
+  {
+    id: "streak_7_days",
+    name: "Seria tygodniowa",
+    description: "Skanuj paragony 7 dni z rzędu",
+    icon: "Flame",
+    requirement: "streak_7_days",
+    threshold: 7,
+  },
+  {
+    id: "streak_30_days",
+    name: "Miesięczna seria",
+    description: "Skanuj paragony 30 dni z rzędu",
+    icon: "Flame",
+    requirement: "streak_30_days",
+    threshold: 30,
+  },
+
+  // Eco achievements (Zielone Listki / BIO)
+  {
+    id: "green_leaves_1",
+    name: "Pierwszy Listek",
+    description: "Zdobądź 1 punkt BIO",
+    icon: "Leaf",
+    requirement: "green_leaves_count",
+    threshold: 1,
+  },
   {
     id: "green_leaves_10",
     name: "Początkujący Zielarz",
@@ -138,6 +219,14 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     icon: "Leaf",
     requirement: "green_leaves_count",
     threshold: 10,
+  },
+  {
+    id: "green_leaves_25",
+    name: "Zielony Krok",
+    description: "Zbierz 25 Zielonych Listków",
+    icon: "Leaf",
+    requirement: "green_leaves_count",
+    threshold: 25,
   },
   {
     id: "green_leaves_50",
@@ -154,6 +243,64 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     icon: "Clover",
     requirement: "green_leaves_count",
     threshold: 100,
+  },
+  {
+    id: "green_leaves_250",
+    name: "Miłośnik Planety",
+    description: "Zbierz 250 Zielonych Listków",
+    icon: "Clover",
+    requirement: "green_leaves_count",
+    threshold: 250,
+  },
+  {
+    id: "green_leaves_500",
+    name: "Matka Natura",
+    description: "Zbierz 500 Zielonych Listków",
+    icon: "Clover",
+    requirement: "green_leaves_count",
+    threshold: 500,
+  },
+  {
+    id: "green_leaves_1000",
+    name: "Zbawca Świata",
+    description: "Zbierz 1000 Zielonych Listków",
+    icon: "Zap",
+    requirement: "green_leaves_count",
+    threshold: 1000,
+  },
+
+  // Special Achievements
+  {
+    id: "special_big_spender",
+    name: "Gruby Portfel",
+    description: "Zeskanuj jeden paragon na kwotę powyżej 500 zł",
+    icon: "Wallet",
+    requirement: "special_big_spender",
+    threshold: 1,
+  },
+  {
+    id: "special_pennies",
+    name: "Grosz do grosza",
+    description: "Zeskanuj paragon na kwotę poniżej 10 zł",
+    icon: "Coins",
+    requirement: "special_pennies",
+    threshold: 1,
+  },
+  {
+    id: "special_night_owl",
+    name: "Nocny Marek",
+    description: "Zeskanuj paragon po 22:00",
+    icon: "Moon",
+    requirement: "special_night_owl",
+    threshold: 1,
+  },
+  {
+    id: "special_weekend",
+    name: "Weekendowy Szoping",
+    description: "Zeskanuj paragon z datą sobotnią lub niedzielną",
+    icon: "CalendarHeart",
+    requirement: "special_weekend",
+    threshold: 1,
   },
 ];
 
@@ -174,6 +321,11 @@ const iconMap: Record<
   ShoppingBag,
   Leaf,
   Clover,
+  Wallet,
+  Coins,
+  Moon,
+  CalendarHeart,
+  PartyPopper,
 };
 
 export function getAchievementIcon(iconName: string) {
@@ -181,7 +333,13 @@ export function getAchievementIcon(iconName: string) {
 }
 
 // Check and award achievements after a new receipt is added
-export async function checkAchievements(userId: string): Promise<string[]> {
+export async function checkAchievements(
+  userId: string,
+  newReceipt?: {
+    total_amount: number;
+    date: string;
+  },
+): Promise<string[]> {
   const newAchievements: string[] = [];
 
   try {
@@ -249,13 +407,24 @@ export async function checkAchievements(userId: string): Promise<string[]> {
 
     // Check each achievement
     const checks = [
+      // First Receipt
       {
         id: "first_receipt",
+        condition: receipts && receipts.length >= 1,
+      },
+
+      // Receipts Count
+      {
+        id: "receipts_1",
         condition: receipts && receipts.length >= 1,
       },
       {
         id: "receipts_10",
         condition: receipts && receipts.length >= 10,
+      },
+      {
+        id: "receipts_25",
+        condition: receipts && receipts.length >= 25,
       },
       {
         id: "receipts_50",
@@ -266,29 +435,15 @@ export async function checkAchievements(userId: string): Promise<string[]> {
         condition: receipts && receipts.length >= 100,
       },
       {
-        id: "streak_7_days",
-        condition: streak >= 7,
+        id: "receipts_500",
+        condition: receipts && receipts.length >= 500,
       },
       {
-        id: "streak_30_days",
-        condition: streak >= 30,
+        id: "receipts_1000",
+        condition: receipts && receipts.length >= 1000,
       },
-      {
-        id: "budget_set",
-        condition: budgetsCount && budgetsCount >= 1,
-      },
-      {
-        id: "budgets_5",
-        condition: budgetsCount && budgetsCount >= 5,
-      },
-      {
-        id: "categories_5",
-        condition: uniqueCategories.size >= 5,
-      },
-      {
-        id: "categories_all",
-        condition: uniqueCategories.size >= 14,
-      },
+
+      // Spending
       {
         id: "spending_1000",
         condition: totalSpent >= 1000,
@@ -298,8 +453,60 @@ export async function checkAchievements(userId: string): Promise<string[]> {
         condition: totalSpent >= 10000,
       },
       {
+        id: "spending_20000",
+        condition: totalSpent >= 20000,
+      },
+      {
+        id: "spending_50000",
+        condition: totalSpent >= 50000,
+      },
+      {
+        id: "spending_100000",
+        condition: totalSpent >= 100000,
+      },
+
+      // Budgets
+      {
+        id: "budget_set",
+        condition: budgetsCount && budgetsCount >= 1,
+      },
+      {
+        id: "budgets_5",
+        condition: budgetsCount && budgetsCount >= 5,
+      },
+
+      // Categories
+      {
+        id: "categories_5",
+        condition: uniqueCategories.size >= 5,
+      },
+      {
+        id: "categories_all",
+        condition: uniqueCategories.size >= 14,
+      },
+
+      // Streaks
+      {
+        id: "streak_7_days",
+        condition: streak >= 7,
+      },
+      {
+        id: "streak_30_days",
+        condition: streak >= 30,
+      },
+
+      // Eco achievements
+      {
+        id: "green_leaves_1",
+        condition: greenLeavesCount >= 1,
+      },
+      {
         id: "green_leaves_10",
         condition: greenLeavesCount >= 10,
+      },
+      {
+        id: "green_leaves_25",
+        condition: greenLeavesCount >= 25,
       },
       {
         id: "green_leaves_50",
@@ -309,7 +516,93 @@ export async function checkAchievements(userId: string): Promise<string[]> {
         id: "green_leaves_100",
         condition: greenLeavesCount >= 100,
       },
+      {
+        id: "green_leaves_250",
+        condition: greenLeavesCount >= 250,
+      },
+      {
+        id: "green_leaves_500",
+        condition: greenLeavesCount >= 500,
+      },
+      {
+        id: "green_leaves_1000",
+        condition: greenLeavesCount >= 1000,
+      },
     ];
+
+    // Check special achievements if new receipt data is provided
+    if (newReceipt) {
+      // Check special_big_spender (Gruby Portfel)
+      if (
+        newReceipt.total_amount > 500 &&
+        !earnedTypes.has("special_big_spender")
+      ) {
+        const { error } = await supabase.from("achievements").insert({
+          user_id: userId,
+          type: "special_big_spender",
+          value: 1,
+        });
+
+        if (!error) {
+          newAchievements.push("special_big_spender");
+          earnedTypes.add("special_big_spender");
+        }
+      }
+
+      // Check special_pennies (Grosz do grosza)
+      if (newReceipt.total_amount < 10 && !earnedTypes.has("special_pennies")) {
+        const { error } = await supabase.from("achievements").insert({
+          user_id: userId,
+          type: "special_pennies",
+          value: 1,
+        });
+
+        if (!error) {
+          newAchievements.push("special_pennies");
+          earnedTypes.add("special_pennies");
+        }
+      }
+
+      // Check special_night_owl (Nocny Marek)
+      if (newReceipt.date) {
+        const receiptDate = new Date(newReceipt.date);
+        const hour = receiptDate.getHours();
+        if (hour >= 22 || hour < 6) {
+          if (!earnedTypes.has("special_night_owl")) {
+            const { error } = await supabase.from("achievements").insert({
+              user_id: userId,
+              type: "special_night_owl",
+              value: 1,
+            });
+
+            if (!error) {
+              newAchievements.push("special_night_owl");
+              earnedTypes.add("special_night_owl");
+            }
+          }
+        }
+      }
+
+      // Check special_weekend (Weekendowy Szoping)
+      if (newReceipt.date) {
+        const receiptDate = new Date(newReceipt.date);
+        const dayOfWeek = receiptDate.getDay();
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+          if (!earnedTypes.has("special_weekend")) {
+            const { error } = await supabase.from("achievements").insert({
+              user_id: userId,
+              type: "special_weekend",
+              value: 1,
+            });
+
+            if (!error) {
+              newAchievements.push("special_weekend");
+              earnedTypes.add("special_weekend");
+            }
+          }
+        }
+      }
+    }
 
     // Award new achievements
     for (const check of checks) {
