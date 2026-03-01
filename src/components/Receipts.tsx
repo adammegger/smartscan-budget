@@ -486,7 +486,7 @@ export default function Receipts(props: ReceiptsProps) {
                 </TableRow>
                 {props.selectedReceiptId === receipt.id && (
                   <TableRow className="bg-muted/50">
-                    <TableCell colSpan={5} className="p-0">
+                    <TableCell colSpan={6} className="p-0">
                       <div className="w-full p-6 space-y-6">
                         <div>
                           <h4 className="font-semibold text-foreground text-lg mb-4">
