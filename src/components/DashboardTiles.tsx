@@ -686,6 +686,9 @@ export default function DashboardTiles(props: DashboardTilesProps) {
     );
   }
 
+  // Check if there are any receipts (if no receipts, hide the chart)
+  const hasReceipts = stats.receiptCount > 0;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       {/* Budget Monitor Tile */}
@@ -826,102 +829,104 @@ export default function DashboardTiles(props: DashboardTilesProps) {
         </CardHeader>
       </Card>
 
-      {/* Main Chart Tile */}
-      <Card className="lg:col-span-4 transition-colors cursor-pointer">
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Donut Chart */}
-            <div className="flex-1 flex items-center justify-center">
-              <ResponsiveContainer width="100%" height={280}>
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={2}
-                    dataKey="value"
-                    strokeWidth={0}
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <RechartsTooltip
-                    formatter={(value, name) => [
-                      `${Number(value || 0).toFixed(2)} PLN`,
-                      name || "",
-                    ]}
-                    labelFormatter={(label) => label || ""}
-                    contentStyle={{
-                      backgroundColor: "rgba(255, 255, 255, 0.95)",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "8px",
-                      color: "#1e293b",
-                    }}
-                    wrapperStyle={{ zIndex: 100 }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Category List */}
-            <div className="flex-1 overflow-hidden">
-              <div className="space-y-2 max-h-[320px] overflow-y-auto pr-2">
-                {categoryData.map((category) => {
-                  const percentage =
-                    totalSpent > 0 ? (category.total / totalSpent) * 100 : 0;
-                  const color =
-                    CATEGORY_COLORS[category.category] ||
-                    CATEGORY_COLORS["Inne"];
-
-                  return (
-                    <div
-                      key={category.category}
-                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors border border-border"
+      {/* Main Chart Tile - Only render if there are receipts */}
+      {hasReceipts && (
+        <Card className="lg:col-span-4 transition-colors cursor-pointer">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row gap-6">
+              {/* Donut Chart */}
+              <div className="flex-1 flex items-center justify-center">
+                <ResponsiveContainer width="100%" height={280}>
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={100}
+                      paddingAngle={2}
+                      dataKey="value"
+                      strokeWidth={0}
                     >
-                      {/* Left side: Category badge */}
-                      <div
-                        className="flex items-center gap-2 px-3 py-1 rounded-full border-2"
-                        style={{
-                          backgroundColor: color + "15", // 15% opacity background
-                          borderColor: color,
-                        }}
-                      >
-                        <CategoryIcon
-                          icon={category.category}
-                          color={color}
-                          size={16}
-                        />
-                        <span
-                          className="font-medium text-sm"
-                          style={{ color: color }}
-                        >
-                          {category.category}
-                        </span>
-                        <span className="text-muted-foreground text-xs">
-                          ({category.count})
-                        </span>
-                      </div>
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip
+                      formatter={(value, name) => [
+                        `${Number(value || 0).toFixed(2)} PLN`,
+                        name || "",
+                      ]}
+                      labelFormatter={(label) => label || ""}
+                      contentStyle={{
+                        backgroundColor: "rgba(255, 255, 255, 0.95)",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "8px",
+                        color: "#1e293b",
+                      }}
+                      wrapperStyle={{ zIndex: 100 }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
 
-                      {/* Right side: Amount and percentage */}
-                      <div className="text-right gap-2">
-                        <span className="font-bold text-foreground text-sm">
-                          {category.total.toFixed(2)} PLN
-                        </span>
-                        <span className="text-muted-foreground text-xs ml-2">
-                          ({percentage.toFixed(1)}%)
-                        </span>
+              {/* Category List */}
+              <div className="flex-1 overflow-hidden">
+                <div className="space-y-2 max-h-[320px] overflow-y-auto pr-2">
+                  {categoryData.map((category) => {
+                    const percentage =
+                      totalSpent > 0 ? (category.total / totalSpent) * 100 : 0;
+                    const color =
+                      CATEGORY_COLORS[category.category] ||
+                      CATEGORY_COLORS["Inne"];
+
+                    return (
+                      <div
+                        key={category.category}
+                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors border border-border"
+                      >
+                        {/* Left side: Category badge */}
+                        <div
+                          className="flex items-center gap-2 px-3 py-1 rounded-full border-2"
+                          style={{
+                            backgroundColor: color + "15", // 15% opacity background
+                            borderColor: color,
+                          }}
+                        >
+                          <CategoryIcon
+                            icon={category.category}
+                            color={color}
+                            size={16}
+                          />
+                          <span
+                            className="font-medium text-sm"
+                            style={{ color: color }}
+                          >
+                            {category.category}
+                          </span>
+                          <span className="text-muted-foreground text-xs">
+                            ({category.count})
+                          </span>
+                        </div>
+
+                        {/* Right side: Amount and percentage */}
+                        <div className="text-right gap-2">
+                          <span className="font-bold text-foreground text-sm">
+                            {category.total.toFixed(2)} PLN
+                          </span>
+                          <span className="text-muted-foreground text-xs ml-2">
+                            ({percentage.toFixed(1)}%)
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

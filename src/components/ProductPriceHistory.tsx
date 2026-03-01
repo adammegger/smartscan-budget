@@ -326,24 +326,37 @@ export default function ProductPriceHistory({
         Analiza Cen
       </h3>
 
-      {/* Wybór Produktu */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-muted-foreground mb-2">
-          Wybierz produkt do analizy:
-        </label>
-        <select
-          value={selectedProduct}
-          onChange={handleProductChange}
-          className="w-full px-3 py-2 bg-white dark:bg-zinc-800/50 border border-slate-300 dark:border-zinc-700/50 rounded-md text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-slate-400 dark:focus:border-zinc-600/50"
-        >
-          <option value="">-- Wybierz produkt --</option>
-          {productList.map((product) => (
-            <option key={product} value={product}>
-              {product}
-            </option>
-          ))}
-        </select>
-      </div>
+      {/* Wybór Produktu lub komunikat o braku danych */}
+      {productList.length === 0 ? (
+        <div className="w-full bg-card border border-border/50 rounded-xl p-12 flex flex-col items-center justify-center text-center shadow-sm">
+          <h3 className="text-lg font-medium text-foreground mb-2">
+            Brak zapisanych paragonów
+          </h3>
+          <p className="text-muted-foreground">
+            Zeskanuj pierwszy paragon, aby wyświetlić listę produktów.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-muted-foreground mb-2">
+              Wybierz produkt do analizy:
+            </label>
+            <select
+              value={selectedProduct}
+              onChange={handleProductChange}
+              className="w-full px-3 py-2 bg-white dark:bg-zinc-800/50 border border-slate-300 dark:border-zinc-700/50 rounded-md text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-slate-400 dark:focus:border-zinc-600/50"
+            >
+              <option value="">-- Wybierz produkt --</option>
+              {productList.map((product) => (
+                <option key={product} value={product}>
+                  {product}
+                </option>
+              ))}
+            </select>
+          </div>
+        </>
+      )}
 
       {/* Product Tags - Nutri-Score and Warnings */}
       {(productTags || tagsLoading) && (
@@ -489,11 +502,21 @@ export default function ProductPriceHistory({
       )}
 
       {/* No product selected */}
-      {!selectedProduct && !loading && (
+      {productList.length === 0 ? null : (
+        <>
+          {!selectedProduct && !loading && (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Wybierz produkt, aby zobaczyć analizę cen</p>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* {!selectedProduct && !loading && (
         <div className="text-center py-8 text-muted-foreground">
           <p>Wybierz produkt, aby zobaczyć analizę cen</p>
         </div>
-      )}
+      )} */}
 
       {/* Statistics Pills */}
       {stats && priceHistory.length > 0 && (

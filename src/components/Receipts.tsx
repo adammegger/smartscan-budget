@@ -404,10 +404,12 @@ export default function Receipts(props: ReceiptsProps) {
 
   if (receipts.length === 0)
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        <p>Brak zapisanych paragonów</p>
-        <p className="text-sm mt-2">
-          Zeskanuj pierwszy paragon, aby go tutaj zobaczyć
+      <div className="w-full bg-card border border-border/50 rounded-xl p-12 flex flex-col items-center justify-center text-center shadow-sm">
+        <h3 className="text-lg font-medium text-foreground mb-2">
+          Brak zapisanych paragonów
+        </h3>
+        <p className="text-muted-foreground">
+          Zeskanuj pierwszy paragon, aby go tutaj zobaczyć.
         </p>
       </div>
     );
@@ -476,7 +478,10 @@ export default function Receipts(props: ReceiptsProps) {
                   </TableCell>
                   <TableCell className="px-4 py-3 text-center">
                     <button
-                      onClick={() => setReceiptToDelete(receipt.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setReceiptToDelete(receipt.id);
+                      }}
                       className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors cursor-pointer"
                       title="Usuń paragon"
                     >
@@ -629,13 +634,17 @@ export default function Receipts(props: ReceiptsProps) {
 
               <div className="flex justify-end gap-3 mt-6">
                 <button
-                  onClick={() => setReceiptToDelete(null)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setReceiptToDelete(null);
+                  }}
                   className="px-4 py-2 rounded-lg font-medium text-muted-foreground hover:bg-muted transition-colors cursor-pointer"
                 >
                   Anuluj
                 </button>
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     handleDeleteReceipt(receiptToDelete);
                     setReceiptToDelete(null); // Zamknij modal po akcji
                   }}
