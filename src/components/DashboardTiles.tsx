@@ -546,32 +546,38 @@ export default function DashboardTiles(props: DashboardTilesProps) {
         }
       }
 
-      // Fetch green leaves count from profile
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("green_leaves_count")
-        .eq("id", authUser.id)
-        .single();
-
-      setGreenLeavesCount(profile?.green_leaves_count || 0);
-
-      // Calculate BIO products percentage
-      const { count: totalProductsCount } = await supabase
+      // Calculate BIO products percentage and green leaves count dynamically
+      // Filter items by date range to match the dashboard period
+      let itemsQuery = supabase
         .from("items")
         .select("*", { count: "exact", head: true })
         .eq("user_id", authUser.id);
+
+      // Apply the same date filter as for receipts
+      if (receiptIds.length > 0) {
+        itemsQuery = itemsQuery.in("receipt_id", receiptIds);
+      } else {
+        // If no receipts in period, set counts to 0
+        setGreenLeavesCount(0);
+        setBioPercentage(0);
+      }
+
+      const { count: totalProductsCount } = await itemsQuery;
 
       const { count: bioProductsCount } = await supabase
         .from("items")
         .select("*", { count: "exact", head: true })
         .eq("user_id", authUser.id)
-        .eq("is_bio", true);
+        .eq("is_bio", true)
+        .in("receipt_id", receiptIds);
 
       const bioPercentage =
         totalProductsCount && totalProductsCount > 0
           ? Math.round(((bioProductsCount || 0) / totalProductsCount) * 100)
           : 0;
 
+      // Green leaves count = number of BIO products in the selected period
+      setGreenLeavesCount(bioProductsCount || 0);
       setBioPercentage(bioPercentage);
 
       setStats({
@@ -728,7 +734,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
         <TooltipTrigger asChild>
           <Card className="transition-colors cursor-pointer">
             <CardHeader className="text-center">
-              <div className="text-4xl font-bold text-blue-500 mb-2">
+              <div className="text-3xl font-bold text-blue-500 mb-2">
                 {stats.receiptCount}
               </div>
               <div className="text-sm text-blue-500">Zeskanowane paragony</div>

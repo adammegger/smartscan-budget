@@ -8,7 +8,6 @@ import {
   getCategoryId,
   CATEGORY_IDS,
 } from "../lib/categories";
-import { checkAndTriggerAchievements } from "../lib/achievementUtils";
 import { isBioProduct } from "../lib/eco";
 
 // Mock data for testing
@@ -326,9 +325,6 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
                 throw itemsError;
               }
             }
-
-            // Check for new achievements after saving receipt
-            await checkAndTriggerAchievements();
 
             onAnalysisComplete(receiptData);
           } catch (error) {
