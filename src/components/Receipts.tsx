@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabase";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import CategoryIcon from "./CategoryIcon";
-import { AlertTriangle, Clover, Leaf } from "lucide-react";
+import { AlertTriangle, Clover, Leaf, Trash2 } from "lucide-react";
 import { isBioProduct } from "../lib/eco";
 import { getItemTags, getMainCategory } from "../lib/categories";
 import { NUTRI_SCORE_COLORS } from "../lib/openfoodfacts";
@@ -17,6 +17,7 @@ import {
   TableCaption,
 } from "./ui/table";
 import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
 
 interface Category {
   id: number;
@@ -231,6 +232,54 @@ export default function Receipts(props: ReceiptsProps) {
     else setSelectedItems([]);
   }, [props.selectedReceiptId]);
 
+  const handleDeleteReceipt = async (receiptId: number) => {
+    try {
+      // Confirm deletion
+      if (
+        !window.confirm(
+          "Czy na pewno chcesz trwale usunąć ten paragon? Tej operacji nie można cofnąć.",
+        )
+      ) {
+        return;
+      }
+
+      // Delete associated items first
+      const { error: itemsError } = await supabase
+        .from("items")
+        .delete()
+        .eq("receipt_id", receiptId);
+
+      if (itemsError) throw itemsError;
+
+      // Delete the receipt
+      const { error: receiptError } = await supabase
+        .from("receipts")
+        .delete()
+        .eq("id", receiptId);
+
+      if (receiptError) throw receiptError;
+
+      // Update local state
+      setReceipts((prev) => prev.filter((r) => r.id !== receiptId));
+      setItemCounts((prev) => {
+        const newCounts = { ...prev };
+        delete newCounts[receiptId];
+        return newCounts;
+      });
+
+      // Clear selected items if deleted receipt was selected
+      if (props.selectedReceiptId === receiptId) {
+        setSelectedItems([]);
+        props.onReceiptSelect(null);
+      }
+
+      console.log("Paragon usunięty pomyślnie");
+    } catch (error) {
+      console.error("Błąd podczas usuwania paragonu:", error);
+      setError("Wystąpił błąd podczas usuwania paragonu");
+    }
+  };
+
   const fetchReceipts = async () => {
     try {
       setLoading(true);
@@ -380,6 +429,9 @@ export default function Receipts(props: ReceiptsProps) {
               <TableHead className="text-muted-foreground font-medium text-sm">
                 Kwota
               </TableHead>
+              <TableHead className="text-muted-foreground font-medium text-sm text-center">
+                Akcje
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -417,6 +469,18 @@ export default function Receipts(props: ReceiptsProps) {
                     <div className="font-semibold text-foreground">
                       {receipt.total_amount.toFixed(2)} PLN
                     </div>
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-center">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteReceipt(receipt.id);
+                      }}
+                      className="inline-flex items-center justify-center w-8 h-8 rounded-full text-destructive hover:bg-destructive/10 transition-colors"
+                      title="Usuń paragon"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </TableCell>
                 </TableRow>
                 {props.selectedReceiptId === receipt.id && (
