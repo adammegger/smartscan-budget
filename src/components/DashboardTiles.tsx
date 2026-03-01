@@ -504,10 +504,13 @@ export default function DashboardTiles(props: DashboardTilesProps) {
       if (itemsError) throw itemsError;
 
       // Calculate stats
-      const totalSpent = filteredReceipts.reduce(
-        (sum, receipt) => sum + (receipt.total_amount || 0),
-        0,
-      );
+      const totalSpent = filteredReceipts.reduce((sum, receipt) => {
+        const amount =
+          typeof receipt.total_amount === "number"
+            ? receipt.total_amount
+            : parseFloat(String(receipt.total_amount || 0).replace(",", "."));
+        return sum + amount;
+      }, 0);
       const receiptCount = filteredReceipts.length;
 
       // Calculate average Nutri-Score (placeholder - column doesn't exist yet)
@@ -696,7 +699,12 @@ export default function DashboardTiles(props: DashboardTilesProps) {
           <Card className="transition-colors cursor-pointer">
             <CardHeader className="text-center">
               <div className="text-4xl font-bold text-green-500 mb-2">
-                {stats.totalSpent.toFixed(0)} PLN
+                {new Intl.NumberFormat("pl-PL", {
+                  style: "currency",
+                  currency: "PLN",
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(stats.totalSpent)}
               </div>
               <div className="text-sm text-green-500">
                 {(() => {
