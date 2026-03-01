@@ -18,6 +18,17 @@ import {
 } from "./ui/table";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../../@/components/ui/alert-dialog";
 
 interface Category {
   id: number;
@@ -234,15 +245,6 @@ export default function Receipts(props: ReceiptsProps) {
 
   const handleDeleteReceipt = async (receiptId: number) => {
     try {
-      // Confirm deletion
-      if (
-        !window.confirm(
-          "Czy na pewno chcesz trwale usunąć ten paragon? Tej operacji nie można cofnąć.",
-        )
-      ) {
-        return;
-      }
-
       // Delete associated items first
       const { error: itemsError } = await supabase
         .from("items")
@@ -471,16 +473,40 @@ export default function Receipts(props: ReceiptsProps) {
                     </div>
                   </TableCell>
                   <TableCell className="px-4 py-3 text-center">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteReceipt(receipt.id);
-                      }}
-                      className="inline-flex items-center justify-center w-8 h-8 rounded-full text-destructive hover:bg-destructive/10 transition-colors"
-                      title="Usuń paragon"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <button
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-full text-destructive hover:bg-destructive/10 transition-colors"
+                          title="Usuń paragon"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Czy na pewno chcesz usunąć ten paragon?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tej operacji nie można cofnąć. Spowoduje to trwałe
+                            usunięcie paragonu z {receipt.store_name} (
+                            {receipt.total_amount} zł) oraz wszystkich
+                            powiązanych z nim wydatków i produktów z bazy
+                            danych.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Anuluj</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteReceipt(receipt.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Tak, usuń paragon
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </TableCell>
                 </TableRow>
                 {props.selectedReceiptId === receipt.id && (
