@@ -713,7 +713,10 @@ export default function DashboardTiles(props: DashboardTilesProps) {
             </CardHeader>
           </Card>
         </TooltipTrigger>
-        <TooltipContent side="top" className="max-w-xs text-sm">
+        <TooltipContent
+          side="top"
+          className="max-w-xs text-sm font-medium border-none text-white shadow-lg bg-gradient-to-r from-orange-500 to-red-500 p-3"
+        >
           <p>
             Łączna kwota wydatków zarejestrowanych z Twoich paragonów w wybranym
             przedziale czasowym.
@@ -732,7 +735,10 @@ export default function DashboardTiles(props: DashboardTilesProps) {
             </CardHeader>
           </Card>
         </TooltipTrigger>
-        <TooltipContent side="top" className="max-w-xs text-sm">
+        <TooltipContent
+          side="top"
+          className="max-w-xs text-sm font-medium border-none text-white shadow-lg bg-gradient-to-r from-orange-500 to-red-500 p-3"
+        >
           <p>
             Liczba paragonów, które zostały dodane do Paragonly w tym okresie.
           </p>
@@ -751,7 +757,10 @@ export default function DashboardTiles(props: DashboardTilesProps) {
             </CardHeader>
           </Card>
         </TooltipTrigger>
-        <TooltipContent side="top" className="max-w-xs text-sm">
+        <TooltipContent
+          side="top"
+          className="max-w-xs text-sm font-medium border-none text-white shadow-lg bg-gradient-to-r from-orange-500 to-red-500 p-3"
+        >
           <p>
             Liczba zebranych punktów ekologicznych. Otrzymujesz 1 listek za
             każdy kupiony produkt oznaczony jako BIO lub EKO.
@@ -771,7 +780,10 @@ export default function DashboardTiles(props: DashboardTilesProps) {
             </CardHeader>
           </Card>
         </TooltipTrigger>
-        <TooltipContent side="top" className="max-w-xs text-sm">
+        <TooltipContent
+          side="top"
+          className="max-w-xs text-sm font-medium border-none text-white shadow-lg bg-gradient-to-r from-orange-500 to-red-500 p-3"
+        >
           <p>
             Odsetek wszystkich Twoich zakupów, które stanowią produkty
             ekologiczne w wybranym okresie.
