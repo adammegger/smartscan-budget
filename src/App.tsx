@@ -22,7 +22,26 @@ import ResetPassword from "./components/ResetPassword";
 import UpdatePassword from "./components/UpdatePassword";
 import Budgets from "./components/Budgets";
 import Achievements from "./components/Achievements";
+import ReceiptVerification from "./components/ReceiptVerification";
 import { TooltipProvider } from "./components/ui/tooltip";
+
+// Define the ReceiptData type for TypeScript
+interface ReceiptData {
+  store_name: string;
+  date: string;
+  total_amount: number;
+  category: string;
+  category_id: string | null;
+  items: Array<{
+    name: string;
+    price: number;
+    category: string;
+    category_id: string | null;
+    unit: string;
+    quantity: number;
+    is_bio: boolean;
+  }>;
+}
 
 // Theme Toggle Button Component
 function ThemeToggle() {
@@ -84,6 +103,8 @@ function AppContent() {
   const [selectedProductForHistory, setSelectedProductForHistory] = useState<
     string | null
   >(null);
+  const [verificationReceipt, setVerificationReceipt] =
+    useState<ReceiptData | null>(null);
   const scannerRef = useRef<React.ElementRef<typeof Scanner>>(null);
 
   // Handle clicking on a product name - navigate to price history
@@ -114,16 +135,13 @@ function AppContent() {
     console.log("Image captured:", imageData);
   };
 
-  const handleAnalysisComplete = (receiptData: unknown) => {
+  const handleAnalysisComplete = (receiptData: ReceiptData) => {
     setIsAnalyzing(false);
-    setCaptureMessage("Paragon zapisany pomyślnie!");
+    setCaptureMessage("Zweryfikuj dane z paragonu...");
 
-    // Hide success message after 3 seconds
-    setTimeout(() => {
-      setCaptureMessage("");
-    }, 3000);
-
-    console.log("Receipt analysis complete:", receiptData);
+    // ZAPISUJEMY DANE DO STANU, ŻEBY WYŚWIETLIĆ MODAL:
+    setVerificationReceipt(receiptData);
+    console.log("Oczekuje na weryfikację:", receiptData);
   };
 
   const handleAnalysisError = (error: string) => {
@@ -665,6 +683,23 @@ function AppContent() {
         onAnalysisComplete={handleAnalysisComplete}
         onAnalysisError={handleAnalysisError}
       />
+
+      {/* Receipt Verification Modal */}
+      {verificationReceipt && (
+        <ReceiptVerification
+          receiptData={verificationReceipt}
+          isOpen={true}
+          onClose={() => setVerificationReceipt(null)}
+          onReject={() => setVerificationReceipt(null)}
+          onSave={async (finalData: ReceiptData) => {
+            // Tutaj wywołujesz funkcję zapisującą do bazy (Supabase)
+            // import { saveReceiptToSupabase } from "../lib/receiptVerification";
+            // await saveReceiptToSupabase(finalData);
+            setVerificationReceipt(null); // Zamknij modal po zapisie
+            setCaptureMessage("Paragon zweryfikowany i zapisany!");
+          }}
+        />
+      )}
     </div>
   );
 }

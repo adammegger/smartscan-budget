@@ -1,0 +1,94 @@
+import { supabase } from "./supabase";
+import { checkAndTriggerAchievements } from "./achievementUtils";
+import { processReceiptItems, updateGreenLeaves } from "./eco";
+
+export interface ReceiptItem {
+  name: string;
+  price: number;
+  category: string;
+  category_id: string | null;
+  unit: string;
+  quantity: number;
+  is_bio: boolean;
+}
+
+export interface ReceiptData {
+  store_name: string;
+  date: string;
+  total_amount: number;
+  category: string;
+  category_id: string | null;
+  items: ReceiptItem[];
+}
+
+export const saveReceiptToSupabase = async (receiptData: ReceiptData) => {
+  try {
+    // Get current authenticated user
+    const {
+      data: { user: authUser },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !authUser) {
+      throw new Error("User not authenticated");
+    }
+
+    // Save receipt to Supabase
+    const { data: receiptDataResult, error: receiptError } = await supabase
+      .from("receipts")
+      .insert({
+        store_name: receiptData.store_name,
+        date: receiptData.date,
+        total_amount: receiptData.total_amount,
+        category: receiptData.category,
+        category_id: receiptData.category_id,
+        user_id: authUser.id,
+        created_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
+
+    if (receiptError) {
+      throw receiptError;
+    }
+
+    // Save items with proper category_id
+    const itemsToInsert = receiptData.items.map((item) => ({
+      receipt_id: receiptDataResult.id,
+      name: item.name,
+      price: item.price,
+      category: item.category,
+      category_id: item.category_id,
+      unit: item.unit,
+      quantity: item.quantity,
+      brand: null,
+      user_id: authUser.id,
+      is_bio: item.is_bio, // Set the is_bio flag directly on the column
+      tags: {}, // Empty tags object
+    }));
+
+    const { error: itemsError } = await supabase
+      .from("items")
+      .insert(itemsToInsert);
+
+    if (itemsError) {
+      throw itemsError;
+    }
+
+    // Calculate and update green leaves for eco products
+    const { totalGreenLeaves } = processReceiptItems(
+      receiptData.items.map((item) => ({ name: item.name, price: item.price })),
+    );
+    if (totalGreenLeaves > 0) {
+      await updateGreenLeaves(authUser.id, totalGreenLeaves);
+    }
+
+    // Check for new achievements
+    await checkAndTriggerAchievements();
+
+    return receiptDataResult;
+  } catch (error) {
+    console.error("Error saving receipt to Supabase:", error);
+    throw error;
+  }
+};
