@@ -211,6 +211,10 @@ export default function Budgets(props: BudgetsProps) {
         // Optimistic add - create temp ID
         const tempId = Date.now();
 
+        // Calculate spent amount for the new budget category
+        const spendingData = await fetchSpending(user.id);
+        const spentForCategory = spendingData[editingCategory] || 0;
+
         startTransition(() => {
           setBudgets((prev) => [
             ...prev,
@@ -220,7 +224,7 @@ export default function Budgets(props: BudgetsProps) {
               category_name: editingCategory,
               amount,
               period: "monthly",
-              spent: 0,
+              spent: spentForCategory,
             },
           ]);
         });
