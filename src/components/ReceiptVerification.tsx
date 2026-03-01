@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, Plus, Trash2, Save, XCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -14,7 +15,6 @@ import {
 import { supabase } from "../lib/supabase";
 import { isBioProduct } from "../lib/eco";
 import { getCategoryId, CATEGORY_IDS } from "../lib/categories";
-import { saveReceiptToSupabase } from "../lib/receiptVerification";
 
 interface ReceiptItem {
   id?: string;
@@ -203,13 +203,23 @@ export default function ReceiptVerification({
     onClose();
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !receiptData) return null;
 
   const totalAmount = calculateTotal();
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-card border border-border/50 rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden animate-in zoom-in-95 duration-200">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+      {/* TŁO: Półprzezroczysty backdrop z najwyższym priorytetem */}
+      <div
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        onClick={onReject}
+      />
+
+      {/* KONTENER MODALA: Podniesiony nad tło, zablokowane kliknięcia */}
+      <div
+        className="relative bg-card border border-border rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col z-[10000]"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border/50">
           <div className="flex items-center gap-4">
@@ -234,7 +244,7 @@ export default function ReceiptVerification({
         </div>
 
         {/* Form Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 overflow-y-auto">
           {/* Receipt Header Form */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
             <div className="space-y-2">
@@ -416,6 +426,7 @@ export default function ReceiptVerification({
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
