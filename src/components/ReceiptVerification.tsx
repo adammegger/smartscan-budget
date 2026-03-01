@@ -237,7 +237,7 @@ export default function ReceiptVerification({
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors cursor-pointer"
           >
             <X size={24} />
           </button>
@@ -246,7 +246,7 @@ export default function ReceiptVerification({
         {/* Form Content */}
         <div className="p-6 space-y-6 overflow-y-auto">
           {/* Receipt Header Form */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
             <div className="space-y-2">
               <Label htmlFor="store_name" className="text-sm font-medium">
                 Sklep
@@ -273,6 +273,29 @@ export default function ReceiptVerification({
                 }
                 className="bg-background border-border/50"
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="category" className="text-sm font-medium">
+                Kategoria główna
+              </Label>
+              <select
+                id="category"
+                value={editedData.category}
+                onChange={(e) => {
+                  const selectedCategory = categories.find(
+                    (cat) => cat.name === e.target.value,
+                  );
+                  handleInputChange("category", e.target.value);
+                  handleInputChange("category_id", selectedCategory?.id || "");
+                }}
+                className="w-full px-3 py-2 bg-background border border-border/50 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
+              >
+                {categories.map((category) => (
+                  <option key={category.id} value={category.name}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -353,7 +376,7 @@ export default function ReceiptVerification({
                           onChange={(e) =>
                             handleItemChange(index, "category", e.target.value)
                           }
-                          className="w-full px-3 py-2 bg-background border border-border/50 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          className="w-full px-3 py-2 bg-background border border-border/50 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
                         >
                           {categories.map((category) => (
                             <option key={category.id} value={category.name}>
@@ -375,7 +398,7 @@ export default function ReceiptVerification({
                       <TableCell>
                         <button
                           onClick={() => handleRemoveItem(index)}
-                          className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                          className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors cursor-pointer"
                         >
                           <Trash2 size={16} />
                         </button>

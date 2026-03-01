@@ -24,6 +24,7 @@ import Budgets from "./components/Budgets";
 import Achievements from "./components/Achievements";
 import ReceiptVerification from "./components/ReceiptVerification";
 import { TooltipProvider } from "./components/ui/tooltip";
+import { saveReceiptToSupabase } from "./lib/receiptVerification";
 
 // Define the ReceiptData type for TypeScript
 interface ReceiptData {
@@ -692,11 +693,15 @@ function AppContent() {
           onClose={() => setVerificationReceipt(null)}
           onReject={() => setVerificationReceipt(null)}
           onSave={async (finalData: ReceiptData) => {
-            // Tutaj wywołujesz funkcję zapisującą do bazy (Supabase)
-            // import { saveReceiptToSupabase } from "../lib/receiptVerification";
-            // await saveReceiptToSupabase(finalData);
-            setVerificationReceipt(null); // Zamknij modal po zapisie
-            setCaptureMessage("Paragon zweryfikowany i zapisany!");
+            try {
+              // Zapisz zweryfikowany paragon do bazy danych
+              await saveReceiptToSupabase(finalData);
+              setVerificationReceipt(null); // Zamknij modal po zapisie
+              setCaptureMessage("Paragon zweryfikowany i zapisany!");
+            } catch (error) {
+              console.error("Błąd zapisu zweryfikowanego paragonu:", error);
+              setCaptureMessage("Błąd zapisu paragonu. Spróbuj ponownie.");
+            }
           }}
         />
       )}
