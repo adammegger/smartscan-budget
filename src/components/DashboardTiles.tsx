@@ -679,31 +679,41 @@ export default function DashboardTiles(props: DashboardTilesProps) {
       </div>
 
       {/* Top Stats Tiles */}
-      <Card className="transition-colors cursor-pointer">
-        <CardHeader className="text-center">
-          <div className="text-4xl font-bold text-green-500 mb-2">
-            {stats.totalSpent.toFixed(0)} PLN
-          </div>
-          <div className="text-sm text-green-500">
-            {(() => {
-              switch (props.dateFilter?.period) {
-                case "today":
-                  return "W tym dniu";
-                case "week":
-                  return "W tym tygodniu";
-                case "month":
-                  return "W tym miesiącu";
-                case "last30":
-                  return "W ostatnich 30 dniach";
-                case "custom":
-                  return "W tym okresie";
-                default:
-                  return "W tym miesiącu";
-              }
-            })()}
-          </div>
-        </CardHeader>
-      </Card>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Card className="transition-colors cursor-pointer">
+            <CardHeader className="text-center">
+              <div className="text-4xl font-bold text-green-500 mb-2">
+                {stats.totalSpent.toFixed(0)} PLN
+              </div>
+              <div className="text-sm text-green-500">
+                {(() => {
+                  switch (props.dateFilter?.period) {
+                    case "today":
+                      return "W tym dniu";
+                    case "week":
+                      return "W tym tygodniu";
+                    case "month":
+                      return "W tym miesiącu";
+                    case "last30":
+                      return "W ostatnich 30 dniach";
+                    case "custom":
+                      return "W tym okresie";
+                    default:
+                      return "W tym miesiącu";
+                  }
+                })()}
+              </div>
+            </CardHeader>
+          </Card>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-xs text-sm">
+          <p>
+            Łączna kwota wydatków zarejestrowanych z Twoich paragonów w wybranym
+            przedziale czasowym.
+          </p>
+        </TooltipContent>
+      </Tooltip>
 
       <Tooltip>
         <TooltipTrigger asChild>
@@ -724,24 +734,44 @@ export default function DashboardTiles(props: DashboardTilesProps) {
       </Tooltip>
 
       {/* Green Leaves Count Tile */}
-      <Card className="transition-colors cursor-pointer">
-        <CardHeader className="text-center">
-          <div className="text-3xl font-bold text-green-500 mb-1">
-            {greenLeavesCount}
-          </div>
-          <div className="text-sm text-green-500">Zielone Listki</div>
-        </CardHeader>
-      </Card>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Card className="transition-colors cursor-pointer">
+            <CardHeader className="text-center">
+              <div className="text-3xl font-bold text-green-500 mb-1">
+                {greenLeavesCount}
+              </div>
+              <div className="text-sm text-green-500">Zielone Listki</div>
+            </CardHeader>
+          </Card>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-xs text-sm">
+          <p>
+            Liczba zebranych punktów ekologicznych. Otrzymujesz 1 listek za
+            każdy kupiony produkt oznaczony jako BIO lub EKO.
+          </p>
+        </TooltipContent>
+      </Tooltip>
 
       {/* BIO Products Percentage Tile */}
-      <Card className="transition-colors cursor-pointer">
-        <CardHeader className="text-center">
-          <div className="text-3xl font-bold text-green-500 mb-1">
-            {bioPercentage}%
-          </div>
-          <div className="text-sm text-green-500">Twoje eko-wybory</div>
-        </CardHeader>
-      </Card>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Card className="transition-colors cursor-pointer">
+            <CardHeader className="text-center">
+              <div className="text-3xl font-bold text-green-500 mb-1">
+                {bioPercentage}%
+              </div>
+              <div className="text-sm text-green-500">Twoje eko-wybory</div>
+            </CardHeader>
+          </Card>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-xs text-sm">
+          <p>
+            Odsetek wszystkich Twoich zakupów, które stanowią produkty
+            ekologiczne w wybranym okresie.
+          </p>
+        </TooltipContent>
+      </Tooltip>
 
       {/* Most Popular Product Tile */}
       <Card className="lg:col-span-4 transition-colors cursor-pointer">
