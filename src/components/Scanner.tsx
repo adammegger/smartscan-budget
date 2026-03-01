@@ -6,6 +6,7 @@ import {
   determineReceiptCategory,
   autoCategorizeItem,
   getCategoryId,
+  CATEGORY_IDS,
 } from "../lib/categories";
 import { checkAndTriggerAchievements } from "../lib/achievementUtils";
 import {
@@ -14,7 +15,6 @@ import {
   updateGreenLeaves,
   processReceiptItems,
 } from "../lib/eco";
-import { Button } from "@/components/ui/button";
 
 // Mock data for testing
 const MOCK_STORES = [
@@ -98,6 +98,30 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
         throw new Error("User not authenticated");
       }
 
+      // Fetch user's categories from Supabase
+      const { data: dbCategories } = await supabase
+        .from("categories")
+        .select("id, name")
+        .eq("user_id", authUser.id);
+
+      // If no user categories found, try to get global categories
+      let categoriesToUse = dbCategories;
+      if (!categoriesToUse || categoriesToUse.length === 0) {
+        const { data: globalCategories } = await supabase
+          .from("categories")
+          .select("id, name")
+          .is("user_id", null);
+        categoriesToUse = globalCategories;
+      }
+
+      // Fallback to default categories if no categories found in database
+      if (!categoriesToUse || categoriesToUse.length === 0) {
+        categoriesToUse = Object.entries(CATEGORY_IDS).map(([name, id]) => ({
+          id,
+          name,
+        }));
+      }
+
       // Simulate "analyzing" delay
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
@@ -122,18 +146,67 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
         totalAmount,
       );
 
-      // Create mock receipt data
+      // Create category mapping from detailed to main categories
+      const categoryMapping: Record<string, string> = {
+        Nabiał: "Jedzenie",
+        Pieczywo: "Jedzenie",
+        Mięso: "Jedzenie",
+        Warzywa: "Jedzenie",
+        Owoce: "Jedzenie",
+        "Produkty suche": "Jedzenie",
+        Tłuszcze: "Jedzenie",
+        Napoje: "Jedzenie",
+        Chemia: "Chemia",
+      };
+
+      // Create mock receipt data with proper category_id mapping
       const receiptData = {
         store_name: storeName,
         date: new Date().toISOString().split("T")[0],
         total_amount: totalAmount,
-        items: selectedItems.map((item) => ({
-          name: item.name,
-          price: item.price,
-          category: item.category,
-          unit: item.unit,
-          quantity: 1,
-        })),
+        category: categoryMapping[smartCategory] || smartCategory,
+        category_id: getCategoryId(
+          categoryMapping[smartCategory] || smartCategory,
+        ),
+        items: selectedItems.map((item) => {
+          // Map detailed category to main category
+          const mappedCategoryName =
+            categoryMapping[item.category] || item.category;
+
+          // Find matching category from database
+          const matchingCategory = categoriesToUse.find(
+            (cat: { id: string; name: string }) =>
+              cat.name.toLowerCase() === mappedCategoryName.toLowerCase(),
+          );
+
+          let category_id = null;
+          let category_name = mappedCategoryName;
+
+          if (matchingCategory) {
+            category_id = matchingCategory.id;
+            category_name = matchingCategory.name;
+          } else {
+            // Try to find "Inne" category as fallback
+            const inneCategory = categoriesToUse.find(
+              (cat: { id: string; name: string }) =>
+                cat.name.toLowerCase() === "inne",
+            );
+            if (inneCategory) {
+              category_id = inneCategory.id;
+              category_name = inneCategory.name;
+            }
+          }
+
+          return {
+            name: item.name,
+            price: item.price,
+            category: category_name,
+            category_id: category_id,
+            unit: item.unit,
+            quantity: 1,
+            is_bio: isBioProduct(item.name),
+          };
+        }),
       };
 
       // Save receipt to Supabase
@@ -143,7 +216,8 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
           store_name: receiptData.store_name,
           date: receiptData.date,
           total_amount: receiptData.total_amount,
-          category: smartCategory,
+          category: receiptData.category,
+          category_id: receiptData.category_id,
           user_id: authUser.id,
           created_at: new Date().toISOString(),
         })
@@ -154,18 +228,30 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
         throw receiptError;
       }
 
-      // Save items
-      const itemsToInsert = selectedItems.map((item) => ({
-        receipt_id: receiptDataResult.id,
-        name: item.name,
-        price: item.price,
-        category: item.category,
-        unit: item.unit,
-        quantity: 1,
-        brand: null,
-        user_id: authUser.id,
-        tags: {}, // Initialize empty tags object for JSONB column
-      }));
+      // Save items with proper category_id
+      const itemsToInsert = receiptData.items.map(
+        (item: {
+          name: string;
+          price: number;
+          category: string;
+          category_id: string | null;
+          unit: string;
+          quantity: number;
+          is_bio: boolean;
+        }) => ({
+          receipt_id: receiptDataResult.id,
+          name: item.name,
+          price: item.price,
+          category: item.category,
+          category_id: item.category_id,
+          unit: item.unit,
+          quantity: item.quantity,
+          brand: null,
+          user_id: authUser.id,
+          is_bio: item.is_bio, // Set the is_bio flag directly on the column
+          tags: {}, // Empty tags object
+        }),
+      );
 
       const { error: itemsError } = await supabase
         .from("items")
@@ -260,6 +346,7 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
                   unit?: string;
                   quantity?: number;
                   brand?: string | null;
+                  is_bio?: boolean;
                 }) => {
                   const itemCategory =
                     item.category || autoCategorizeItem(item.name);
@@ -275,7 +362,8 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
                     quantity: item.quantity || 1,
                     brand: item.brand || null,
                     user_id: authUser.id,
-                    tags: {}, // Initialize empty tags object for JSONB column
+                    is_bio: item.is_bio || false, // Set the is_bio flag directly on the column
+                    tags: {}, // Empty tags object
                   };
                 },
               );

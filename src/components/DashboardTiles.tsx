@@ -675,7 +675,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
       </div>
 
       {/* Top Stats Tiles */}
-      <Card className="hover:border-primary/50 transition-colors">
+      <Card className="transition-colors cursor-pointer">
         <CardHeader className="text-center">
           <div className="text-4xl font-bold text-green-500 mb-2">
             {stats.totalSpent.toFixed(0)} PLN
@@ -701,7 +701,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
         </CardHeader>
       </Card>
 
-      <Card className="hover:border-primary/50 transition-colors">
+      <Card className="transition-colors cursor-pointer">
         <CardHeader className="text-center">
           <div className="text-4xl font-bold text-blue-500 mb-2">
             {stats.receiptCount}
@@ -711,7 +711,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
       </Card>
 
       {/* Green Leaves Count Tile */}
-      <Card className="hover:border-primary/50 transition-colors">
+      <Card className="transition-colors cursor-pointer">
         <CardHeader className="text-center">
           <div className="text-3xl font-bold text-green-500 mb-1">
             {greenLeavesCount}
@@ -721,7 +721,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
       </Card>
 
       {/* BIO Products Percentage Tile */}
-      <Card className="hover:border-primary/50 transition-colors">
+      <Card className="transition-colors cursor-pointer">
         <CardHeader className="text-center">
           <div className="text-3xl font-bold text-green-500 mb-1">
             {bioPercentage}%
@@ -731,7 +731,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
       </Card>
 
       {/* Most Popular Product Tile */}
-      <Card className="lg:col-span-4 hover:border-primary/50 transition-colors">
+      <Card className="lg:col-span-4 transition-colors cursor-pointer">
         <CardHeader className="text-center flex flex-col justify-center h-full">
           {stats.mostPopularProduct ? (
             <>
@@ -752,7 +752,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
       </Card>
 
       {/* Main Chart Tile */}
-      <Card className="lg:col-span-4 hover:border-primary/50 transition-colors">
+      <Card className="lg:col-span-4 transition-colors cursor-pointer">
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row gap-6">
             {/* Donut Chart */}
