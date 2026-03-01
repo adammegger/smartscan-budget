@@ -448,7 +448,7 @@ export default function Receipts(props: ReceiptsProps) {
                                     className="flex items-center justify-between bg-card border border-border/50 p-4 rounded-lg hover:bg-muted transition-colors"
                                   >
                                     <div className="flex flex-col gap-2 flex-1">
-                                      <div className="flex items-center gap-2">
+                                      <div className="flex items-center gap-2 flex-wrap">
                                         <div
                                           className="font-medium text-orange-500 cursor-pointer hover:text-orange-400 hover:underline transition-colors"
                                           onClick={(e) => {
@@ -461,33 +461,28 @@ export default function Receipts(props: ReceiptsProps) {
                                           {item.name}
                                         </div>
                                         {renderCategoryBadge(item.category)}
+                                        {/* BIO Icon - moved to same line */}
+                                        {isBio && (
+                                          <span
+                                            className="inline-flex items-center justify-center w-6 h-6 bg-green-100 dark:bg-green-900/30 rounded-full"
+                                            title="Produkt BIO"
+                                          >
+                                            <Clover
+                                              size={14}
+                                              className="text-green-600 dark:text-green-400"
+                                            />
+                                          </span>
+                                        )}
+                                        {/* Nutri-Score Icon - moved to same line */}
+                                        {nutriscore && (
+                                          <span
+                                            className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-[10px] font-bold text-white ${NUTRI_SCORE_COLORS[nutriscore.toLowerCase()] || "bg-gray-400"}`}
+                                            title={`Nutri-Score: ${nutriscore.toUpperCase()}`}
+                                          >
+                                            {nutriscore.toUpperCase()}
+                                          </span>
+                                        )}
                                       </div>
-                                      {/* Special tags as icons - only show if they don't match category */}
-                                      {(isBio || nutriscore) && (
-                                        <div className="flex items-center gap-2">
-                                          {/* BIO Icon */}
-                                          {isBio && (
-                                            <span
-                                              className="inline-flex items-center justify-center w-6 h-6 bg-green-100 dark:bg-green-900/30 rounded-full"
-                                              title="Produkt BIO"
-                                            >
-                                              <Clover
-                                                size={14}
-                                                className="text-green-600 dark:text-green-400"
-                                              />
-                                            </span>
-                                          )}
-                                          {/* Nutri-Score Icon */}
-                                          {nutriscore && (
-                                            <span
-                                              className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-[10px] font-bold text-white ${NUTRI_SCORE_COLORS[nutriscore.toLowerCase()] || "bg-gray-400"}`}
-                                              title={`Nutri-Score: ${nutriscore.toUpperCase()}`}
-                                            >
-                                              {nutriscore.toUpperCase()}
-                                            </span>
-                                          )}
-                                        </div>
-                                      )}
                                     </div>
                                     <div className="font-semibold text-foreground ml-4">
                                       {item.price.toFixed(2)} PLN
