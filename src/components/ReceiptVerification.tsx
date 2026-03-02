@@ -63,6 +63,7 @@ export default function ReceiptVerification({
   const [categories, setCategories] = useState<Category[]>([]);
   const [editedData, setEditedData] = useState<ReceiptData>(receiptData);
   const [isLoading, setIsLoading] = useState(false);
+  const [showCategoryError, setShowCategoryError] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -182,6 +183,13 @@ export default function ReceiptVerification({
   };
 
   const handleSave = async () => {
+    // Validate main category is selected
+    if (!editedData.category_id || editedData.category_id === "") {
+      setShowCategoryError(true);
+      return; // PRZERWIJ ZAPIS!
+    }
+
+    setShowCategoryError(false);
     setIsLoading(true);
     try {
       // Update total amount
@@ -275,9 +283,9 @@ export default function ReceiptVerification({
                 className="bg-background border-border/50"
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label htmlFor="category" className="text-sm font-medium">
-                Kategoria główna
+                Kategoria główna <span className="text-red-500">*</span>
               </Label>
               <select
                 id="category"
@@ -295,8 +303,13 @@ export default function ReceiptVerification({
                       ? matchedCategory.name
                       : editedData.category,
                   );
+                  setShowCategoryError(false); // Ukryj błąd po dokonaniu wyboru
                 }}
-                className="w-full px-3 py-2 bg-background border border-border/50 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
+                className={`w-full px-3 py-2 bg-background border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer ${
+                  showCategoryError
+                    ? "border-red-500 ring-1 ring-red-500"
+                    : "border-border/50"
+                }`}
               >
                 <option value="" disabled>
                   Wybierz kategorię...
@@ -307,6 +320,11 @@ export default function ReceiptVerification({
                   </option>
                 ))}
               </select>
+              {showCategoryError && (
+                <span className="text-xs text-red-500">
+                  Kategoria jest wymagana do zapisu.
+                </span>
+              )}
             </div>
           </div>
 
