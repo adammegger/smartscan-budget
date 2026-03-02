@@ -6,6 +6,7 @@ import {
   fetchUserAchievements,
   checkAchievements,
   getAchievementIcon,
+  syncMissingAchievements,
 } from "../lib/achievements";
 import type {
   AchievementDefinition,
@@ -35,6 +36,9 @@ export default function Achievements({
         if (user) {
           // Check and award any achievements that should be earned
           await checkAchievements(user.id);
+
+          // Sync missing achievements (retroactive unlock)
+          await syncMissingAchievements(user.id);
 
           const achievements = await fetchUserAchievements(user.id);
           setUserAchievements(achievements);

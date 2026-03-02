@@ -676,6 +676,59 @@ export async function fetchUserAchievements(
   return data || [];
 }
 
+// Sync missing achievements (retroactive unlock)
+export async function syncMissingAchievements(
+  userId: string,
+): Promise<string[]> {
+  const newAchievements: string[] = [];
+
+  try {
+    // Get user progress data
+    const progressData = await fetchUserProgressData(userId);
+
+    // Get existing achievements
+    const { data: existingAchievements } = await supabase
+      .from("achievements")
+      .select("type")
+      .eq("user_id", userId);
+
+    const earnedTypes = new Set(existingAchievements?.map((a) => a.type) || []);
+
+    // Check each achievement definition
+    for (const achievement of ACHIEVEMENTS) {
+      // Get current progress value
+      const currentValue = getProgressValue(
+        achievement.requirement,
+        progressData,
+      );
+
+      // Check if user meets threshold but doesn't have the achievement
+      if (
+        currentValue >= achievement.threshold &&
+        !earnedTypes.has(achievement.id)
+      ) {
+        // Award the missing achievement
+        const { error } = await supabase.from("achievements").insert({
+          user_id: userId,
+          type: achievement.id,
+          value: 1,
+        });
+
+        if (!error) {
+          newAchievements.push(achievement.id);
+          earnedTypes.add(achievement.id);
+        } else {
+          console.error(`Error awarding achievement ${achievement.id}:`, error);
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Error syncing missing achievements:", err);
+  }
+
+  return newAchievements;
+}
+
 // User progress data interface
 export interface UserProgressData {
   totalReceipts: number;
