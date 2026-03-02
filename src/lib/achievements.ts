@@ -17,6 +17,25 @@ import {
   Moon,
   CalendarHeart,
   PartyPopper,
+  ScanLine,
+  Receipt,
+  Barcode,
+  Camera,
+  ClipboardList,
+  Crown,
+  PiggyBank,
+  CreditCard,
+  Landmark,
+  Gem,
+  Sprout,
+  Flower2,
+  TreePine,
+  Trees,
+  Recycle,
+  Globe,
+  Medal,
+  BadgeDollarSign,
+  HandCoins,
 } from "lucide-react";
 
 // Achievement type definitions
@@ -44,25 +63,17 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: "first_receipt",
     name: "Pierwszy krok",
     description: "Zeskanuj swój pierwszy paragon",
-    icon: "Trophy",
+    icon: "ScanLine",
     requirement: "first_receipt",
     threshold: 1,
   },
 
   // Receipts Count (Skanowanie paragonów)
   {
-    id: "receipts_1",
-    name: "Pierwszy krok",
-    description: "Zeskanuj swój pierwszy paragon",
-    icon: "Trophy",
-    requirement: "total_receipts",
-    threshold: 1,
-  },
-  {
     id: "receipts_10",
     name: "Początek kolekcji",
     description: "Zeskanuj 10 paragonów",
-    icon: "ShoppingBag",
+    icon: "Receipt",
     requirement: "total_receipts",
     threshold: 10,
   },
@@ -70,7 +81,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: "receipts_25",
     name: "Ćwierć setki",
     description: "Zeskanuj 25 paragonów",
-    icon: "Award",
+    icon: "Barcode",
     requirement: "total_receipts",
     threshold: 25,
   },
@@ -78,7 +89,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: "receipts_50",
     name: "Kolekcjoner",
     description: "Zeskanuj 50 paragonów",
-    icon: "Award",
+    icon: "Camera",
     requirement: "total_receipts",
     threshold: 50,
   },
@@ -86,7 +97,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: "receipts_100",
     name: "Mistrz kolekcji",
     description: "Zeskanuj 100 paragonów",
-    icon: "Trophy",
+    icon: "ClipboardList",
     requirement: "total_receipts",
     threshold: 100,
   },
@@ -94,7 +105,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: "receipts_500",
     name: "Weteran Skanowania",
     description: "Zeskanuj 500 paragonów",
-    icon: "Flame",
+    icon: "Award",
     requirement: "total_receipts",
     threshold: 500,
   },
@@ -102,7 +113,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: "receipts_1000",
     name: "Król Paragonów",
     description: "Zeskanuj 1000 paragonów",
-    icon: "Zap",
+    icon: "Crown",
     requirement: "total_receipts",
     threshold: 1000,
   },
@@ -112,7 +123,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: "spending_1000",
     name: "Tysiącznik",
     description: "Wydaj łącznie 1000 PLN",
-    icon: "TrendingUp",
+    icon: "Coins",
     requirement: "total_spent",
     threshold: 1000,
   },
@@ -120,7 +131,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: "spending_10000",
     name: "Wielki wydawca",
     description: "Wydaj łącznie 10000 PLN",
-    icon: "Trophy",
+    icon: "PiggyBank",
     requirement: "total_spent",
     threshold: 10000,
   },
@@ -128,7 +139,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: "spending_20000",
     name: "Hojny Klient",
     description: "Wydaj łącznie 20 000 PLN",
-    icon: "TrendingUp",
+    icon: "CreditCard",
     requirement: "total_spent",
     threshold: 20000,
   },
@@ -136,7 +147,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: "spending_50000",
     name: "Złota Karta",
     description: "Wydaj łącznie 50 000 PLN",
-    icon: "Award",
+    icon: "Landmark",
     requirement: "total_spent",
     threshold: 50000,
   },
@@ -144,7 +155,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: "spending_100000",
     name: "Krezus",
     description: "Wydaj łącznie 100 000 PLN",
-    icon: "Zap",
+    icon: "Gem",
     requirement: "total_spent",
     threshold: 100000,
   },
@@ -216,7 +227,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: "green_leaves_10",
     name: "Początkujący Zielarz",
     description: "Zbierz 10 Zielonych Listków",
-    icon: "Leaf",
+    icon: "Sprout",
     requirement: "green_leaves_count",
     threshold: 10,
   },
@@ -224,7 +235,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: "green_leaves_25",
     name: "Zielony Krok",
     description: "Zbierz 25 Zielonych Listków",
-    icon: "Leaf",
+    icon: "Flower2",
     requirement: "green_leaves_count",
     threshold: 25,
   },
@@ -232,7 +243,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: "green_leaves_50",
     name: "Eko-Entuzjasta",
     description: "Zbierz 50 Zielonych Listków",
-    icon: "Leaf",
+    icon: "TreePine",
     requirement: "green_leaves_count",
     threshold: 50,
   },
@@ -240,7 +251,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: "green_leaves_100",
     name: "Bio-Master",
     description: "Zbierz 100 Zielonych Listków",
-    icon: "Clover",
+    icon: "Trees",
     requirement: "green_leaves_count",
     threshold: 100,
   },
@@ -248,7 +259,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: "green_leaves_250",
     name: "Miłośnik Planety",
     description: "Zbierz 250 Zielonych Listków",
-    icon: "Clover",
+    icon: "Recycle",
     requirement: "green_leaves_count",
     threshold: 250,
   },
@@ -256,7 +267,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: "green_leaves_500",
     name: "Matka Natura",
     description: "Zbierz 500 Zielonych Listków",
-    icon: "Clover",
+    icon: "Globe",
     requirement: "green_leaves_count",
     threshold: 500,
   },
@@ -264,7 +275,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: "green_leaves_1000",
     name: "Zbawca Świata",
     description: "Zbierz 1000 Zielonych Listków",
-    icon: "Zap",
+    icon: "Medal",
     requirement: "green_leaves_count",
     threshold: 1000,
   },
@@ -274,7 +285,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: "special_big_spender",
     name: "Gruby Portfel",
     description: "Zeskanuj jeden paragon na kwotę powyżej 500 zł",
-    icon: "Wallet",
+    icon: "BadgeDollarSign",
     requirement: "special_big_spender",
     threshold: 1,
   },
@@ -282,7 +293,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: "special_pennies",
     name: "Grosz do grosza",
     description: "Zeskanuj paragon na kwotę poniżej 10 zł",
-    icon: "Coins",
+    icon: "HandCoins",
     requirement: "special_pennies",
     threshold: 1,
   },
@@ -326,10 +337,33 @@ const iconMap: Record<
   Moon,
   CalendarHeart,
   PartyPopper,
+  ScanLine,
+  Receipt,
+  Barcode,
+  Camera,
+  ClipboardList,
+  Crown,
+  PiggyBank,
+  CreditCard,
+  Landmark,
+  Gem,
+  Sprout,
+  Flower2,
+  TreePine,
+  Trees,
+  Recycle,
+  Globe,
+  Medal,
+  BadgeDollarSign,
+  HandCoins,
 };
 
 export function getAchievementIcon(iconName: string) {
-  return iconMap[iconName] || Trophy;
+  const icon = iconMap[iconName];
+  if (!icon) {
+    console.warn(`Icon not found for: ${iconName}`);
+  }
+  return icon || Trophy;
 }
 
 // Check and award achievements after a new receipt is added
@@ -564,21 +598,19 @@ export async function checkAchievements(
       }
 
       // Check special_night_owl (Nocny Marek)
-      if (newReceipt.date) {
-        const receiptDate = new Date(newReceipt.date);
-        const hour = receiptDate.getHours();
-        if (hour >= 22 || hour < 6) {
-          if (!earnedTypes.has("special_night_owl")) {
-            const { error } = await supabase.from("achievements").insert({
-              user_id: userId,
-              type: "special_night_owl",
-              value: 1,
-            });
+      const now = new Date();
+      const currentHour = now.getHours();
+      if (currentHour >= 22 || currentHour < 6) {
+        if (!earnedTypes.has("special_night_owl")) {
+          const { error } = await supabase.from("achievements").insert({
+            user_id: userId,
+            type: "special_night_owl",
+            value: 1,
+          });
 
-            if (!error) {
-              newAchievements.push("special_night_owl");
-              earnedTypes.add("special_night_owl");
-            }
+          if (!error) {
+            newAchievements.push("special_night_owl");
+            earnedTypes.add("special_night_owl");
           }
         }
       }

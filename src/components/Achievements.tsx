@@ -1,46 +1,17 @@
 import { useEffect, useState } from "react";
-import {
-  Trophy,
-  Zap,
-  ShieldCheck,
-  Flame,
-  Target,
-  Star,
-  Award,
-  TrendingUp,
-  ShoppingBag,
-  Leaf,
-  Clover,
-} from "lucide-react";
+import { Trophy } from "lucide-react";
 import confetti from "canvas-confetti";
 import {
   ACHIEVEMENTS,
   fetchUserAchievements,
   checkAchievements,
+  getAchievementIcon,
 } from "../lib/achievements";
 import type {
   AchievementDefinition,
   UserAchievement,
 } from "../lib/achievements";
 import { supabase } from "../lib/supabase";
-
-// Icon mapping
-const iconMap: Record<
-  string,
-  React.ComponentType<{ className?: string; size?: number }>
-> = {
-  Trophy,
-  Zap,
-  ShieldCheck,
-  Flame,
-  Target,
-  Star,
-  Award,
-  TrendingUp,
-  ShoppingBag,
-  Leaf,
-  Clover,
-};
 
 interface AchievementsProps {
   onAchievementEarned?: (achievement: AchievementDefinition) => void;
@@ -152,7 +123,7 @@ export default function Achievements({
   }, [onAchievementEarned]);
 
   const getIcon = (iconName: string) => {
-    return iconMap[iconName] || Trophy;
+    return getAchievementIcon(iconName);
   };
 
   if (loading) {
