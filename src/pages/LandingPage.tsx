@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import type { Session } from "@supabase/supabase-js";
 import {
   Camera,
   BarChart3,
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabase";
 import Logo from "../components/Logo";
 
 // Smooth scrolling function
@@ -27,7 +29,23 @@ const scrollToSection = (id: string) => {
 
 export default function LandingPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        setSession(session);
+      } catch (error) {
+        console.error("Error checking session:", error);
+      }
+    };
+
+    checkSession();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -36,7 +54,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <Logo className="h-12 w-auto" />
+            <Logo className="h-12 w-auto" disableLink={true} />
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8">
@@ -52,33 +70,56 @@ export default function LandingPage() {
               >
                 Cennik
               </button>
-              <Link
-                to="/login"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Zaloguj się
-              </Link>
-              <Button
-                onClick={() => navigate("/register")}
-                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6 py-2 rounded-full transition-all duration-200 hover:scale-105 shadow-lg"
-                style={{ cursor: "pointer" }}
-              >
-                Rozpocznij za darmo
-                <ArrowRight size={16} className="ml-2" />
-              </Button>
+              {session ? (
+                <Link
+                  to="/dashboard"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Mój Dashboard
+                </Link>
+              ) : (
+                <Link
+                  to="/login"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Zaloguj się
+                </Link>
+              )}
+              {session ? null : (
+                <Button
+                  onClick={() => navigate("/register")}
+                  className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6 py-2 rounded-full transition-all duration-200 hover:scale-105 shadow-lg"
+                  style={{ cursor: "pointer" }}
+                >
+                  Rozpocznij za darmo
+                  <ArrowRight size={16} className="ml-2" />
+                </Button>
+              )}
             </div>
 
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center gap-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate("/register")}
-                className="border-border/50 text-foreground hover:bg-muted"
-                style={{ cursor: "pointer" }}
-              >
-                Rozpocznij
-              </Button>
+              {session ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate("/dashboard")}
+                  className="border-border/50 text-foreground hover:bg-muted"
+                  style={{ cursor: "pointer" }}
+                >
+                  Wróć do aplikacji
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate("/register")}
+                  className="border-border/50 text-foreground hover:bg-muted"
+                  style={{ cursor: "pointer" }}
+                >
+                  Rozpocznij
+                </Button>
+              )}
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="p-2 text-muted-foreground hover:text-foreground"
@@ -165,14 +206,16 @@ export default function LandingPage() {
 
                 {/* CTA Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button
-                    onClick={() => navigate("/register")}
-                    className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-8 py-3 rounded-full text-lg transition-all duration-200 hover:scale-105 shadow-lg"
-                    style={{ cursor: "pointer" }}
-                  >
-                    Rozpocznij za darmo
-                    <ArrowRight size={20} className="ml-3" />
-                  </Button>
+                  {session ? null : (
+                    <Button
+                      onClick={() => navigate("/register")}
+                      className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-8 py-3 rounded-full text-lg transition-all duration-200 hover:scale-105 shadow-lg"
+                      style={{ cursor: "pointer" }}
+                    >
+                      Rozpocznij za darmo
+                      <ArrowRight size={20} className="ml-3" />
+                    </Button>
+                  )}
                 </div>
 
                 {/* Features list */}
@@ -539,23 +582,27 @@ export default function LandingPage() {
               finanse!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                onClick={() => navigate("/register")}
-                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-8 py-3 rounded-full text-lg transition-all duration-200 hover:scale-105 shadow-lg"
-                style={{ cursor: "pointer" }}
-              >
-                Rozpocznij za darmo
-                <ArrowRight size={20} className="ml-3" />
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-border/50 text-foreground hover:bg-muted font-semibold px-8 py-3 rounded-full text-lg transition-all duration-200"
-                onClick={() => navigate("/login")}
-                style={{ cursor: "pointer" }}
-              >
-                Masz już konto? Zaloguj się
-              </Button>
+              {session ? null : (
+                <Button
+                  onClick={() => navigate("/register")}
+                  className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-8 py-3 rounded-full text-lg transition-all duration-200 hover:scale-105 shadow-lg"
+                  style={{ cursor: "pointer" }}
+                >
+                  Rozpocznij za darmo
+                  <ArrowRight size={20} className="ml-3" />
+                </Button>
+              )}
+              {session ? null : (
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-border/50 text-foreground hover:bg-muted font-semibold px-8 py-3 rounded-full text-lg transition-all duration-200"
+                  onClick={() => navigate("/login")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Masz już konto? Zaloguj się
+                </Button>
+              )}
             </div>
           </div>
         </section>
