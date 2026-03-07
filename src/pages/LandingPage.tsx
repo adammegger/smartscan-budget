@@ -249,22 +249,24 @@ export default function LandingPage() {
                   Skaner AI
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  Automatyczne rozpoznawanie produktów i kategorii z
-                  zeskanowanych paragonów. Nie musisz ręcznie wpisywać żadnych
-                  danych.
+                  Większość aplikacji widzi tylko kwotę całkowitą. Nasz Skaner
+                  AI wyciąga każdy pojedynczy produkt z paragonu! Zapisujemy
+                  całą Twoją listę zakupów, automatycznie przydzielając
+                  konkretnym produktom ich własne kategorie budżetowe (np.
+                  jedzenie, chemia).
                 </p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-green-500" />
-                    Szybkie skanowanie
+                    Skanowanie pojedynczych produktów
                   </li>
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-green-500" />
-                    Rozpoznawanie produktów
+                    Inteligentne kategorie per produkt
                   </li>
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-green-500" />
-                    Automatyczne kategoryzowanie
+                    Koniec z ręcznym przepisywaniem
                   </li>
                 </ul>
               </div>
@@ -308,7 +310,6 @@ export default function LandingPage() {
                 </h3>
                 <p className="text-muted-foreground mb-4">
                   Zdobywaj osiągnięcia i Zielone Listki za wybór produktów BIO.
-                  Nagradzamy świadomych konsumentów!
                 </p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-center gap-2">
@@ -318,10 +319,6 @@ export default function LandingPage() {
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-green-500" />
                     Zielone Listki
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Nagrody
                   </li>
                 </ul>
               </div>
@@ -363,9 +360,10 @@ export default function LandingPage() {
                   Śledzenie Historii
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  Pełna historia wszystkich Twoich paragonów. Łatwe
-                  wyszukiwanie, filtrowanie i porównywanie zakupów z różnych
-                  okresów.
+                  Śledź inflację na własnych oczach. Paragonly zapamiętuje ceny
+                  Twoich ulubionych i najczęściej kupowanych produktów na
+                  przestrzeni czasu, pokazując najniższą i najwyższą zapłaconą
+                  cenę oraz trendy.
                 </p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-center gap-2">
@@ -379,6 +377,10 @@ export default function LandingPage() {
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-green-500" />
                     Porównania
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-green-500" />
+                    Wykresy historii cen produktów
                   </li>
                 </ul>
               </div>
@@ -466,10 +468,6 @@ export default function LandingPage() {
                       Podstawowe statystyki
                     </span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Check size={20} className="text-green-500" />
-                    <span className="text-foreground">Wsparcie e-mail</span>
-                  </div>
                 </div>
               </div>
 
@@ -500,13 +498,13 @@ export default function LandingPage() {
                   <div className="flex items-center gap-3">
                     <Check size={20} className="text-green-500" />
                     <span className="text-foreground">
-                      Nielimitowane skanowanie paragonów
+                      Wszystko z Planu Free
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check size={20} className="text-green-500" />
                     <span className="text-foreground">
-                      Nieograniczone budżety
+                      Nielimitowane skanowanie paragonów
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
@@ -514,16 +512,6 @@ export default function LandingPage() {
                     <span className="text-foreground">
                       Zaawansowana analiza wahań cen
                     </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Check size={20} className="text-green-500" />
-                    <span className="text-foreground">
-                      Priorytetowe wsparcie
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Check size={20} className="text-green-500" />
-                    <span className="text-foreground">Eksport danych</span>
                   </div>
                 </div>
               </div>
