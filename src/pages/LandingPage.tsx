@@ -650,8 +650,12 @@ export default function LandingPage() {
 
             <div className="border-t border-border/50 mt-8 pt-8 text-center text-sm text-muted-foreground">
               <p>
-                © 2026 Paragonly. Wszelkie prawa zastrzeżone. Stworzone z pasją
-                do finansów.
+                &copy;{" "}
+                {new Date().getFullYear() === 2026
+                  ? "2026"
+                  : `2026 - ${new Date().getFullYear()}`}{" "}
+                Paragonly. Wszelkie prawa zastrzeżone. Stworzone z pasją do
+                finansów.
               </p>
             </div>
           </div>
