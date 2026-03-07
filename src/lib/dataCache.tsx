@@ -6,6 +6,7 @@ import {
   refreshFavoriteProducts,
 } from "./dataRefresh";
 import { DataCacheContext } from "./dataCacheContext";
+import { ensureUserProfile, type Profile } from "./profile";
 
 // Types for cached data
 export interface ReceiptCache {
@@ -52,10 +53,16 @@ interface DataCacheContextType {
   setFavoriteProductCache: (data: FavoriteProductCache) => void;
   clearFavoriteProductCache: () => void;
 
+  // User profile
+  userProfile: Profile | null;
+  setUserProfile: (profile: Profile) => void;
+  clearUserProfile: () => void;
+
   // Refresh functions
   refreshReceipts: () => Promise<void>;
   refreshBudgets: () => Promise<void>;
   refreshFavoriteProducts: () => Promise<void>;
+  refreshUserProfile: () => Promise<void>;
   refreshAllData: () => Promise<void>;
 }
 
@@ -66,6 +73,7 @@ export function DataCacheProvider({ children }: { children: ReactNode }) {
   const [budgetCache, setBudgetCacheState] = useState<BudgetCache | null>(null);
   const [favoriteProductCache, setFavoriteProductCacheState] =
     useState<FavoriteProductCache | null>(null);
+  const [userProfile, setUserProfileState] = useState<Profile | null>(null);
 
   const setReceiptCache = useCallback((data: ReceiptCache) => {
     setReceiptCacheState(data);
@@ -77,6 +85,14 @@ export function DataCacheProvider({ children }: { children: ReactNode }) {
 
   const setFavoriteProductCache = useCallback((data: FavoriteProductCache) => {
     setFavoriteProductCacheState(data);
+  }, []);
+
+  const setUserProfile = useCallback((profile: Profile) => {
+    setUserProfileState(profile);
+  }, []);
+
+  const clearUserProfile = useCallback(() => {
+    setUserProfileState(null);
   }, []);
 
   const clearReceiptCache = useCallback(() => {
@@ -131,6 +147,18 @@ export function DataCacheProvider({ children }: { children: ReactNode }) {
     setFavoriteProductCache,
     clearFavoriteProductCache,
     refreshFavoriteProducts: wrappedRefreshFavoriteProducts,
+
+    // User profile
+    userProfile,
+    setUserProfile,
+    clearUserProfile,
+    refreshUserProfile: async () => {
+      const profile = await ensureUserProfile();
+      if (profile) {
+        setUserProfileState(profile);
+      }
+    },
+
     refreshAllData,
   };
 

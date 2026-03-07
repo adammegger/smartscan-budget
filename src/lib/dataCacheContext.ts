@@ -4,6 +4,7 @@ import type {
   BudgetCache,
   FavoriteProductCache,
 } from "./dataCache";
+import type { Profile } from "./profile";
 
 interface DataCacheContextType {
   // Receipts cache
@@ -21,10 +22,16 @@ interface DataCacheContextType {
   setFavoriteProductCache: (data: FavoriteProductCache) => void;
   clearFavoriteProductCache: () => void;
 
+  // User profile
+  userProfile: Profile | null;
+  setUserProfile: (profile: Profile) => void;
+  clearUserProfile: () => void;
+
   // Refresh functions
   refreshReceipts: () => Promise<void>;
   refreshBudgets: () => Promise<void>;
   refreshFavoriteProducts: () => Promise<void>;
+  refreshUserProfile: () => Promise<void>;
   refreshAllData: () => Promise<void>;
 }
 

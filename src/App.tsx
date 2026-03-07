@@ -38,6 +38,7 @@ import Contact from "./pages/Contact";
 import Faq from "./pages/Faq";
 import LandingPage from "./pages/LandingPage";
 import ScrollToTop from "./components/ScrollToTop";
+import { useDataCache } from "./lib/cacheUtils";
 
 // Import the correct ReceiptData type from receiptVerification
 import type { ReceiptData } from "./lib/receiptVerification";
@@ -81,6 +82,9 @@ function DashboardLayout() {
   const [verificationReceipt, setVerificationReceipt] =
     useState<ReceiptData | null>(null);
   const scannerRef = useRef<React.ElementRef<typeof Scanner>>(null);
+
+  // Data cache for user profile
+  const { setUserProfile, refreshUserProfile, userProfile } = useDataCache();
 
   const handleLoginSuccess = () => {
     setIsAuthenticated(true);
@@ -142,6 +146,8 @@ function DashboardLayout() {
         if (session) {
           setIsAuthenticated(true);
           setUserEmail(session.user.email || "");
+          // Fetch and store user profile with subscription_tier
+          await refreshUserProfile();
           // Preload categories when user logs in
           await preloadCategories();
         } else {
@@ -165,6 +171,8 @@ function DashboardLayout() {
       if (event === "SIGNED_IN" && session) {
         setIsAuthenticated(true);
         setUserEmail(session.user.email || "");
+        // Fetch and store user profile with subscription_tier
+        refreshUserProfile();
         // Preload categories when user logs in
         preloadCategories();
       } else if (event === "SIGNED_OUT" || !session) {
@@ -174,25 +182,31 @@ function DashboardLayout() {
         // Token refresh successful
         setIsAuthenticated(true);
         setUserEmail(session.user.email || "");
+        // Fetch and store user profile with subscription_tier
+        refreshUserProfile();
       } else if (event === "INITIAL_SESSION" && session) {
         // Initial session loaded
         setIsAuthenticated(true);
         setUserEmail(session.user.email || "");
+        // Fetch and store user profile with subscription_tier
+        refreshUserProfile();
         // Preload categories when initial session is loaded
         preloadCategories();
       } else if (event === "PASSWORD_RECOVERY") {
         // Password recovery event - don't change auth state
         console.log("Password recovery event");
       } else if (event === "USER_UPDATED") {
-        // User updated - refresh session data
+        // User updated - refresh session data and profile
         if (session) {
           setUserEmail(session.user.email || "");
+          // Fetch and store user profile with subscription_tier
+          refreshUserProfile();
         }
       }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [refreshUserProfile]);
 
   // Show loading while checking auth
   if (isAuthenticated === null) {
@@ -313,6 +327,13 @@ function DashboardLayout() {
               </svg>
               Profil
             </Link>
+            {/* Subscription Tier Badge */}
+            <div className="flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-md bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
+              <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+              <span className="text-orange-600 dark:text-orange-400">
+                {userProfile?.subscription_tier?.toUpperCase() || "FREE"}
+              </span>
+            </div>
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors cursor-pointer"

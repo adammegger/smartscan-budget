@@ -7,6 +7,7 @@ export interface Profile {
   last_name: string | null;
   avatar_url: string | null;
   green_leaves_count: number;
+  subscription_tier: "free" | "pro" | "premium";
   created_at: string; // timestamptz
   updated_at: string; // timestamptz
   role: string;
