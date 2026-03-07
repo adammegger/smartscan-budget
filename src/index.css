@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+@layer base {
+  html,
+  body {
+    @apply bg-background text-foreground;
+  }
+  /* Alternatywnie, jeśli używasz twardego koloru w dark: */
+  .dark body {
+    background-color: #0a0a0a; /* Zmień na Twój domyślny ciemny kolor */
+  }
+}
+
 /* Theme Variables - Tailwind v4 @theme syntax */
 @theme {
   --color-background: var(--background);
@@ -113,6 +124,19 @@ body {
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
+}
+
+/* Smooth scrolling for anchor links */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Anchor link offset for fixed navigation */
+:target::before {
+  content: "";
+  display: block;
+  height: 80px; /* Height of your fixed navigation */
+  margin: -80px 0 0; /* Negative margin equal to navigation height */
 }
 
 /* Utility classes for theme colors - these work with both themes */

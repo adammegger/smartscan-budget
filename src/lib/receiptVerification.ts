@@ -1,6 +1,7 @@
 import { supabase } from "./supabase";
 import { checkAndTriggerAchievements } from "./achievementUtils";
 import { processReceiptItems, updateGreenLeaves } from "./eco";
+import { refreshAllData } from "./dataRefresh";
 
 export interface ReceiptItem {
   name: string;
@@ -46,13 +47,28 @@ export const saveReceiptToSupabase = async (receiptData: ReceiptData) => {
       throw new Error("User not authenticated");
     }
 
+    // Sanitize the receipt data to ensure numeric fields are valid numbers
+    const sanitizedItems = receiptData.items.map((item) => ({
+      ...item,
+      // Convert price to valid number: Number(item.price) || 0
+      price: Number(item.price) || 0,
+      // Convert quantity to valid number: Number(item.quantity) || 1
+      quantity: Number(item.quantity) || 1,
+    }));
+
+    // Recalculate total_amount with sanitized prices
+    const sanitizedTotalAmount = sanitizedItems.reduce(
+      (total, item) => total + item.price * item.quantity,
+      0,
+    );
+
     // Save receipt to Supabase
     const { data: receiptDataResult, error: receiptError } = await supabase
       .from("receipts")
       .insert({
         store_name: receiptData.store_name,
         date: receiptData.date,
-        total_amount: receiptData.total_amount,
+        total_amount: sanitizedTotalAmount,
         category: receiptData.category,
         category_id: receiptData.category_id,
         user_id: authUser.id,
@@ -65,8 +81,8 @@ export const saveReceiptToSupabase = async (receiptData: ReceiptData) => {
       throw receiptError;
     }
 
-    // Save items with proper category_id
-    const itemsToInsert = receiptData.items.map((item) => ({
+    // Save items with proper category_id and sanitized numeric values
+    const itemsToInsert = sanitizedItems.map((item) => ({
       receipt_id: receiptDataResult.id,
       name: item.name,
       price: item.price,
@@ -88,19 +104,23 @@ export const saveReceiptToSupabase = async (receiptData: ReceiptData) => {
       throw itemsError;
     }
 
-    // Calculate and update green leaves for eco products
+    // Calculate and update green leaves for eco products using sanitized prices
     const { totalGreenLeaves } = processReceiptItems(
-      receiptData.items.map((item) => ({ name: item.name, price: item.price })),
+      sanitizedItems.map((item) => ({ name: item.name, price: item.price })),
     );
     if (totalGreenLeaves > 0) {
       await updateGreenLeaves(authUser.id, totalGreenLeaves);
     }
 
-    // Check for new achievements
-    await checkAndTriggerAchievements(
-      receiptData.total_amount,
-      receiptData.date,
-    );
+    // Check for new achievements using sanitized total
+    await checkAndTriggerAchievements(sanitizedTotalAmount, receiptData.date);
+
+    // Refresh cache after successful save
+    try {
+      await refreshAllData();
+    } catch (cacheError) {
+      console.warn("Failed to refresh cache after saving receipt:", cacheError);
+    }
 
     return receiptDataResult;
   } catch (error) {

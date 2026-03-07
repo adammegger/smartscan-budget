@@ -321,358 +321,372 @@ export default function ProductPriceHistory({
   };
 
   return (
-    <div className="bg-card border border-border/50 rounded-xl p-6">
-      <h3 className="text-lg font-semibold text-foreground mb-4">
-        Analiza Cen
-      </h3>
-
-      {/* Wybór Produktu lub komunikat o braku danych */}
-      {productList.length === 0 ? (
-        <div className="w-full bg-card border border-border/50 rounded-xl p-12 flex flex-col items-center justify-center text-center shadow-sm">
-          <h3 className="text-lg font-medium text-foreground mb-2">
-            Brak zapisanych paragonów
-          </h3>
+    <>
+      {/* Page Header */}
+      <div className="flex justify-between items-center mb-5">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">
+            Historia cen produktów
+          </h1>
           <p className="text-muted-foreground">
-            Zeskanuj pierwszy paragon, aby wyświetlić listę produktów.
+            Sprawdź historię cen swoich ulubionych produktów i analizuj trendy
+            zakupowe
           </p>
         </div>
-      ) : (
-        <>
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-muted-foreground mb-2">
-              Wybierz produkt do analizy:
-            </label>
-            <select
-              value={selectedProduct}
-              onChange={handleProductChange}
-              className="w-full px-3 py-2 bg-white dark:bg-zinc-800/50 border border-slate-300 dark:border-zinc-700/50 rounded-md text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-slate-400 dark:focus:border-zinc-600/50"
-            >
-              <option value="">-- Wybierz produkt --</option>
-              {productList.map((product) => (
-                <option key={product} value={product}>
-                  {product}
-                </option>
-              ))}
-            </select>
+        {/* <div className="flex items-center gap-2">
+          <Calendar size={20} className="text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">Ostatnie zakupy</span>
+        </div> */}
+      </div>
+      <div className="bg-card border border-border/50 rounded-xl p-6">
+        {/* Wybór Produktu lub komunikat o braku danych */}
+        {productList.length === 0 ? (
+          <div className="w-full bg-card border border-border/50 rounded-xl p-12 flex flex-col items-center justify-center text-center shadow-sm">
+            <h3 className="text-lg font-medium text-foreground mb-2">
+              Brak zapisanych paragonów
+            </h3>
+            <p className="text-muted-foreground">
+              Zeskanuj pierwszy paragon, aby wyświetlić listę produktów.
+            </p>
           </div>
-        </>
-      )}
-
-      {/* Product Tags - Nutri-Score and Warnings */}
-      {(productTags || tagsLoading) && (
-        <div className="mb-6 p-4 bg-muted rounded-lg border border-border">
-          {tagsLoading ? (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
-              <span>Pobieranie informacji o produkcie...</span>
+        ) : (
+          <>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">
+                Wybierz produkt do analizy:
+              </label>
+              <select
+                value={selectedProduct}
+                onChange={handleProductChange}
+                className="w-full px-3 py-2 bg-white dark:bg-zinc-800/50 border border-slate-300 dark:border-zinc-700/50 rounded-md text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-slate-400 dark:focus:border-zinc-600/50"
+              >
+                <option value="">-- Wybierz produkt --</option>
+                {productList.map((product) => (
+                  <option key={product} value={product}>
+                    {product}
+                  </option>
+                ))}
+              </select>
             </div>
-          ) : productTags ? (
-            <div className="space-y-4">
-              {/* Nutri-Score Display */}
-              {productTags.nutriscore && productTags.nutriscore !== "N/A" && (
-                <div className="flex items-center gap-4">
-                  <div className="text-sm text-muted-foreground font-medium">
-                    Nutri-Score:
-                  </div>
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${
-                      NUTRI_SCORE_COLORS[
-                        productTags.nutriscore?.toLowerCase() || ""
-                      ] || "bg-gray-400"
-                    }`}
-                  >
-                    {productTags.nutriscore?.toUpperCase()}
-                  </div>
-                </div>
-              )}
+          </>
+        )}
 
-              {/* BIO Badge */}
-              {productTags.isBio && (
-                <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-                  <Leaf size={20} />
-                  <span className="font-medium">Produkt BIO</span>
-                </div>
-              )}
-
-              {/* Macronutrients */}
-              {((productTags.protein || 0) > 0 ||
-                (productTags.fat || 0) > 0 ||
-                (productTags.carbs || 0) > 0) && (
-                <div>
-                  <div className="text-sm text-muted-foreground font-medium mb-2">
-                    Wartość odżywcza (na 100g):
+        {/* Product Tags - Nutri-Score and Warnings */}
+        {(productTags || tagsLoading) && (
+          <div className="mb-6 p-4 bg-muted rounded-lg border border-border">
+            {tagsLoading ? (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
+                <span>Pobieranie informacji o produkcie...</span>
+              </div>
+            ) : productTags ? (
+              <div className="space-y-4">
+                {/* Nutri-Score Display */}
+                {productTags.nutriscore && productTags.nutriscore !== "N/A" && (
+                  <div className="flex items-center gap-4">
+                    <div className="text-sm text-muted-foreground font-medium">
+                      Nutri-Score:
+                    </div>
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${
+                        NUTRI_SCORE_COLORS[
+                          productTags.nutriscore?.toLowerCase() || ""
+                        ] || "bg-gray-400"
+                      }`}
+                    >
+                      {productTags.nutriscore?.toUpperCase()}
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    {/* Protein */}
-                    {(productTags.protein || 0) > 0 && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs min-w-[80px] text-muted-foreground">
-                          Białko
-                        </span>
-                        <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-blue-500 rounded-full"
-                            style={{
-                              width: `${Math.min(productTags.protein || 0, 100)}%`,
-                            }}
-                          />
+                )}
+
+                {/* BIO Badge */}
+                {productTags.isBio && (
+                  <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                    <Leaf size={20} />
+                    <span className="font-medium">Produkt BIO</span>
+                  </div>
+                )}
+
+                {/* Macronutrients */}
+                {((productTags.protein || 0) > 0 ||
+                  (productTags.fat || 0) > 0 ||
+                  (productTags.carbs || 0) > 0) && (
+                  <div>
+                    <div className="text-sm text-muted-foreground font-medium mb-2">
+                      Wartość odżywcza (na 100g):
+                    </div>
+                    <div className="space-y-2">
+                      {/* Protein */}
+                      {(productTags.protein || 0) > 0 && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs min-w-[80px] text-muted-foreground">
+                            Białko
+                          </span>
+                          <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-blue-500 rounded-full"
+                              style={{
+                                width: `${Math.min(productTags.protein || 0, 100)}%`,
+                              }}
+                            />
+                          </div>
+                          <span className="text-xs w-12 text-right">
+                            {(productTags.protein || 0).toFixed(1)}g
+                          </span>
                         </div>
-                        <span className="text-xs w-12 text-right">
-                          {(productTags.protein || 0).toFixed(1)}g
-                        </span>
-                      </div>
-                    )}
-                    {/* Fat */}
-                    {(productTags.fat || 0) > 0 && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs min-w-[80px] text-muted-foreground">
-                          Tłuszcze
-                        </span>
-                        <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-yellow-500 rounded-full"
-                            style={{
-                              width: `${Math.min(productTags.fat || 0, 100)}%`,
-                            }}
-                          />
+                      )}
+                      {/* Fat */}
+                      {(productTags.fat || 0) > 0 && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs min-w-[80px] text-muted-foreground">
+                            Tłuszcze
+                          </span>
+                          <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-yellow-500 rounded-full"
+                              style={{
+                                width: `${Math.min(productTags.fat || 0, 100)}%`,
+                              }}
+                            />
+                          </div>
+                          <span className="text-xs w-12 text-right">
+                            {(productTags.fat || 0).toFixed(1)}g
+                          </span>
                         </div>
-                        <span className="text-xs w-12 text-right">
-                          {(productTags.fat || 0).toFixed(1)}g
-                        </span>
-                      </div>
-                    )}
-                    {/* Carbs */}
-                    {(productTags.carbs || 0) > 0 && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs min-w-[80px] text-muted-foreground">
-                          Węglowodany
-                        </span>
-                        <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-orange-500 rounded-full"
-                            style={{
-                              width: `${Math.min(productTags.carbs || 0, 100)}%`,
-                            }}
-                          />
+                      )}
+                      {/* Carbs */}
+                      {(productTags.carbs || 0) > 0 && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs min-w-[80px] text-muted-foreground">
+                            Węglowodany
+                          </span>
+                          <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-orange-500 rounded-full"
+                              style={{
+                                width: `${Math.min(productTags.carbs || 0, 100)}%`,
+                              }}
+                            />
+                          </div>
+                          <span className="text-xs w-12 text-right">
+                            {(productTags.carbs || 0).toFixed(1)}g
+                          </span>
                         </div>
-                        <span className="text-xs w-12 text-right">
-                          {(productTags.carbs || 0).toFixed(1)}g
-                        </span>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Warnings */}
-              {(productTags.nutriscore === "D" ||
-                productTags.nutriscore === "E" ||
-                productTags.isHighSalt ||
-                productTags.isHighSugar ||
-                productTags.isHighFat) && (
-                <div className="flex items-start gap-2 text-amber-600 dark:text-amber-400">
-                  <AlertTriangle size={20} className="flex-shrink-0 mt-0.5" />
-                  <div className="text-sm">
-                    {productTags.nutriscore === "D" ||
-                    productTags.nutriscore === "E"
-                      ? "Produkt odradzany w dużych ilościach. "
-                      : ""}
-                    {productTags.isHighSalt && "Wysoka zawartość soli. "}
-                    {productTags.isHighSugar && "Wysoka zawartość cukru. "}
-                    {productTags.isHighFat &&
-                      "Wysoka zawartość tłuszczu nasyconego."}
+                {/* Warnings */}
+                {(productTags.nutriscore === "D" ||
+                  productTags.nutriscore === "E" ||
+                  productTags.isHighSalt ||
+                  productTags.isHighSugar ||
+                  productTags.isHighFat) && (
+                  <div className="flex items-start gap-2 text-amber-600 dark:text-amber-400">
+                    <AlertTriangle size={20} className="flex-shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      {productTags.nutriscore === "D" ||
+                      productTags.nutriscore === "E"
+                        ? "Produkt odradzany w dużych ilościach. "
+                        : ""}
+                      {productTags.isHighSalt && "Wysoka zawartość soli. "}
+                      {productTags.isHighSugar && "Wysoka zawartość cukru. "}
+                      {productTags.isHighFat &&
+                        "Wysoka zawartość tłuszczu nasyconego."}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="text-muted-foreground text-sm">
-              Brak informacji o produkcie w bazie OpenFoodFacts
-            </div>
-          )}
-        </div>
-      )}
+                )}
+              </div>
+            ) : (
+              <div className="text-muted-foreground text-sm">
+                Brak informacji o produkcie w bazie OpenFoodFacts
+              </div>
+            )}
+          </div>
+        )}
 
-      {/* Loading */}
-      {loading && (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#ff7043] mx-auto"></div>
-          <p className="text-muted-foreground mt-2">Ładowanie danych...</p>
-        </div>
-      )}
+        {/* Loading */}
+        {loading && (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#ff7043] mx-auto"></div>
+            <p className="text-muted-foreground mt-2">Ładowanie danych...</p>
+          </div>
+        )}
 
-      {/* No product selected */}
-      {productList.length === 0 ? null : (
-        <>
-          {!selectedProduct && !loading && (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>Wybierz produkt, aby zobaczyć analizę cen</p>
-            </div>
-          )}
-        </>
-      )}
+        {/* No product selected */}
+        {productList.length === 0 ? null : (
+          <>
+            {!selectedProduct && !loading && (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>Wybierz produkt, aby zobaczyć analizę cen</p>
+              </div>
+            )}
+          </>
+        )}
 
-      {/* {!selectedProduct && !loading && (
+        {/* {!selectedProduct && !loading && (
         <div className="text-center py-8 text-muted-foreground">
           <p>Wybierz produkt, aby zobaczyć analizę cen</p>
         </div>
       )} */}
 
-      {/* Statistics Pills */}
-      {stats && priceHistory.length > 0 && (
-        <div className="mb-6">
-          {/* Main stats row */}
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            {/* Min Price - pastel green for light, original for dark */}
-            <div className="bg-emerald-50 dark:bg-green-500/10 border border-emerald-200 dark:border-green-500/30 rounded-lg p-4">
-              <div className="text-xs text-emerald-700 dark:text-green-400 font-medium mb-1">
-                Najniższa cena
+        {/* Statistics Pills */}
+        {stats && priceHistory.length > 0 && (
+          <div className="mb-6">
+            {/* Main stats row */}
+            <div className="grid grid-cols-3 gap-4 mb-4">
+              {/* Min Price - pastel green for light, original for dark */}
+              <div className="bg-emerald-50 dark:bg-green-500/10 border border-emerald-200 dark:border-green-500/30 rounded-lg p-4">
+                <div className="text-xs text-emerald-700 dark:text-green-400 font-medium mb-1">
+                  Najniższa cena
+                </div>
+                <div className="text-xl font-bold text-emerald-700 dark:text-green-400">
+                  {stats.minPrice.toFixed(2)} PLN
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  {formatDate(stats.minDate)} • {stats.minStore}
+                </div>
               </div>
-              <div className="text-xl font-bold text-emerald-700 dark:text-green-400">
-                {stats.minPrice.toFixed(2)} PLN
+
+              {/* Max Price - pastel red for light, original for dark */}
+              <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg p-4">
+                <div className="text-xs text-red-700 dark:text-red-400 font-medium mb-1">
+                  Najwyższa cena
+                </div>
+                <div className="text-xl font-bold text-red-700 dark:text-red-400">
+                  {stats.maxPrice.toFixed(2)} PLN
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  {formatDate(stats.maxDate)}
+                </div>
               </div>
-              <div className="text-xs text-muted-foreground mt-1">
-                {formatDate(stats.minDate)} • {stats.minStore}
+
+              {/* Average Price - pastel blue for light, original for dark */}
+              <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-lg p-4">
+                <div className="text-xs text-blue-700 dark:text-blue-400 font-medium mb-1">
+                  Średnia cena
+                </div>
+                <div className="text-xl font-bold text-blue-700 dark:text-blue-400">
+                  {stats.avgPrice.toFixed(2)} PLN
+                </div>
+                <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                  Ostatnia: {stats.lastPrice.toFixed(2)} PLN
+                  {stats.trend === "up" && (
+                    <span className="text-red-600 dark:text-red-400">
+                      ↑ wyższa
+                    </span>
+                  )}
+                  {stats.trend === "down" && (
+                    <span className="text-green-600 dark:text-green-400">
+                      ↓ niższa
+                    </span>
+                  )}
+                  {stats.trend === "stable" && (
+                    <span className="text-muted-foreground">= równa</span>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Max Price - pastel red for light, original for dark */}
-            <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg p-4">
-              <div className="text-xs text-red-700 dark:text-red-400 font-medium mb-1">
-                Najwyższa cena
-              </div>
-              <div className="text-xl font-bold text-red-700 dark:text-red-400">
-                {stats.maxPrice.toFixed(2)} PLN
-              </div>
-              <div className="text-xs text-muted-foreground mt-1">
-                {formatDate(stats.maxDate)}
-              </div>
-            </div>
-
-            {/* Average Price - pastel blue for light, original for dark */}
-            <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-lg p-4">
-              <div className="text-xs text-blue-700 dark:text-blue-400 font-medium mb-1">
-                Średnia cena
-              </div>
-              <div className="text-xl font-bold text-blue-700 dark:text-blue-400">
-                {stats.avgPrice.toFixed(2)} PLN
-              </div>
-              <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                Ostatnia: {stats.lastPrice.toFixed(2)} PLN
-                {stats.trend === "up" && (
-                  <span className="text-red-600 dark:text-red-400">
-                    ↑ wyższa
-                  </span>
-                )}
-                {stats.trend === "down" && (
-                  <span className="text-green-600 dark:text-green-400">
-                    ↓ niższa
-                  </span>
-                )}
-                {stats.trend === "stable" && (
-                  <span className="text-muted-foreground">= równa</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Line Chart */}
-          {chartData.length > 0 && (
-            <div className="bg-muted rounded-lg p-4 mb-6">
-              <h4 className="text-sm font-medium text-muted-foreground mb-4">
-                Wykres cen w czasie
-              </h4>
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart
-                  data={chartData}
-                  margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke={chartColors.grid}
-                  />
-                  <XAxis
-                    dataKey="date"
-                    stroke={chartColors.axis}
-                    tick={{ fill: chartColors.axisTick, fontSize: 12 }}
-                    tickLine={{ stroke: chartColors.grid }}
-                  />
-                  <YAxis
-                    stroke={chartColors.axis}
-                    tick={{ fill: chartColors.axisTick, fontSize: 12 }}
-                    tickLine={{ stroke: chartColors.grid }}
-                    tickFormatter={(value) => `${value.toFixed(2)}`}
-                    domain={["dataMin - 0.5", "dataMax + 0.5"]}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: chartColors.tooltipBg,
-                      border: `1px solid ${chartColors.tooltipBorder}`,
-                      borderRadius: "8px",
-                      color: chartColors.tooltipText,
-                    }}
-                    labelStyle={{ color: chartColors.tooltipLabel }}
-                    formatter={(value) => [
-                      `${Number(value).toFixed(2)} PLN`,
-                      "Cena",
-                    ]}
-                    labelFormatter={(label) => `Data: ${label}`}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="price"
-                    stroke="#ff7043"
-                    strokeWidth={2}
-                    dot={{ fill: "#ff7043", strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 6, fill: "#ff7043" }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-
-          {/* Best Prices by Store */}
-          {storePrices.length > 0 && (
-            <div>
-              <h4 className="text-sm font-medium text-muted-foreground mb-3">
-                Najlepsza cena w sklepach
-              </h4>
-              <div className="space-y-2">
-                {storePrices.map((store, index) => (
-                  <div
-                    key={store.store_name}
-                    className="flex items-center justify-between bg-muted rounded-lg p-3"
+            {/* Line Chart */}
+            {chartData.length > 0 && (
+              <div className="bg-muted rounded-lg p-4 mb-6">
+                <h4 className="text-sm font-medium text-muted-foreground mb-4">
+                  Wykres cen w czasie
+                </h4>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart
+                    data={chartData}
+                    margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg font-bold text-muted-foreground w-6">
-                        #{index + 1}
-                      </span>
-                      <span className="text-foreground font-medium">
-                        {store.store_name}
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[#ff7043] dark:text-[#ff7043] font-bold">
-                        {store.min_price.toFixed(2)} PLN
-                      </span>
-                      <span className="text-muted-foreground text-xs ml-2">
-                        ({formatDate(store.date)})
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={chartColors.grid}
+                    />
+                    <XAxis
+                      dataKey="date"
+                      stroke={chartColors.axis}
+                      tick={{ fill: chartColors.axisTick, fontSize: 12 }}
+                      tickLine={{ stroke: chartColors.grid }}
+                    />
+                    <YAxis
+                      stroke={chartColors.axis}
+                      tick={{ fill: chartColors.axisTick, fontSize: 12 }}
+                      tickLine={{ stroke: chartColors.grid }}
+                      tickFormatter={(value) => `${value.toFixed(2)}`}
+                      domain={["dataMin - 0.5", "dataMax + 0.5"]}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: chartColors.tooltipBg,
+                        border: `1px solid ${chartColors.tooltipBorder}`,
+                        borderRadius: "8px",
+                        color: chartColors.tooltipText,
+                      }}
+                      labelStyle={{ color: chartColors.tooltipLabel }}
+                      formatter={(value) => [
+                        `${Number(value).toFixed(2)} PLN`,
+                        "Cena",
+                      ]}
+                      labelFormatter={(label) => `Data: ${label}`}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="price"
+                      stroke="#ff7043"
+                      strokeWidth={2}
+                      dot={{ fill: "#ff7043", strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, fill: "#ff7043" }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
-            </div>
-          )}
-        </div>
-      )}
+            )}
 
-      {/* Empty state for product with no history */}
-      {selectedProduct && !loading && priceHistory.length === 0 && (
-        <div className="text-center py-8 text-muted-foreground">
-          <p>Brak danych cenowych dla tego produktu</p>
-        </div>
-      )}
-    </div>
+            {/* Best Prices by Store */}
+            {storePrices.length > 0 && (
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground mb-3">
+                  Najlepsza cena w sklepach
+                </h4>
+                <div className="space-y-2">
+                  {storePrices.map((store, index) => (
+                    <div
+                      key={store.store_name}
+                      className="flex items-center justify-between bg-muted rounded-lg p-3"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg font-bold text-muted-foreground w-6">
+                          #{index + 1}
+                        </span>
+                        <span className="text-foreground font-medium">
+                          {store.store_name}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[#ff7043] dark:text-[#ff7043] font-bold">
+                          {store.min_price.toFixed(2)} PLN
+                        </span>
+                        <span className="text-muted-foreground text-xs ml-2">
+                          ({formatDate(store.date)})
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Empty state for product with no history */}
+        {selectedProduct && !loading && priceHistory.length === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            <p>Brak danych cenowych dla tego produktu</p>
+          </div>
+        )}
+      </div>
+    </>
   );
 }

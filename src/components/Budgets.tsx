@@ -1,8 +1,10 @@
 import { useEffect, useState, useTransition } from "react";
 import { supabase } from "../lib/supabase";
+import { getCategoryColor, getCategoryIcon } from "../lib/categoryCache";
 import { Wallet, Pencil, AlertTriangle, Check, X } from "lucide-react";
 import CategoryIcon from "./CategoryIcon";
 import { motion, AnimatePresence } from "framer-motion";
+import { useDataCache, useCacheValid } from "../lib/cacheUtils";
 
 interface Budget {
   id: number;
@@ -42,10 +44,25 @@ export default function Budgets(props: BudgetsProps) {
   const [saving, setSaving] = useState(false);
   const [, startTransition] = useTransition();
 
+  // Data cache
+  const { budgetCache, setBudgetCache } = useDataCache();
+  const isCacheValid = useCacheValid(budgetCache);
+
   // Fetch initial data
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Initialize with cached data if available
+  useEffect(() => {
+    if (budgetCache && isCacheValid) {
+      setBudgets(budgetCache.budgets);
+      setCategories(budgetCache.categories);
+      setLoading(false);
+    } else {
+      fetchData();
+    }
+  }, [budgetCache, isCacheValid]);
 
   const fetchData = async () => {
     try {
@@ -76,6 +93,13 @@ export default function Budgets(props: BudgetsProps) {
       }));
 
       setBudgets(budgetsWithSpent);
+
+      // Store in cache
+      setBudgetCache({
+        budgets: budgetsWithSpent,
+        categories: catsRes.data || [],
+        lastFetched: Date.now(),
+      });
     } catch (err) {
       console.error("Error fetching data:", err);
       setError("Błąd podczas pobierania danych");
@@ -135,20 +159,6 @@ export default function Budgets(props: BudgetsProps) {
     });
 
     return spending;
-  };
-
-  const getCategoryColor = (categoryName: string) => {
-    const cat = categories.find(
-      (c) => c.name.toLowerCase() === categoryName.toLowerCase(),
-    );
-    return cat?.color || "#6b7280";
-  };
-
-  const getCategoryIcon = (categoryName: string) => {
-    const cat = categories.find(
-      (c) => c.name.toLowerCase() === categoryName.toLowerCase(),
-    );
-    return cat?.icon || "MoreHorizontal";
   };
 
   const handleStartEdit = (budget: BudgetWithSpending) => {
@@ -309,6 +319,16 @@ export default function Budgets(props: BudgetsProps) {
 
   return (
     <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Budżety</h1>
+          <p className="text-muted-foreground">
+            Twoje miesięczne limity wydatków według kategorii. Kliknij "Dodaj"
+            aby ustawić budżet dla danej kategorii
+          </p>
+        </div>
+      </div>
       {/* Summary */}
       <div className="bg-card border border-border/50 rounded-xl p-4 shadow-sm">
         <div className="flex items-center justify-between">

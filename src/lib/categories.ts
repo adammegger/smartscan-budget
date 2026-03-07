@@ -149,12 +149,12 @@ export function getIconComponent(iconName: string) {
 // Helper function to determine receipt category based on items
 // This implements the smart categorization logic:
 // 1. If only one item, use that item's category
-// 2. If a category is >= 70% of total, use that category (Domination Rule)
-// 3. If >= 3 categories each have >= 15%, use "Multi"
-// 4. Otherwise, use the category with highest percentage
+// 2. Count occurrences of each valid category
+// 3. Find the category with the highest count
+// 4. For clear majority (highest count > others), use that category
+// 5. For ties or mixed categories, use "Mieszane" or fallback to highest price
 export function determineReceiptCategory(
   items: Array<{ category: string; price: number }>,
-  totalAmount: number,
 ): string {
   if (!items || items.length === 0) {
     return "Inne";
@@ -165,41 +165,84 @@ export function determineReceiptCategory(
     return items[0].category || "Inne";
   }
 
-  // Group items by category and sum prices
-  const categoryTotals: Record<string, number> = {};
+  // Step 1: Count occurrences of each valid category
+  const categoryCounts: Record<string, number> = {};
+  const categoryPrices: Record<string, number> = {};
+
   items.forEach((item) => {
     const cat = item.category || "Inne";
-    categoryTotals[cat] = (categoryTotals[cat] || 0) + item.price;
+    // Only count valid categories (not empty or placeholder values)
+    if (
+      cat &&
+      cat !== "" &&
+      cat !== "Wybierz kategorię" &&
+      cat !== "Wybierz kategorię..."
+    ) {
+      categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+      categoryPrices[cat] = (categoryPrices[cat] || 0) + item.price;
+    }
   });
 
-  // Calculate percentages
-  const categoryPercentages: Array<{ category: string; percentage: number }> =
-    [];
-  Object.entries(categoryTotals).forEach(([category, total]) => {
-    const percentage = (total / totalAmount) * 100;
-    categoryPercentages.push({ category, percentage });
-  });
-
-  // Sort by percentage descending
-  categoryPercentages.sort((a, b) => b.percentage - a.percentage);
-
-  const topCategory = categoryPercentages[0];
-
-  // Domination Rule: if top category >= 70%, use it
-  if (topCategory.percentage >= 70) {
-    return topCategory.category;
+  // If no valid categories found, default to "Inne"
+  const validCategories = Object.keys(categoryCounts);
+  if (validCategories.length === 0) {
+    return "Inne";
   }
 
-  // Multi Rule: if >= 3 categories each have >= 15%
-  const significantCategories = categoryPercentages.filter(
-    (c) => c.percentage >= 15,
+  // Step 2: Find the category with the highest count
+  let maxCount = 0;
+  let topCategory = "";
+  let tieCategories: string[] = [];
+
+  validCategories.forEach((category) => {
+    const count = categoryCounts[category];
+    if (count > maxCount) {
+      maxCount = count;
+      topCategory = category;
+      tieCategories = [category];
+    } else if (count === maxCount) {
+      tieCategories.push(category);
+    }
+  });
+
+  // Step 3: Check for clear majority vs ties
+  // If we have a tie (multiple categories with same highest count)
+  if (tieCategories.length > 1) {
+    // For ties, check if we should use "Mieszane" or pick by price
+    // If "Mieszane" exists as a valid category, use it
+    if (validCategories.includes("Mieszane")) {
+      return "Mieszane";
+    }
+
+    // Otherwise, pick the category with highest total price among tied categories
+    let highestPriceCategory = tieCategories[0];
+    let highestPrice = categoryPrices[highestPriceCategory] || 0;
+
+    tieCategories.forEach((category) => {
+      const price = categoryPrices[category] || 0;
+      if (price > highestPrice) {
+        highestPrice = price;
+        highestPriceCategory = category;
+      }
+    });
+
+    return highestPriceCategory;
+  }
+
+  // Step 4: We have a clear winner by count
+  // Verify it's a clear majority (not just 1-1-1 or similar)
+  const totalValidItems = validCategories.reduce(
+    (sum, cat) => sum + categoryCounts[cat],
+    0,
   );
-  if (significantCategories.length >= 3) {
-    return "Mieszane";
+
+  // If the top category has more than half the items, it's a clear majority
+  if (maxCount > totalValidItems / 2) {
+    return topCategory;
   }
 
-  // Otherwise, use the top category
-  return topCategory.category;
+  // If it's not a clear majority (e.g., 2-2-1 or 1-1-1), use "Mieszane"
+  return "Mieszane";
 }
 
 // Default categories for receipts (in Polish) - matches database

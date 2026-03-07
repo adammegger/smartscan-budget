@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+import { getCategoryColor, getCategoryIcon } from "../lib/categoryCache";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import CategoryIcon from "./CategoryIcon";
-import { AlertTriangle, Clover, Leaf, Trash2 } from "lucide-react";
+import { AlertTriangle, Trash2 } from "lucide-react";
+import { Card, CardHeader, CardTitle } from "./ui/card";
 import { isBioProduct } from "../lib/eco";
-import { getItemTags, getMainCategory } from "../lib/categories";
+import { getItemTags } from "../lib/categories";
 import { NUTRI_SCORE_COLORS } from "../lib/openfoodfacts";
 import {
   Table,
@@ -14,29 +16,9 @@ import {
   TableHead,
   TableRow,
   TableCell,
-  TableCaption,
 } from "./ui/table";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "../../@/components/ui/alert-dialog";
-
-interface Category {
-  id: number;
-  name: string;
-  icon: string;
-  color: string;
-  user_id: string | null;
-}
+import TimeFilter from "./TimeFilter";
+import { useDataCache, useCacheValid } from "../lib/cacheUtils";
 
 interface Receipt {
   id: number;
@@ -54,37 +36,42 @@ interface Item {
   name: string;
   price: number;
   category: string;
+  quantity?: number;
+  unit_price?: number;
   tags?: string[];
   created_at?: string;
   receipts?: { date: string }[];
-}
-
-interface DateFilter {
-  startDate: Date | null;
-  endDate: Date | null;
-  period: "today" | "week" | "month" | "custom";
 }
 
 interface ReceiptsProps {
   selectedReceiptId: number | null;
   onReceiptSelect: (id: number | null) => void;
   onProductClick?: (productName: string) => void;
-  dateFilter?: DateFilter;
+  timeFilter?: "today" | "week" | "month" | "year" | "all";
 }
 
 export default function Receipts(props: ReceiptsProps) {
   const [receipts, setReceipts] = useState<Receipt[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<Item[]>([]);
   const [itemsLoading, setItemsLoading] = useState(false);
   const [itemCounts, setItemCounts] = useState<Record<number, number>>({});
-  const [categories, setCategories] = useState<Category[]>([]);
   const [overBudgetCategories, setOverBudgetCategories] = useState<Set<string>>(
     new Set(),
   );
   // Stan do zarządzania otwartym modalem
   const [receiptToDelete, setReceiptToDelete] = useState<number | null>(null);
+  // Stan do zarządzania filtrem czasu
+  const [timeFilter, setTimeFilter] = useState<
+    "today" | "week" | "month" | "year" | "all"
+  >(props.timeFilter || "month");
+  // Stan do śledzenia pierwszego załadowania
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+
+  // Data cache
+  const { receiptCache, setReceiptCache } = useDataCache();
+  const isCacheValid = useCacheValid(receiptCache);
 
   // Fetch budgets and check which categories are over budget
   useEffect(() => {
@@ -160,29 +147,20 @@ export default function Receipts(props: ReceiptsProps) {
   }, []);
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) return;
-        const { data, error } = await supabase
-          .from("categories")
-          .select("*")
-          .or(`user_id.eq.${user.id},user_id.is.null`)
-          .order("name", { ascending: true });
-        if (error) throw error;
-        setCategories(data || []);
-      } catch (err) {
-        console.error("Error fetching categories:", err);
-      }
-    };
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
     fetchReceipts();
-  }, [props.dateFilter]);
+  }, [timeFilter]);
+
+  // Initialize with cached data if available
+  useEffect(() => {
+    if (receiptCache && isCacheValid) {
+      setReceipts(receiptCache.receipts);
+      setItemCounts(receiptCache.itemCounts);
+      setHasLoadedOnce(true);
+      setLoading(false);
+    } else if (!hasLoadedOnce) {
+      fetchReceipts();
+    }
+  }, [receiptCache, isCacheValid, hasLoadedOnce]);
 
   useEffect(() => {
     const fetchItemCounts = async () => {
@@ -225,7 +203,7 @@ export default function Receipts(props: ReceiptsProps) {
       const { data, error } = await supabase
         .from("items")
         .select(
-          `id, receipt_id, name, price, category, receipts!fk_items_receipt_id(date)`,
+          `id, receipt_id, name, price, category, quantity, receipts!fk_items_receipt_id(date)`,
         )
         .eq("receipt_id", receiptId)
         .eq("user_id", authUser.id)
@@ -286,7 +264,10 @@ export default function Receipts(props: ReceiptsProps) {
 
   const fetchReceipts = async () => {
     try {
-      setLoading(true);
+      // Only show loading spinner on initial mount, not when switching filters
+      if (!hasLoadedOnce) {
+        setLoading(true);
+      }
       setError(null);
       const {
         data: { user: authUser },
@@ -294,49 +275,91 @@ export default function Receipts(props: ReceiptsProps) {
       } = await supabase.auth.getUser();
       if (authError || !authUser) {
         setReceipts([]);
-        setLoading(false);
+        if (!hasLoadedOnce) {
+          setLoading(false);
+        }
         return;
       }
       let query = supabase
         .from("receipts")
         .select("*")
         .eq("user_id", authUser.id);
-      if (props.dateFilter) {
-        const { startDate, endDate, period } = props.dateFilter;
-        if (period === "today") {
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          const tomorrow = new Date(today);
-          tomorrow.setDate(tomorrow.getDate() + 1);
+
+      // Apply time filter
+      if (timeFilter) {
+        const now = new Date();
+        const toDateString = (date: Date) => {
+          const d = new Date(date);
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, "0");
+          const day = String(d.getDate()).padStart(2, "0");
+          return `${year}-${month}-${day}`;
+        };
+
+        if (timeFilter === "today") {
+          query = query.eq("date", toDateString(now));
+        } else if (timeFilter === "week") {
+          const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
           query = query
-            .gte("date", today.toISOString().split("T")[0])
-            .lte("date", tomorrow.toISOString().split("T")[0]);
-        } else if (period === "week") {
-          const today = new Date();
-          const oneWeekAgo = new Date(today);
-          oneWeekAgo.setDate(today.getDate() - 7);
-          query = query.gte("date", oneWeekAgo.toISOString().split("T")[0]);
-        } else if (period === "month") {
-          const today = new Date();
-          const oneMonthAgo = new Date(today);
-          oneMonthAgo.setMonth(today.getMonth() - 1);
-          query = query.gte("date", oneMonthAgo.toISOString().split("T")[0]);
-        } else if (period === "custom" && startDate && endDate) {
+            .gte("date", toDateString(oneWeekAgo))
+            .lte("date", toDateString(now));
+        } else if (timeFilter === "month") {
+          const oneMonthAgo = new Date(
+            now.getTime() - 30 * 24 * 60 * 60 * 1000,
+          );
           query = query
-            .gte("date", startDate.toISOString().split("T")[0])
-            .lte("date", endDate.toISOString().split("T")[0]);
+            .gte("date", toDateString(oneMonthAgo))
+            .lte("date", toDateString(now));
+        } else if (timeFilter === "year") {
+          const oneYearAgo = new Date(
+            now.getTime() - 365 * 24 * 60 * 60 * 1000,
+          );
+          query = query
+            .gte("date", toDateString(oneYearAgo))
+            .lte("date", toDateString(now));
         }
+        // For "all", we don't apply date filter
       }
+
       const { data, error } = await query
         .order("date", { ascending: false })
         .order("created_at", { ascending: false });
       if (error) throw error;
+
+      // Update receipts without clearing them first - seamless update
       setReceipts(data || []);
+
+      // Calculate item counts for caching
+      const receiptIds = data?.map((r) => r.id) || [];
+      const { data: items } = await supabase
+        .from("items")
+        .select("receipt_id")
+        .eq("user_id", authUser.id)
+        .in("receipt_id", receiptIds);
+
+      const itemCounts: Record<number, number> = {};
+      items?.forEach((item) => {
+        itemCounts[item.receipt_id] = (itemCounts[item.receipt_id] || 0) + 1;
+      });
+
+      // Store in cache
+      setReceiptCache({
+        receipts: data || [],
+        itemCounts,
+        lastFetched: Date.now(),
+      });
+
+      // Mark that we've loaded at least once
+      if (!hasLoadedOnce) {
+        setHasLoadedOnce(true);
+        setLoading(false);
+      }
     } catch (err) {
       console.error("Error fetching receipts:", err);
       setError("Wystąpił błąd podczas pobierania paragonów");
-    } finally {
-      setLoading(false);
+      if (!hasLoadedOnce) {
+        setLoading(false);
+      }
     }
   };
 
@@ -348,26 +371,16 @@ export default function Receipts(props: ReceiptsProps) {
     }
   };
 
-  const getCategoryData = (categoryName: string) => {
-    return categories.find(
-      (cat) => cat.name.toLowerCase() === categoryName.toLowerCase(),
-    );
-  };
-
   const renderCategoryBadge = (categoryName: string) => {
-    const categoryData = getCategoryData(categoryName);
-    const color = categoryData?.color || "#6b7280";
+    const color = getCategoryColor(categoryName);
+    const icon = getCategoryIcon(categoryName);
     const isOverBudget = overBudgetCategories.has(categoryName);
     return (
       <span
         className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-semibold rounded-full"
         style={{ backgroundColor: `${color}20`, color }}
       >
-        <CategoryIcon
-          icon={categoryData?.icon || "MoreHorizontal"}
-          color={color}
-          size={12}
-        />
+        <CategoryIcon icon={icon} color={color} size={12} />
         {categoryName}
         {isOverBudget && (
           <AlertTriangle
@@ -379,43 +392,33 @@ export default function Receipts(props: ReceiptsProps) {
     );
   };
 
-  if (loading)
-    return (
-      <div className="flex justify-center items-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-        <span className="ml-2 text-muted-foreground">
-          Ładowanie paragonów...
-        </span>
-      </div>
-    );
-
-  if (error)
-    return (
-      <div className="bg-destructive/10 border border-destructive/50 rounded-lg p-4">
-        <p className="text-destructive">{error}</p>
-        <button
-          onClick={fetchReceipts}
-          className="mt-2 bg-destructive text-destructive-foreground px-4 py-2 rounded-md text-sm"
-        >
-          Spróbuj ponownie
-        </button>
-      </div>
-    );
-
-  if (receipts.length === 0)
-    return (
-      <div className="w-full bg-card border border-border/50 rounded-xl p-12 flex flex-col items-center justify-center text-center shadow-sm">
-        <h3 className="text-lg font-medium text-foreground mb-2">
-          Brak zapisanych paragonów
-        </h3>
-        <p className="text-muted-foreground">
-          Zeskanuj pierwszy paragon, aby go tutaj zobaczyć.
-        </p>
-      </div>
-    );
-
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Paragony</h1>
+          <p className="text-muted-foreground">Twoje zapisane paragony</p>
+        </div>
+        {/* <div className="flex items-center gap-2">
+          <Calendar size={20} className="text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">Ostatnie zakupy</span>
+        </div> */}
+      </div>
+
+      {/* Time Filter */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Filtry</CardTitle>
+            <TimeFilter
+              timeFilter={timeFilter}
+              onTimeFilterChange={setTimeFilter}
+            />
+          </div>
+        </CardHeader>
+      </Card>
+
       <div className="bg-card border border-border/50 rounded-xl overflow-hidden shadow-sm">
         <Table className="w-full">
           <TableHeader className="bg-muted">
@@ -441,109 +444,157 @@ export default function Receipts(props: ReceiptsProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {receipts.map((receipt) => (
-              <React.Fragment key={receipt.id}>
-                <TableRow
-                  onClick={() =>
-                    props.onReceiptSelect(
-                      props.selectedReceiptId === receipt.id
-                        ? null
-                        : receipt.id,
-                    )
-                  }
-                  className={`border-t border-border hover:bg-muted cursor-pointer transition-colors ${props.selectedReceiptId === receipt.id ? "bg-muted" : ""}`}
-                >
-                  <TableCell className="px-4 py-3">
-                    <div className="text-muted-foreground">
-                      {formatDate(receipt.date)}
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-3">
-                    <div className="font-medium text-foreground">
-                      {receipt.store_name}
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-3">
-                    <div className="font-semibold text-foreground">
-                      {itemCounts[receipt.id] || 0}
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-3">
-                    {renderCategoryBadge(receipt.category)}
-                  </TableCell>
-                  <TableCell className="px-4 py-3">
-                    <div className="font-semibold text-foreground">
-                      {receipt.total_amount.toFixed(2)} PLN
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-center">
+            {loading && !hasLoadedOnce ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-8">
+                  <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
+                    <span>Ładowanie paragonów...</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : error ? (
+              <TableRow>
+                <TableCell colSpan={6} className="p-4">
+                  <div className="bg-destructive/10 border border-destructive/50 rounded-lg p-4">
+                    <p className="text-destructive">{error}</p>
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setReceiptToDelete(receipt.id);
-                      }}
-                      className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors cursor-pointer"
-                      title="Usuń paragon"
+                      onClick={fetchReceipts}
+                      className="mt-2 bg-destructive text-destructive-foreground px-4 py-2 rounded-md text-sm"
                     >
-                      <Trash2 size={16} />
+                      Spróbuj ponownie
                     </button>
-                  </TableCell>
-                </TableRow>
-                {props.selectedReceiptId === receipt.id && (
-                  <TableRow className="bg-muted/50">
-                    <TableCell colSpan={6} className="p-0">
-                      <div className="w-full p-6 space-y-6">
-                        <div>
-                          <h4 className="font-semibold text-foreground text-lg mb-4">
-                            Pozycje na paragonie ({selectedItems.length})
-                          </h4>
-                          <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-orange-300 scrollbar-track-transparent">
-                            {itemsLoading ? (
-                              <div className="text-center py-6 text-muted-foreground">
-                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500 mx-auto"></div>
-                              </div>
-                            ) : selectedItems.length > 0 ? (
-                              selectedItems.map((item) => {
-                                const isBio = isBioProduct(item.name);
-                                const tags = getItemTags(item);
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : receipts.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="p-8 text-center">
+                  <div className="w-full bg-card border border-border/50 rounded-xl p-8 flex flex-col items-center justify-center text-center shadow-sm">
+                    <h3 className="text-lg font-medium text-foreground mb-2">
+                      Brak zapisanych paragonów
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Zeskanuj pierwszy paragon, aby go tutaj zobaczyć.
+                    </p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : (
+              receipts.map((receipt) => (
+                <React.Fragment key={receipt.id}>
+                  <TableRow
+                    onClick={() =>
+                      props.onReceiptSelect(
+                        props.selectedReceiptId === receipt.id
+                          ? null
+                          : receipt.id,
+                      )
+                    }
+                    className={`border-t border-border hover:bg-muted cursor-pointer transition-colors ${props.selectedReceiptId === receipt.id ? "bg-muted" : ""}`}
+                  >
+                    <TableCell className="px-4 py-3">
+                      <div className="text-muted-foreground">
+                        {formatDate(receipt.date)}
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-4 py-3">
+                      <div className="font-medium text-foreground">
+                        {receipt.store_name}
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-4 py-3">
+                      <div className="font-semibold text-foreground">
+                        {itemCounts[receipt.id] || 0}
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-4 py-3">
+                      {renderCategoryBadge(receipt.category)}
+                    </TableCell>
+                    <TableCell className="px-4 py-3">
+                      <div className="font-semibold text-foreground">
+                        {receipt.total_amount.toFixed(2)} PLN
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-center">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setReceiptToDelete(receipt.id);
+                        }}
+                        className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors cursor-pointer"
+                        title="Usuń paragon"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                  {props.selectedReceiptId === receipt.id && (
+                    <TableRow className="bg-muted/50">
+                      <TableCell colSpan={6} className="p-0">
+                        <div className="w-full p-6 space-y-6">
+                          <div>
+                            <h4 className="font-semibold text-foreground text-lg mb-4">
+                              Pozycje na paragonie ({selectedItems.length})
+                            </h4>
 
-                                // Extract nutriscore from tags if present (single letter A-E)
-                                const nutriscore = tags.find((t) =>
-                                  /^[A-E]$/i.test(t),
-                                );
+                            {/* Column Headers */}
+                            <div className="grid grid-cols-[2fr_1fr_1fr_2fr_1fr] gap-4 text-xs text-muted-foreground font-medium uppercase border-b border-border pb-2 mb-2 px-4">
+                              <div>Nazwa</div>
+                              <div>Ilość</div>
+                              <div>Cena jedn.</div>
+                              <div>Kategoria</div>
+                              <div className="text-right">Suma</div>
+                            </div>
 
-                                return (
-                                  <div
-                                    key={item.id}
-                                    className="flex items-center justify-between bg-card border border-border/50 p-4 rounded-lg hover:bg-muted transition-colors"
-                                  >
-                                    <div className="flex flex-col gap-2 flex-1">
-                                      <div className="flex items-center gap-2 flex-wrap">
-                                        <div
-                                          className="font-medium text-orange-500 cursor-pointer hover:text-orange-400 hover:underline transition-colors"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (props.onProductClick) {
-                                              props.onProductClick(item.name);
-                                            }
-                                          }}
-                                        >
-                                          {item.name}
-                                        </div>
-                                        {renderCategoryBadge(item.category)}
-                                        {/* BIO Icon - moved to same line */}
+                            <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-orange-300 scrollbar-track-transparent">
+                              {itemsLoading ? (
+                                <div className="text-center py-6 text-muted-foreground">
+                                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500 mx-auto"></div>
+                                </div>
+                              ) : selectedItems.length > 0 ? (
+                                selectedItems.map((item) => {
+                                  const isBio = isBioProduct(item.name);
+                                  const tags = getItemTags(item);
+
+                                  // Extract nutriscore from tags if present (single letter A-E)
+                                  const nutriscore = tags.find((t) =>
+                                    /^[A-E]$/i.test(t),
+                                  );
+
+                                  // Calculate unit price
+                                  const quantity = item.quantity || 1;
+                                  const unitPrice = item.price / quantity;
+
+                                  return (
+                                    <div
+                                      key={item.id}
+                                      className="grid grid-cols-[2fr_1fr_1fr_2fr_1fr] gap-4 items-center bg-card border border-border/50 p-4 rounded-lg hover:bg-muted transition-colors"
+                                    >
+                                      {/* Col 1: Product Name */}
+                                      <div className="flex items-center font-medium text-orange-500 cursor-pointer hover:text-orange-400 hover:underline transition-colors">
+                                        {item.name}
                                         {isBio && (
-                                          <span
-                                            className="inline-flex items-center justify-center w-6 h-6 bg-green-100 dark:bg-green-900/30 rounded-full"
-                                            title="Produkt BIO"
-                                          >
-                                            <Clover
-                                              size={14}
-                                              className="text-green-600 dark:text-green-400"
-                                            />
+                                          <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800">
+                                            BIO
                                           </span>
                                         )}
-                                        {/* Nutri-Score Icon - moved to same line */}
+                                      </div>
+
+                                      {/* Col 2: Quantity */}
+                                      <div className="text-sm text-foreground">
+                                        {quantity} szt.
+                                      </div>
+
+                                      {/* Col 3: Unit Price */}
+                                      <div className="text-sm text-muted-foreground">
+                                        {unitPrice.toFixed(2)} zł/szt.
+                                      </div>
+
+                                      {/* Col 4: Category with icons */}
+                                      <div className="flex items-center gap-2">
+                                        {renderCategoryBadge(item.category)}
+                                        {/* Nutri-Score Icon */}
                                         {nutriscore && (
                                           <span
                                             className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-[10px] font-bold text-white ${NUTRI_SCORE_COLORS[nutriscore.toLowerCase()] || "bg-gray-400"}`}
@@ -553,42 +604,44 @@ export default function Receipts(props: ReceiptsProps) {
                                           </span>
                                         )}
                                       </div>
+
+                                      {/* Col 5: Total Price */}
+                                      <div className="font-semibold text-foreground text-right">
+                                        {item.price.toFixed(2)} PLN
+                                      </div>
                                     </div>
-                                    <div className="font-semibold text-foreground ml-4">
-                                      {item.price.toFixed(2)} PLN
-                                    </div>
-                                  </div>
-                                );
-                              })
-                            ) : (
-                              <div className="text-muted-foreground text-center py-4">
-                                Brak pozycji na tym paragonie
-                              </div>
-                            )}
+                                  );
+                                })
+                              ) : (
+                                <div className="text-muted-foreground text-center py-4">
+                                  Brak pozycji na tym paragonie
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center pt-4 border-t border-border">
+                            <span className="text-sm text-muted-foreground">
+                              Zapisano:{" "}
+                              {format(
+                                new Date(receipt.created_at),
+                                "dd.MM.yyyy HH:mm",
+                                { locale: pl },
+                              )}
+                            </span>
+                            <button
+                              onClick={() => props.onReceiptSelect(null)}
+                              className="text-orange-500 hover:text-orange-400 text-sm font-medium"
+                            >
+                              Ukryj szczegóły
+                            </button>
                           </div>
                         </div>
-                        <div className="flex justify-between items-center pt-4 border-t border-border">
-                          <span className="text-sm text-muted-foreground">
-                            Zapisano:{" "}
-                            {format(
-                              new Date(receipt.created_at),
-                              "dd.MM.yyyy HH:mm",
-                              { locale: pl },
-                            )}
-                          </span>
-                          <button
-                            onClick={() => props.onReceiptSelect(null)}
-                            className="text-orange-500 hover:text-orange-400 text-sm font-medium"
-                          >
-                            Ukryj szczegóły
-                          </button>
-                        </div>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </React.Fragment>
-            ))}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </React.Fragment>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

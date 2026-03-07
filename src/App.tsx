@@ -8,14 +8,17 @@ import {
   Wallet,
   Trophy,
   Receipt,
+  ShoppingCart,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, lazy, Suspense } from "react";
 import { supabase } from "./lib/supabase";
 import { ThemeProvider, useTheme } from "./lib/theme";
+import { Routes, Route, Link, useNavigate, Outlet } from "react-router-dom";
 import Scanner from "./components/Scanner";
 import Receipts from "./components/Receipts";
 import DashboardTiles from "./components/DashboardTiles";
 import ProductPriceHistory from "./components/ProductPriceHistory";
+import FavoriteProducts from "./pages/dashboard/FavoriteProducts";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import ResetPassword from "./components/ResetPassword";
@@ -23,26 +26,21 @@ import UpdatePassword from "./components/UpdatePassword";
 import Budgets from "./components/Budgets";
 import Achievements from "./components/Achievements";
 import ReceiptVerification from "./components/ReceiptVerification";
+import Profile from "./components/Profile";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { saveReceiptToSupabase } from "./lib/receiptVerification";
+import { DataCacheProvider } from "./lib/dataCache";
+import { preloadCategories } from "./lib/categoryCache";
+import Logo from "./components/Logo";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Contact from "./pages/Contact";
+import Faq from "./pages/Faq";
+import LandingPage from "./pages/LandingPage";
+import ScrollToTop from "./components/ScrollToTop";
 
-// Define the ReceiptData type for TypeScript
-interface ReceiptData {
-  store_name: string;
-  date: string;
-  total_amount: number;
-  category: string;
-  category_id: string | null;
-  items: Array<{
-    name: string;
-    price: number;
-    category: string;
-    category_id: string | null;
-    unit: string;
-    quantity: number;
-    is_bio: boolean;
-  }>;
-}
+// Import the correct ReceiptData type from receiptVerification
+import type { ReceiptData } from "./lib/receiptVerification";
 
 // Theme Toggle Button Component
 function ThemeToggle() {
@@ -70,58 +68,31 @@ function ThemeToggle() {
   );
 }
 
-// Main App Content
-function AppContent() {
-  const [supabaseStatus, setSupabaseStatus] = useState<
-    "loading" | "connected" | "error"
-  >("loading");
+// Dashboard Layout Component
+function DashboardLayout() {
+  const navigate = useNavigate();
+  // const location = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [, setUserEmail] = useState<string>("");
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [captureMessage, setCaptureMessage] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [selectedReceiptId, setSelectedReceiptId] = useState<number | null>(
-    null,
-  );
-  const [dateFilter, setDateFilter] = useState<{
-    startDate: Date | null;
-    endDate: Date | null;
-    period: "today" | "week" | "month" | "custom";
-  }>({
-    startDate: (() => {
-      const today = new Date();
-      const thirtyDaysAgo = new Date(today);
-      thirtyDaysAgo.setDate(today.getDate() - 30);
-      return thirtyDaysAgo;
-    })(),
-    endDate: new Date(),
-    period: "custom",
-  });
-  const [activeTab, setActiveTab] = useState<
-    "dashboard" | "receipts" | "priceHistory" | "budgets" | "achievements"
-  >("dashboard");
-  const [isDateFilterExpanded, setIsDateFilterExpanded] = useState(false);
-  const [selectedProductForHistory, setSelectedProductForHistory] = useState<
-    string | null
-  >(null);
   const [verificationReceipt, setVerificationReceipt] =
     useState<ReceiptData | null>(null);
   const scannerRef = useRef<React.ElementRef<typeof Scanner>>(null);
-
-  // Handle clicking on a product name - navigate to price history
-  const handleProductClick = (productName: string) => {
-    setSelectedProductForHistory(productName);
-    setActiveTab("priceHistory");
-  };
 
   const handleLoginSuccess = () => {
     setIsAuthenticated(true);
   };
 
   const handleLogout = async () => {
+    setIsLoggingOut(true);
     await supabase.auth.signOut();
     setIsAuthenticated(false);
     setUserEmail("");
+    // Redirect to home page after logout using client-side routing
+    navigate("/");
   };
 
   const handleImageCaptured = (imageData: string | Blob) => {
@@ -162,27 +133,6 @@ function AppContent() {
   };
 
   useEffect(() => {
-    const checkSupabaseConnection = async () => {
-      try {
-        const { data, error } = await supabase.auth.getSession();
-
-        if (error) {
-          console.error("Supabase connection error:", error);
-          setSupabaseStatus("error");
-        } else {
-          console.log("Supabase connected successfully:", data);
-          setSupabaseStatus("connected");
-        }
-      } catch (error) {
-        console.error("Supabase connection failed:", error);
-        setSupabaseStatus("error");
-      }
-    };
-
-    checkSupabaseConnection();
-  }, []);
-
-  useEffect(() => {
     const checkAuth = async () => {
       try {
         const {
@@ -192,6 +142,8 @@ function AppContent() {
         if (session) {
           setIsAuthenticated(true);
           setUserEmail(session.user.email || "");
+          // Preload categories when user logs in
+          await preloadCategories();
         } else {
           setIsAuthenticated(false);
         }
@@ -213,6 +165,8 @@ function AppContent() {
       if (event === "SIGNED_IN" && session) {
         setIsAuthenticated(true);
         setUserEmail(session.user.email || "");
+        // Preload categories when user logs in
+        preloadCategories();
       } else if (event === "SIGNED_OUT" || !session) {
         setIsAuthenticated(false);
         setUserEmail("");
@@ -224,6 +178,8 @@ function AppContent() {
         // Initial session loaded
         setIsAuthenticated(true);
         setUserEmail(session.user.email || "");
+        // Preload categories when initial session is loaded
+        preloadCategories();
       } else if (event === "PASSWORD_RECOVERY") {
         // Password recovery event - don't change auth state
         console.log("Password recovery event");
@@ -258,16 +214,10 @@ function AppContent() {
     currentPath === "/update-password"
   ) {
     if (currentPath === "/register") {
-      return (
-        <Register onRegisterSuccess={() => (window.location.href = "/login")} />
-      );
+      return <Register onRegisterSuccess={() => navigate("/login")} />;
     }
     if (currentPath === "/reset-password") {
-      return (
-        <ResetPassword
-          onResetSuccess={() => (window.location.href = "/login")}
-        />
-      );
+      return <ResetPassword onResetSuccess={() => navigate("/login")} />;
     }
     if (currentPath === "/update-password") {
       return <UpdatePassword />;
@@ -275,8 +225,38 @@ function AppContent() {
     return <Login onLoginSuccess={handleLoginSuccess} />;
   }
 
+  // For root path (/), show Landing Page if not authenticated
+  if (currentPath === "/" && !isAuthenticated) {
+    // Import and render Landing Page
+    const LandingPage = lazy(() => import("./pages/LandingPage"));
+    return (
+      <Suspense fallback={<div>Loading...</div>}>
+        <LandingPage />
+      </Suspense>
+    );
+  }
+
+  // For informational pages, show them regardless of authentication
+  if (currentPath === "/regulamin") {
+    return <Terms />;
+  }
+  if (currentPath === "/polityka-prywatnosci") {
+    return <Privacy />;
+  }
+  if (currentPath === "/kontakt") {
+    return <Contact />;
+  }
+  if (currentPath === "/faq") {
+    return <Faq />;
+  }
+
   // For other routes, require authentication
   if (!isAuthenticated) {
+    // If we're in the process of logging out, show a blank screen to prevent flicker
+    if (isLoggingOut) {
+      return <div className="min-h-screen bg-background" />;
+    }
+
     return (
       <div className="min-h-screen w-full bg-[#0a0a0a] flex items-center justify-center p-4 overflow-y-auto">
         <div className="max-w-md w-full">
@@ -296,40 +276,43 @@ function AppContent() {
       <header className="px-6 lg:px-12 xl:px-16 2xl:px-24 py-8">
         <div className="flex justify-between items-center">
           {/* Logo and App Name */}
-          <div className="flex items-center gap-3">
-            <img src="/logo-1.svg" alt="Paragonly" className="h-12 w-auto" />
-            <div>
-              <h1
-                className="text-2xl font-bold text-orange-500"
-                style={{ fontFamily: "Montserrat, sans-serif" }}
-              >
-                Paragonly
-              </h1>
-              <p className="text-xs text-muted-foreground">Twoje finanse</p>
-            </div>
+          <div className="flex items-center gap-2">
+            <Logo className="h-12 w-auto" />
+            <span
+              className="font-bold tracking-wider"
+              style={{
+                fontFamily:
+                  "Montserrat, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif",
+                fontSize: "1.25rem",
+                fontWeight: "700",
+              }}
+            >
+              PARAGONLY
+            </span>
           </div>
 
           {/* User Info */}
           <div className="flex items-center gap-4">
             <ThemeToggle />
-            <div className="flex items-center gap-2">
-              <div
-                className={`w-3 h-3 rounded-full ${
-                  supabaseStatus === "connected"
-                    ? "bg-green-500"
-                    : supabaseStatus === "error"
-                      ? "bg-red-500"
-                      : "bg-yellow-500"
-                }`}
-              />
-              <span className="text-sm text-muted-foreground">
-                {supabaseStatus === "connected"
-                  ? "Supabase połączony"
-                  : supabaseStatus === "error"
-                    ? "Błąd połączenia"
-                    : "Łączenie..."}
-              </span>
-            </div>
+            <Link
+              to="/profile"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors cursor-pointer"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+              Profil
+            </Link>
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors cursor-pointer"
@@ -397,60 +380,65 @@ function AppContent() {
             {[
               {
                 id: "dashboard",
+                path: "/dashboard",
                 icon: <Calendar size={20} />,
                 label: "Dashboard",
               },
               {
                 id: "receipts",
+                path: "/dashboard/receipts",
                 icon: <Receipt size={20} />,
                 label: "Paragony",
               },
-              { id: "budgets", icon: <Wallet size={20} />, label: "Budżety" },
+              {
+                id: "budgets",
+                path: "/dashboard/budgets",
+                icon: <Wallet size={20} />,
+                label: "Budżety",
+              },
               {
                 id: "priceHistory",
+                path: "/dashboard/price-history",
                 icon: <BarChart3 size={20} />,
                 label: "Historia cen",
               },
               {
+                id: "favoriteProducts",
+                path: "/dashboard/favorite-products",
+                icon: <ShoppingCart size={20} />,
+                label: "Ulubione produkty",
+              },
+              {
                 id: "achievements",
+                path: "/dashboard/achievements",
                 icon: <Trophy size={20} />,
                 label: "Osiągnięcia",
               },
             ].map((tab) => (
-              <button
+              <Link
                 key={tab.id}
-                onClick={() =>
-                  setActiveTab(
-                    tab.id as
-                      | "dashboard"
-                      | "receipts"
-                      | "budgets"
-                      | "priceHistory"
-                      | "achievements",
-                  )
-                }
-                // ODPINAMY hover:bg-muted i shadow! Dodajemy style w locie.
+                to={tab.path}
                 className="cursor-pointer flex-1 flex items-center justify-center gap-2 p-4 font-semibold transition-all duration-200 outline-none ring-0 border-none bg-transparent"
                 style={{
-                  // Ten styl wymusza tło i tekst tylko na podstawie stanu activeTab
+                  // Ten styl wymusza tło i tekst tylko na podstawie aktualnej ścieżki
                   backgroundColor:
-                    activeTab === tab.id ? "var(--secondary)" : "transparent",
+                    window.location.pathname === tab.path
+                      ? "var(--secondary)"
+                      : "transparent",
                   color:
-                    activeTab === tab.id
+                    window.location.pathname === tab.path
                       ? "var(--secondary-foreground)"
                       : "var(--muted-foreground)",
-                  // Wyłączamy domyślny promień ramki przycisku całkowicie, bo kontener rodzica i tak to zetnie.
                   borderRadius: "0px",
                 }}
-                // Wymuszamy zmiane tła z palca - zadna inna klasa tailwind w to nie wejdzie
                 onMouseEnter={(e) => {
-                  if (activeTab !== tab.id) {
+                  if (window.location.pathname !== tab.path) {
                     e.currentTarget.style.backgroundColor = "var(--muted)";
                     e.currentTarget.style.color = "var(--foreground)";
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (activeTab !== tab.id) {
+                  if (window.location.pathname !== tab.path) {
                     e.currentTarget.style.backgroundColor = "transparent";
                     e.currentTarget.style.color = "var(--muted-foreground)";
                   }
@@ -458,223 +446,15 @@ function AppContent() {
               >
                 {tab.icon}
                 {tab.label}
-              </button>
+              </Link>
             ))}
           </div>
         </div>
       </nav>
 
-      {/* Date Filter Section - only show for dashboard and receipts tabs */}
-      {(activeTab === "dashboard" || activeTab === "receipts") && (
-        <section className="px-6 lg:px-12 xl:px-16 2xl:px-24 pb-6">
-          <div className="bg-card border border-border rounded-xl">
-            <button
-              onClick={() => setIsDateFilterExpanded(!isDateFilterExpanded)}
-              className={`w-full flex items-center justify-between p-6 hover:bg-muted transition-colors cursor-pointer ${isDateFilterExpanded ? "rounded-t-xl" : "rounded-xl"}`}
-            >
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <Calendar size={20} />
-                Filtr dat
-              </h3>
-              <svg
-                className={`w-4 h-4 transition-transform ${
-                  isDateFilterExpanded ? "rotate-180" : ""
-                }`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
-
-            <div
-              className={`overflow-hidden transition-all duration-300 ${
-                isDateFilterExpanded
-                  ? "max-h-96 opacity-100"
-                  : "max-h-0 opacity-0"
-              }`}
-            >
-              <div className="p-6 border-t border-border">
-                {/* Quick Period Buttons - Badge Style */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {[
-                    { key: "today", label: "Dziś", color: "#86efac" }, // Pastel Green
-                    { key: "week", label: "Tydzień", color: "#93c5fd" }, // Pastel Blue
-                    { key: "month", label: "Miesiąc", color: "#fde047" }, // Pastel Yellow
-                    {
-                      key: "last30",
-                      label: "Ostatnie 30 dni",
-                      color: "#c084fc",
-                    }, // Pastel Purple
-                    {
-                      key: "custom",
-                      label: "Niestandardowy",
-                      color: "#f472b6",
-                    }, // Pastel Pink
-                  ].map((period) => {
-                    // Calculate dates for each period - simplified to use actual date ranges
-                    const getDatesForPeriod = () => {
-                      const today = new Date();
-                      // Set to end of day
-                      today.setHours(23, 59, 59, 999);
-
-                      if (period.key === "today") {
-                        const startOfDay = new Date(today);
-                        startOfDay.setHours(0, 0, 0, 0);
-                        return { startDate: startOfDay, endDate: today };
-                      }
-                      if (period.key === "week") {
-                        // Last 7 days - simple calculation
-                        const sevenDaysAgo = new Date(today);
-                        sevenDaysAgo.setDate(today.getDate() - 7);
-                        sevenDaysAgo.setHours(0, 0, 0, 0);
-                        return { startDate: sevenDaysAgo, endDate: today };
-                      }
-                      if (period.key === "month") {
-                        // Last 30 days - simpler approach
-                        const thirtyDaysAgo = new Date(today);
-                        thirtyDaysAgo.setDate(today.getDate() - 30);
-                        thirtyDaysAgo.setHours(0, 0, 0, 0);
-                        return { startDate: thirtyDaysAgo, endDate: today };
-                      }
-                      if (period.key === "last30") {
-                        const thirtyDaysAgo = new Date(today);
-                        thirtyDaysAgo.setDate(today.getDate() - 30);
-                        thirtyDaysAgo.setHours(0, 0, 0, 0);
-                        return { startDate: thirtyDaysAgo, endDate: today };
-                      }
-                      return { startDate: null, endDate: null };
-                    };
-
-                    const dates = getDatesForPeriod();
-                    const isActive = dateFilter.period === period.key;
-
-                    return (
-                      <button
-                        key={period.key}
-                        onClick={() => {
-                          if (period.key === "custom") {
-                            setDateFilter({
-                              ...dateFilter,
-                              period: "custom",
-                              startDate: null,
-                              endDate: null,
-                            });
-                          } else {
-                            setDateFilter({
-                              ...dateFilter,
-                              period: period.key as
-                                | "today"
-                                | "week"
-                                | "month"
-                                | "custom",
-                              startDate: dates.startDate,
-                              endDate: dates.endDate,
-                            });
-                          }
-                        }}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                          isActive
-                            ? "font-bold border-2"
-                            : "bg-[#1a1a1a] text-muted-foreground border-2"
-                        }`}
-                        style={{
-                          backgroundColor: "transparent",
-                          borderColor: period.color,
-                          color: period.color,
-                          boxShadow: isActive
-                            ? `0 0 15px ${period.color}40`
-                            : "none",
-                          cursor: "pointer",
-                        }}
-                      >
-                        {period.label}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Custom Date Range */}
-                {dateFilter.period === "custom" && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-muted-foreground mb-1">
-                        Data początkowa
-                      </label>
-                      <input
-                        type="date"
-                        value={
-                          dateFilter.startDate
-                            ? dateFilter.startDate.toISOString().split("T")[0]
-                            : ""
-                        }
-                        onChange={(e) => {
-                          const date = e.target.value
-                            ? new Date(e.target.value)
-                            : null;
-                          setDateFilter({
-                            ...dateFilter,
-                            startDate: date,
-                          });
-                        }}
-                        className="w-full px-3 py-2 bg-muted border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-input"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-muted-foreground mb-1">
-                        Data końcowa
-                      </label>
-                      <input
-                        type="date"
-                        value={
-                          dateFilter.endDate
-                            ? dateFilter.endDate.toISOString().split("T")[0]
-                            : ""
-                        }
-                        onChange={(e) => {
-                          const date = e.target.value
-                            ? new Date(e.target.value)
-                            : null;
-                          setDateFilter({
-                            ...dateFilter,
-                            endDate: date,
-                          });
-                        }}
-                        className="w-full px-3 py-2 bg-muted border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-input"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Main Content */}
+      {/* Main Content - using Outlet for nested routes */}
       <section className="px-6 lg:px-12 xl:px-16 2xl:px-24 pb-8">
-        {activeTab === "dashboard" ? (
-          <DashboardTiles dateFilter={dateFilter} />
-        ) : activeTab === "receipts" ? (
-          <Receipts
-            selectedReceiptId={selectedReceiptId}
-            onReceiptSelect={setSelectedReceiptId}
-            onProductClick={handleProductClick}
-            dateFilter={dateFilter}
-          />
-        ) : activeTab === "budgets" ? (
-          <Budgets dateFilter={dateFilter} />
-        ) : activeTab === "achievements" ? (
-          <Achievements />
-        ) : (
-          <ProductPriceHistory initialProduct={selectedProductForHistory} />
-        )}
+        <Outlet />
       </section>
 
       {/* Hidden Scanner Component */}
@@ -709,13 +489,71 @@ function AppContent() {
   );
 }
 
+// Receipts Wrapper Component
+function ReceiptsWrapper() {
+  const navigate = useNavigate();
+  const [selectedReceiptId, setSelectedReceiptId] = useState<number | null>(
+    null,
+  );
+
+  return (
+    <Receipts
+      selectedReceiptId={selectedReceiptId}
+      onReceiptSelect={setSelectedReceiptId}
+      onProductClick={(productName) => {
+        // Navigate to price history with the product name
+        navigate(
+          `/dashboard/price-history?product=${encodeURIComponent(productName)}`,
+        );
+      }}
+    />
+  );
+}
+
 function App() {
   return (
-    <ThemeProvider>
-      <TooltipProvider>
-        <AppContent />
-      </TooltipProvider>
-    </ThemeProvider>
+    <DataCacheProvider>
+      <ThemeProvider>
+        <TooltipProvider>
+          <ScrollToTop />
+          <Routes>
+            {/* Public routes - accessible without authentication */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/regulamin" element={<Terms />} />
+            <Route path="/polityka-prywatnosci" element={<Privacy />} />
+            <Route path="/kontakt" element={<Contact />} />
+            <Route path="/faq" element={<Faq />} />
+
+            {/* Auth routes - always show regardless of authentication */}
+            <Route
+              path="/login"
+              element={<Login onLoginSuccess={() => {}} />}
+            />
+            <Route
+              path="/register"
+              element={<Register onRegisterSuccess={() => {}} />}
+            />
+            <Route
+              path="/reset-password"
+              element={<ResetPassword onResetSuccess={() => {}} />}
+            />
+            <Route path="/update-password" element={<UpdatePassword />} />
+
+            {/* Dashboard route - requires authentication */}
+            <Route path="/dashboard" element={<DashboardLayout />}>
+              <Route index element={<DashboardTiles />} />
+              <Route path="receipts" element={<ReceiptsWrapper />} />
+              <Route path="budgets" element={<Budgets />} />
+              <Route path="price-history" element={<ProductPriceHistory />} />
+              <Route path="favorite-products" element={<FavoriteProducts />} />
+              <Route path="achievements" element={<Achievements />} />
+            </Route>
+            {/* Profile route - requires authentication */}
+            <Route path="/profile" element={<Profile />} />
+          </Routes>
+        </TooltipProvider>
+      </ThemeProvider>
+    </DataCacheProvider>
   );
 }
 

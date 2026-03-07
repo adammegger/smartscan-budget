@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Camera } from "lucide-react";
 import { Button } from "./ui/button";
 import Scanner from "./Scanner";
 import ReceiptVerification from "./ReceiptVerification";
-import { ReceiptData } from "./ReceiptVerification";
+import type { ReceiptData } from "../lib/receiptVerification";
+import type { ScannerRef } from "./Scanner";
 
 export default function Dashboard() {
-  const [scannerRef, setScannerRef] = useState<any>(null);
+  const [scannerRef, setScannerRef] = useState<ScannerRef | null>(null);
   const [verificationReceipt, setVerificationReceipt] =
     useState<ReceiptData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);

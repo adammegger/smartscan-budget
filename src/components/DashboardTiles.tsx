@@ -9,12 +9,7 @@ import {
 } from "recharts";
 import CategoryIcon from "./CategoryIcon";
 import { Card, CardContent, CardHeader } from "./ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "./ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 // Budget Monitor Component
 interface BudgetMonitorProps {
@@ -31,6 +26,7 @@ interface BudgetData {
   spent: number;
 }
 
+// eslint-disable-next-line no-empty-pattern
 const BudgetMonitor: React.FC<BudgetMonitorProps> = ({}) => {
   const [budgets, setBudgets] = useState<BudgetData[]>([]);
   const [loading, setLoading] = useState(true);
