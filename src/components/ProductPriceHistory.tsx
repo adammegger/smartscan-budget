@@ -322,7 +322,7 @@ export default function ProductPriceHistory({
   };
 
   return (
-    <>
+    <div>
       {/* Page Header */}
       <div className="flex justify-between items-center mb-5">
         <div>
@@ -339,201 +339,204 @@ export default function ProductPriceHistory({
           <span className="text-sm text-muted-foreground">Ostatnie zakupy</span>
         </div> */}
       </div>
-      <div className="bg-card border border-border/50 rounded-xl p-6">
-        {/* Wybór Produktu lub komunikat o braku danych */}
-        {productList.length === 0 ? (
-          <div className="w-full bg-card border border-border/50 rounded-xl p-12 flex flex-col items-center justify-center text-center shadow-sm">
-            <h3 className="text-lg font-medium text-foreground mb-2">
-              Brak zapisanych paragonów
-            </h3>
-            <p className="text-muted-foreground">
-              Zeskanuj pierwszy paragon, aby wyświetlić listę produktów.
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-muted-foreground mb-2">
-                Wybierz produkt do analizy:
-              </label>
-              <select
-                value={selectedProduct}
-                onChange={handleProductChange}
-                className="w-full px-3 py-2 bg-white dark:bg-zinc-800/50 border border-slate-300 dark:border-zinc-700/50 rounded-md text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-slate-400 dark:focus:border-zinc-600/50"
-              >
-                <option value="">-- Wybierz produkt --</option>
-                {productList.map((product) => (
-                  <option key={product} value={product}>
-                    {product}
-                  </option>
-                ))}
-              </select>
+
+      <ProFeatureGate fallbackMessage="Szczegóły produktu, ocena NutriScore oraz historia cen są dostępne tylko w planie PRO.">
+        <div className="bg-card border border-border/50 rounded-xl p-6">
+          {/* Wybór Produktu lub komunikat o braku danych */}
+          {productList.length === 0 ? (
+            <div className="w-full bg-card border border-border/50 rounded-xl p-12 flex flex-col items-center justify-center text-center shadow-sm">
+              <h3 className="text-lg font-medium text-foreground mb-2">
+                Brak zapisanych paragonów
+              </h3>
+              <p className="text-muted-foreground">
+                Zeskanuj pierwszy paragon, aby wyświetlić listę produktów.
+              </p>
             </div>
-          </>
-        )}
-
-        {/* Product Tags - Nutri-Score and Warnings */}
-        {(productTags || tagsLoading) && (
-          <div className="mb-6 p-4 bg-muted rounded-lg border border-border">
-            {tagsLoading ? (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
-                <span>Pobieranie informacji o produkcie...</span>
+          ) : (
+            <>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
+                  Wybierz produkt do analizy:
+                </label>
+                <select
+                  value={selectedProduct}
+                  onChange={handleProductChange}
+                  className="w-full px-3 py-2 bg-white dark:bg-zinc-800/50 border border-slate-300 dark:border-zinc-700/50 rounded-md text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-slate-400 dark:focus:border-zinc-600/50"
+                >
+                  <option value="">-- Wybierz produkt --</option>
+                  {productList.map((product) => (
+                    <option key={product} value={product}>
+                      {product}
+                    </option>
+                  ))}
+                </select>
               </div>
-            ) : productTags ? (
-              <div className="space-y-4">
-                {/* Nutri-Score Display */}
-                {productTags.nutriscore && productTags.nutriscore !== "N/A" && (
-                  <div className="flex items-center gap-4">
-                    <div className="text-sm text-muted-foreground font-medium">
-                      Nutri-Score:
-                    </div>
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${
-                        NUTRI_SCORE_COLORS[
-                          productTags.nutriscore?.toLowerCase() || ""
-                        ] || "bg-gray-400"
-                      }`}
-                    >
-                      {productTags.nutriscore?.toUpperCase()}
-                    </div>
-                  </div>
-                )}
+            </>
+          )}
 
-                {/* BIO Badge */}
-                {productTags.isBio && (
-                  <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-                    <Leaf size={20} />
-                    <span className="font-medium">Produkt BIO</span>
-                  </div>
-                )}
-
-                {/* Macronutrients */}
-                {((productTags.protein || 0) > 0 ||
-                  (productTags.fat || 0) > 0 ||
-                  (productTags.carbs || 0) > 0) && (
-                  <div>
-                    <div className="text-sm text-muted-foreground font-medium mb-2">
-                      Wartość odżywcza (na 100g):
-                    </div>
-                    <div className="space-y-2">
-                      {/* Protein */}
-                      {(productTags.protein || 0) > 0 && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs min-w-[80px] text-muted-foreground">
-                            Białko
-                          </span>
-                          <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-blue-500 rounded-full"
-                              style={{
-                                width: `${Math.min(productTags.protein || 0, 100)}%`,
-                              }}
-                            />
-                          </div>
-                          <span className="text-xs w-12 text-right">
-                            {(productTags.protein || 0).toFixed(1)}g
-                          </span>
+          {/* Product Tags - Nutri-Score and Warnings */}
+          {(productTags || tagsLoading) && (
+            <div className="mb-6 p-4 bg-muted rounded-lg border border-border">
+              {tagsLoading ? (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
+                  <span>Pobieranie informacji o produkcie...</span>
+                </div>
+              ) : productTags ? (
+                <div className="space-y-4">
+                  {/* Nutri-Score Display */}
+                  {productTags.nutriscore &&
+                    productTags.nutriscore !== "N/A" && (
+                      <div className="flex items-center gap-4">
+                        <div className="text-sm text-muted-foreground font-medium">
+                          Nutri-Score:
                         </div>
-                      )}
-                      {/* Fat */}
-                      {(productTags.fat || 0) > 0 && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs min-w-[80px] text-muted-foreground">
-                            Tłuszcze
-                          </span>
-                          <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-yellow-500 rounded-full"
-                              style={{
-                                width: `${Math.min(productTags.fat || 0, 100)}%`,
-                              }}
-                            />
-                          </div>
-                          <span className="text-xs w-12 text-right">
-                            {(productTags.fat || 0).toFixed(1)}g
-                          </span>
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${
+                            NUTRI_SCORE_COLORS[
+                              productTags.nutriscore?.toLowerCase() || ""
+                            ] || "bg-gray-400"
+                          }`}
+                        >
+                          {productTags.nutriscore?.toUpperCase()}
                         </div>
-                      )}
-                      {/* Carbs */}
-                      {(productTags.carbs || 0) > 0 && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs min-w-[80px] text-muted-foreground">
-                            Węglowodany
-                          </span>
-                          <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-orange-500 rounded-full"
-                              style={{
-                                width: `${Math.min(productTags.carbs || 0, 100)}%`,
-                              }}
-                            />
+                      </div>
+                    )}
+
+                  {/* BIO Badge */}
+                  {productTags.isBio && (
+                    <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                      <Leaf size={20} />
+                      <span className="font-medium">Produkt BIO</span>
+                    </div>
+                  )}
+
+                  {/* Macronutrients */}
+                  {((productTags.protein || 0) > 0 ||
+                    (productTags.fat || 0) > 0 ||
+                    (productTags.carbs || 0) > 0) && (
+                    <div>
+                      <div className="text-sm text-muted-foreground font-medium mb-2">
+                        Wartość odżywcza (na 100g):
+                      </div>
+                      <div className="space-y-2">
+                        {/* Protein */}
+                        {(productTags.protein || 0) > 0 && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs min-w-[80px] text-muted-foreground">
+                              Białko
+                            </span>
+                            <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-blue-500 rounded-full"
+                                style={{
+                                  width: `${Math.min(productTags.protein || 0, 100)}%`,
+                                }}
+                              />
+                            </div>
+                            <span className="text-xs w-12 text-right">
+                              {(productTags.protein || 0).toFixed(1)}g
+                            </span>
                           </div>
-                          <span className="text-xs w-12 text-right">
-                            {(productTags.carbs || 0).toFixed(1)}g
-                          </span>
-                        </div>
-                      )}
+                        )}
+                        {/* Fat */}
+                        {(productTags.fat || 0) > 0 && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs min-w-[80px] text-muted-foreground">
+                              Tłuszcze
+                            </span>
+                            <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-yellow-500 rounded-full"
+                                style={{
+                                  width: `${Math.min(productTags.fat || 0, 100)}%`,
+                                }}
+                              />
+                            </div>
+                            <span className="text-xs w-12 text-right">
+                              {(productTags.fat || 0).toFixed(1)}g
+                            </span>
+                          </div>
+                        )}
+                        {/* Carbs */}
+                        {(productTags.carbs || 0) > 0 && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs min-w-[80px] text-muted-foreground">
+                              Węglowodany
+                            </span>
+                            <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-orange-500 rounded-full"
+                                style={{
+                                  width: `${Math.min(productTags.carbs || 0, 100)}%`,
+                                }}
+                              />
+                            </div>
+                            <span className="text-xs w-12 text-right">
+                              {(productTags.carbs || 0).toFixed(1)}g
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Warnings */}
-                {(productTags.nutriscore === "D" ||
-                  productTags.nutriscore === "E" ||
-                  productTags.isHighSalt ||
-                  productTags.isHighSugar ||
-                  productTags.isHighFat) && (
-                  <div className="flex items-start gap-2 text-amber-600 dark:text-amber-400">
-                    <AlertTriangle size={20} className="flex-shrink-0 mt-0.5" />
-                    <div className="text-sm">
-                      {productTags.nutriscore === "D" ||
-                      productTags.nutriscore === "E"
-                        ? "Produkt odradzany w dużych ilościach. "
-                        : ""}
-                      {productTags.isHighSalt && "Wysoka zawartość soli. "}
-                      {productTags.isHighSugar && "Wysoka zawartość cukru. "}
-                      {productTags.isHighFat &&
-                        "Wysoka zawartość tłuszczu nasyconego."}
+                  {/* Warnings */}
+                  {(productTags.nutriscore === "D" ||
+                    productTags.nutriscore === "E" ||
+                    productTags.isHighSalt ||
+                    productTags.isHighSugar ||
+                    productTags.isHighFat) && (
+                    <div className="flex items-start gap-2 text-amber-600 dark:text-amber-400">
+                      <AlertTriangle
+                        size={20}
+                        className="flex-shrink-0 mt-0.5"
+                      />
+                      <div className="text-sm">
+                        {productTags.nutriscore === "D" ||
+                        productTags.nutriscore === "E"
+                          ? "Produkt odradzany w dużych ilościach. "
+                          : ""}
+                        {productTags.isHighSalt && "Wysoka zawartość soli. "}
+                        {productTags.isHighSugar && "Wysoka zawartość cukru. "}
+                        {productTags.isHighFat &&
+                          "Wysoka zawartość tłuszczu nasyconego."}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="text-muted-foreground text-sm">
-                Brak informacji o produkcie w bazie OpenFoodFacts
-              </div>
-            )}
-          </div>
-        )}
+                  )}
+                </div>
+              ) : (
+                <div className="text-muted-foreground text-sm">
+                  Brak informacji o produkcie w bazie OpenFoodFacts
+                </div>
+              )}
+            </div>
+          )}
 
-        {/* Loading */}
-        {loading && (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#ff7043] mx-auto"></div>
-            <p className="text-muted-foreground mt-2">Ładowanie danych...</p>
-          </div>
-        )}
+          {/* Loading */}
+          {loading && (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#ff7043] mx-auto"></div>
+              <p className="text-muted-foreground mt-2">Ładowanie danych...</p>
+            </div>
+          )}
 
-        {/* No product selected */}
-        {productList.length === 0 ? null : (
-          <>
-            {!selectedProduct && !loading && (
-              <div className="text-center py-8 text-muted-foreground">
-                <p>Wybierz produkt, aby zobaczyć analizę cen</p>
-              </div>
-            )}
-          </>
-        )}
+          {/* No product selected */}
+          {productList.length === 0 ? null : (
+            <>
+              {!selectedProduct && !loading && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>Wybierz produkt, aby zobaczyć analizę cen</p>
+                </div>
+              )}
+            </>
+          )}
 
-        {/* {!selectedProduct && !loading && (
+          {/* {!selectedProduct && !loading && (
         <div className="text-center py-8 text-muted-foreground">
           <p>Wybierz produkt, aby zobaczyć analizę cen</p>
         </div>
       )} */}
-
-        {/* Price History Section - Wrapped in ProFeatureGate */}
-        <ProFeatureGate fallbackMessage="Historia zmian cen jest dostępna tylko w planie PRO.">
           {stats && priceHistory.length > 0 ? (
             <div className="mb-6">
               {/* Main stats row */}
@@ -685,15 +688,15 @@ export default function ProductPriceHistory({
               <p>Brak danych cenowych dla tego produktu</p>
             </div>
           )}
-        </ProFeatureGate>
+        </div>
+      </ProFeatureGate>
 
-        {/* Empty state for product with no history */}
-        {selectedProduct && !loading && priceHistory.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            <p>Brak danych cenowych dla tego produktu</p>
-          </div>
-        )}
-      </div>
-    </>
+      {/* Empty state for product with no history */}
+      {selectedProduct && !loading && priceHistory.length === 0 && (
+        <div className="text-center py-8 text-muted-foreground">
+          <p>Brak danych cenowych dla tego produktu</p>
+        </div>
+      )}
+    </div>
   );
 }
