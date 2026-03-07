@@ -537,7 +537,11 @@ export default function ProductPriceHistory({
           <p>Wybierz produkt, aby zobaczyć analizę cen</p>
         </div>
       )} */}
-          {stats && priceHistory.length > 0 ? (
+          {!selectedProduct && !loading ? null : priceHistory.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Brak danych cenowych dla tego produktu</p>
+            </div>
+          ) : stats ? (
             <div className="mb-6">
               {/* Main stats row */}
               <div className="grid grid-cols-3 gap-4 mb-4">
@@ -683,11 +687,7 @@ export default function ProductPriceHistory({
                 </div>
               )}
             </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>Brak danych cenowych dla tego produktu</p>
-            </div>
-          )}
+          ) : null}
         </div>
       </ProFeatureGate>
 
