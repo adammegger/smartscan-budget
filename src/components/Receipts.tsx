@@ -4,7 +4,7 @@ import { getCategoryColor, getCategoryIcon } from "../lib/categoryCache";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import CategoryIcon from "./CategoryIcon";
-import { AlertTriangle, Trash2, Download, Lock } from "lucide-react";
+import { AlertTriangle, Trash2, Download } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "./ui/card";
 import { isBioProduct } from "../lib/eco";
 import { getItemTags } from "../lib/categories";
@@ -19,6 +19,7 @@ import {
 } from "./ui/table";
 import TimeFilter from "./TimeFilter";
 import { useDataCache, useCacheValid } from "../lib/cacheUtils";
+import ProModalGate from "./ProModalGate";
 
 interface Receipt {
   id: number;
@@ -769,64 +770,12 @@ export default function Receipts(props: ReceiptsProps) {
       </div>
 
       {/* Modal upsell PRO */}
-      {showProModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-          onClick={() => setShowProModal(false)} // Zamykanie kliknięciem w tło
-        >
-          <div
-            className="bg-card border border-orange-500/30 rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()} // Zapobiega zamykaniu po kliknięciu w sam modal
-          >
-            {/* Górny kolorowy akcent */}
-            <div className="h-2 w-full bg-gradient-to-r from-orange-500 to-red-500"></div>
-
-            <div className="p-6">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="bg-orange-500/10 p-3 rounded-full text-orange-500">
-                  <Lock size={24} />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-foreground">
-                    Funkcja Premium
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Eksport danych do pliku CSV
-                  </p>
-                </div>
-              </div>
-
-              <p className="text-foreground/80 mb-6 mt-2">
-                Eksport danych do pliku CSV to funkcja Premium. Przejdź na plan
-                PRO, aby pobierać i analizować swoje dane w Excelu.
-              </p>
-
-              <div className="flex justify-end gap-3 mt-6">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowProModal(false);
-                  }}
-                  className="px-4 py-2 rounded-lg font-medium text-muted-foreground hover:bg-muted transition-colors cursor-pointer"
-                >
-                  Zamknij
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowProModal(false);
-                    // TODO: Add navigation to PRO plan page
-                    console.log("Navigate to PRO plan");
-                  }}
-                  className="px-4 py-2 rounded-lg font-medium bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 shadow-md shadow-orange-500/20 transition-all cursor-pointer"
-                >
-                  Odblokuj z PRO
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ProModalGate
+        isOpen={showProModal}
+        onClose={() => setShowProModal(false)}
+        title="Funkcja Premium"
+        message="Eksport danych do pliku CSV to funkcja Premium. Przejdź na plan PRO, aby pobierać i analizować swoje dane w Excelu."
+      />
 
       {/* Modal usuwania paragonu */}
       {receiptToDelete && (

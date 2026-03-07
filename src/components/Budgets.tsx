@@ -5,6 +5,7 @@ import { Wallet, Pencil, AlertTriangle, Check, X } from "lucide-react";
 import CategoryIcon from "./CategoryIcon";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDataCache, useCacheValid } from "../lib/cacheUtils";
+import ProModalGate from "./ProModalGate";
 
 interface Budget {
   id: number;
@@ -42,6 +43,7 @@ export default function Budgets(props: BudgetsProps) {
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editAmount, setEditAmount] = useState<string>("");
   const [saving, setSaving] = useState(false);
+  const [showProLimitModal, setShowProLimitModal] = useState(false);
   const [, startTransition] = useTransition();
 
   // Data cache
@@ -166,7 +168,25 @@ export default function Budgets(props: BudgetsProps) {
     setEditAmount(budget.amount.toString());
   };
 
-  const handleStartAdd = (categoryName: string) => {
+  const handleStartAdd = async (categoryName: string) => {
+    // Get user profile to check subscription tier
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("subscription_tier")
+      .eq("id", user.id)
+      .single();
+
+    // Check if user is on free tier and has reached the limit
+    if (profile?.subscription_tier === "free" && budgets.length >= 3) {
+      setShowProLimitModal(true);
+      return;
+    }
+
     setEditingCategory(categoryName);
     setEditAmount("");
   };
@@ -483,13 +503,13 @@ export default function Budgets(props: BudgetsProps) {
                             </div>
                             <button
                               onClick={() => handleStartEdit(budget)}
-                              className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
+                              className="cursor-pointer p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
                             >
                               <Pencil size={16} />
                             </button>
                             <button
                               onClick={() => handleDelete(budget.id)}
-                              className="p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
+                              className="cursor-pointer p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
                             >
                               <X size={16} />
                             </button>
@@ -554,13 +574,13 @@ export default function Budgets(props: BudgetsProps) {
                             <button
                               onClick={handleSave}
                               disabled={saving}
-                              className="p-1.5 text-green-500 hover:bg-green-500/10 rounded transition-colors"
+                              className="p-1.5 text-green-500 hover:bg-green-500/10 rounded transition-colors cursor-pointer"
                             >
                               <Check size={16} />
                             </button>
                             <button
                               onClick={handleCancel}
-                              className="p-1.5 text-muted-foreground hover:bg-muted rounded transition-colors"
+                              className="p-1.5 text-muted-foreground hover:bg-muted rounded transition-colors cursor-pointer"
                             >
                               <X size={16} />
                             </button>
@@ -577,7 +597,7 @@ export default function Budgets(props: BudgetsProps) {
                             </span>
                             <button
                               onClick={() => handleStartAdd(cat.name)}
-                              className="px-3 py-1 text-xs bg-orange-500 hover:bg-orange-600 text-white rounded-full transition-colors"
+                              className="px-3 py-1 text-xs bg-orange-500 hover:bg-orange-600 text-white rounded-full transition-colors cursor-pointer"
                             >
                               + Dodaj
                             </button>
@@ -598,6 +618,14 @@ export default function Budgets(props: BudgetsProps) {
           {error}
         </div>
       )}
+
+      {/* Budget Limit Modal */}
+      <ProModalGate
+        isOpen={showProLimitModal}
+        onClose={() => setShowProLimitModal(false)}
+        title="Osiągnięto limit budżetów"
+        message="W darmowym planie możesz śledzić maksymalnie 3 kategorie wydatków. Przejdź na plan PRO, aby tworzyć nielimitowaną liczbę budżetów i mieć pełną kontrolę nad każdą złotówką."
+      />
     </div>
   );
 }
