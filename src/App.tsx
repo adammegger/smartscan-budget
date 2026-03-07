@@ -206,7 +206,7 @@ function DashboardLayout() {
     });
 
     return () => subscription.unsubscribe();
-  }, [refreshUserProfile]);
+  }, []); // Remove refreshUserProfile from dependencies to prevent infinite loop
 
   // Show loading while checking auth
   if (isAuthenticated === null) {

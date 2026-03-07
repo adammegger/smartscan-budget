@@ -1,4 +1,4 @@
-import { useState, useCallback, type ReactNode } from "react";
+import { useState, useCallback, useMemo, type ReactNode } from "react";
 import type { BudgetWithSpending, Category, Receipt } from "./types";
 import {
   refreshReceipts,
@@ -129,38 +129,62 @@ export function DataCacheProvider({ children }: { children: ReactNode }) {
     await refreshFavoriteProducts();
   }, []);
 
-  const value: DataCacheContextType = {
-    // Receipts
-    receiptCache,
-    setReceiptCache,
-    clearReceiptCache,
-    refreshReceipts: wrappedRefreshReceipts,
+  // Memoize refreshUserProfile to prevent infinite loops
+  const refreshUserProfile = useCallback(async () => {
+    const profile = await ensureUserProfile();
+    if (profile) {
+      setUserProfileState(profile);
+    }
+  }, []);
 
-    // Budgets
-    budgetCache,
-    setBudgetCache,
-    clearBudgetCache,
-    refreshBudgets: wrappedRefreshBudgets,
+  const value = useMemo<DataCacheContextType>(
+    () => ({
+      // Receipts
+      receiptCache,
+      setReceiptCache,
+      clearReceiptCache,
+      refreshReceipts: wrappedRefreshReceipts,
 
-    // Favorite products
-    favoriteProductCache,
-    setFavoriteProductCache,
-    clearFavoriteProductCache,
-    refreshFavoriteProducts: wrappedRefreshFavoriteProducts,
+      // Budgets
+      budgetCache,
+      setBudgetCache,
+      clearBudgetCache,
+      refreshBudgets: wrappedRefreshBudgets,
 
-    // User profile
-    userProfile,
-    setUserProfile,
-    clearUserProfile,
-    refreshUserProfile: async () => {
-      const profile = await ensureUserProfile();
-      if (profile) {
-        setUserProfileState(profile);
-      }
-    },
+      // Favorite products
+      favoriteProductCache,
+      setFavoriteProductCache,
+      clearFavoriteProductCache,
+      refreshFavoriteProducts: wrappedRefreshFavoriteProducts,
 
-    refreshAllData,
-  };
+      // User profile
+      userProfile,
+      setUserProfile,
+      clearUserProfile,
+      refreshUserProfile,
+
+      refreshAllData,
+    }),
+    [
+      receiptCache,
+      setReceiptCache,
+      clearReceiptCache,
+      wrappedRefreshReceipts,
+      budgetCache,
+      setBudgetCache,
+      clearBudgetCache,
+      wrappedRefreshBudgets,
+      favoriteProductCache,
+      setFavoriteProductCache,
+      clearFavoriteProductCache,
+      wrappedRefreshFavoriteProducts,
+      userProfile,
+      setUserProfile,
+      clearUserProfile,
+      refreshUserProfile,
+      refreshAllData,
+    ],
+  );
 
   return (
     <DataCacheContext.Provider value={value}>

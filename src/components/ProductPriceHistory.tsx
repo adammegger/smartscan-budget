@@ -17,6 +17,7 @@ import {
   NUTRI_SCORE_COLORS,
 } from "../lib/openfoodfacts";
 import type { ProductTags } from "../lib/openfoodfacts";
+import ProFeatureGate from "./ProFeatureGate";
 
 interface PriceHistoryItem {
   price: number;
@@ -531,154 +532,160 @@ export default function ProductPriceHistory({
         </div>
       )} */}
 
-        {/* Statistics Pills */}
-        {stats && priceHistory.length > 0 && (
-          <div className="mb-6">
-            {/* Main stats row */}
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              {/* Min Price - pastel green for light, original for dark */}
-              <div className="bg-emerald-50 dark:bg-green-500/10 border border-emerald-200 dark:border-green-500/30 rounded-lg p-4">
-                <div className="text-xs text-emerald-700 dark:text-green-400 font-medium mb-1">
-                  Najniższa cena
+        {/* Price History Section - Wrapped in ProFeatureGate */}
+        <ProFeatureGate fallbackMessage="Historia zmian cen jest dostępna tylko w planie PRO.">
+          {stats && priceHistory.length > 0 ? (
+            <div className="mb-6">
+              {/* Main stats row */}
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                {/* Min Price - pastel green for light, original for dark */}
+                <div className="bg-emerald-50 dark:bg-green-500/10 border border-emerald-200 dark:border-green-500/30 rounded-lg p-4">
+                  <div className="text-xs text-emerald-700 dark:text-green-400 font-medium mb-1">
+                    Najniższa cena
+                  </div>
+                  <div className="text-xl font-bold text-emerald-700 dark:text-green-400">
+                    {stats.minPrice.toFixed(2)} PLN
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {formatDate(stats.minDate)} • {stats.minStore}
+                  </div>
                 </div>
-                <div className="text-xl font-bold text-emerald-700 dark:text-green-400">
-                  {stats.minPrice.toFixed(2)} PLN
+
+                {/* Max Price - pastel red for light, original for dark */}
+                <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg p-4">
+                  <div className="text-xs text-red-700 dark:text-red-400 font-medium mb-1">
+                    Najwyższa cena
+                  </div>
+                  <div className="text-xl font-bold text-red-700 dark:text-red-400">
+                    {stats.maxPrice.toFixed(2)} PLN
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {formatDate(stats.maxDate)}
+                  </div>
                 </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {formatDate(stats.minDate)} • {stats.minStore}
+
+                {/* Average Price - pastel blue for light, original for dark */}
+                <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-lg p-4">
+                  <div className="text-xs text-blue-700 dark:text-blue-400 font-medium mb-1">
+                    Średnia cena
+                  </div>
+                  <div className="text-xl font-bold text-blue-700 dark:text-blue-400">
+                    {stats.avgPrice.toFixed(2)} PLN
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                    Ostatnia: {stats.lastPrice.toFixed(2)} PLN
+                    {stats.trend === "up" && (
+                      <span className="text-red-600 dark:text-red-400">
+                        ↑ wyższa
+                      </span>
+                    )}
+                    {stats.trend === "down" && (
+                      <span className="text-green-600 dark:text-green-400">
+                        ↓ niższa
+                      </span>
+                    )}
+                    {stats.trend === "stable" && (
+                      <span className="text-muted-foreground">= równa</span>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {/* Max Price - pastel red for light, original for dark */}
-              <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg p-4">
-                <div className="text-xs text-red-700 dark:text-red-400 font-medium mb-1">
-                  Najwyższa cena
-                </div>
-                <div className="text-xl font-bold text-red-700 dark:text-red-400">
-                  {stats.maxPrice.toFixed(2)} PLN
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {formatDate(stats.maxDate)}
-                </div>
-              </div>
-
-              {/* Average Price - pastel blue for light, original for dark */}
-              <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-lg p-4">
-                <div className="text-xs text-blue-700 dark:text-blue-400 font-medium mb-1">
-                  Średnia cena
-                </div>
-                <div className="text-xl font-bold text-blue-700 dark:text-blue-400">
-                  {stats.avgPrice.toFixed(2)} PLN
-                </div>
-                <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                  Ostatnia: {stats.lastPrice.toFixed(2)} PLN
-                  {stats.trend === "up" && (
-                    <span className="text-red-600 dark:text-red-400">
-                      ↑ wyższa
-                    </span>
-                  )}
-                  {stats.trend === "down" && (
-                    <span className="text-green-600 dark:text-green-400">
-                      ↓ niższa
-                    </span>
-                  )}
-                  {stats.trend === "stable" && (
-                    <span className="text-muted-foreground">= równa</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Line Chart */}
-            {chartData.length > 0 && (
-              <div className="bg-muted rounded-lg p-4 mb-6">
-                <h4 className="text-sm font-medium text-muted-foreground mb-4">
-                  Wykres cen w czasie
-                </h4>
-                <ResponsiveContainer width="100%" height={250}>
-                  <LineChart
-                    data={chartData}
-                    margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke={chartColors.grid}
-                    />
-                    <XAxis
-                      dataKey="date"
-                      stroke={chartColors.axis}
-                      tick={{ fill: chartColors.axisTick, fontSize: 12 }}
-                      tickLine={{ stroke: chartColors.grid }}
-                    />
-                    <YAxis
-                      stroke={chartColors.axis}
-                      tick={{ fill: chartColors.axisTick, fontSize: 12 }}
-                      tickLine={{ stroke: chartColors.grid }}
-                      tickFormatter={(value) => `${value.toFixed(2)}`}
-                      domain={["dataMin - 0.5", "dataMax + 0.5"]}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: chartColors.tooltipBg,
-                        border: `1px solid ${chartColors.tooltipBorder}`,
-                        borderRadius: "8px",
-                        color: chartColors.tooltipText,
-                      }}
-                      labelStyle={{ color: chartColors.tooltipLabel }}
-                      formatter={(value) => [
-                        `${Number(value).toFixed(2)} PLN`,
-                        "Cena",
-                      ]}
-                      labelFormatter={(label) => `Data: ${label}`}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="price"
-                      stroke="#ff7043"
-                      strokeWidth={2}
-                      dot={{ fill: "#ff7043", strokeWidth: 2, r: 4 }}
-                      activeDot={{ r: 6, fill: "#ff7043" }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-
-            {/* Best Prices by Store */}
-            {storePrices.length > 0 && (
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground mb-3">
-                  Najlepsza cena w sklepach
-                </h4>
-                <div className="space-y-2">
-                  {storePrices.map((store, index) => (
-                    <div
-                      key={store.store_name}
-                      className="flex items-center justify-between bg-muted rounded-lg p-3"
+              {/* Line Chart */}
+              {chartData.length > 0 && (
+                <div className="bg-muted rounded-lg p-4 mb-6">
+                  <h4 className="text-sm font-medium text-muted-foreground mb-4">
+                    Wykres cen w czasie
+                  </h4>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart
+                      data={chartData}
+                      margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg font-bold text-muted-foreground w-6">
-                          #{index + 1}
-                        </span>
-                        <span className="text-foreground font-medium">
-                          {store.store_name}
-                        </span>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[#ff7043] dark:text-[#ff7043] font-bold">
-                          {store.min_price.toFixed(2)} PLN
-                        </span>
-                        <span className="text-muted-foreground text-xs ml-2">
-                          ({formatDate(store.date)})
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke={chartColors.grid}
+                      />
+                      <XAxis
+                        dataKey="date"
+                        stroke={chartColors.axis}
+                        tick={{ fill: chartColors.axisTick, fontSize: 12 }}
+                        tickLine={{ stroke: chartColors.grid }}
+                      />
+                      <YAxis
+                        stroke={chartColors.axis}
+                        tick={{ fill: chartColors.axisTick, fontSize: 12 }}
+                        tickLine={{ stroke: chartColors.grid }}
+                        tickFormatter={(value) => `${value.toFixed(2)}`}
+                        domain={["dataMin - 0.5", "dataMax + 0.5"]}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: chartColors.tooltipBg,
+                          border: `1px solid ${chartColors.tooltipBorder}`,
+                          borderRadius: "8px",
+                          color: chartColors.tooltipText,
+                        }}
+                        labelStyle={{ color: chartColors.tooltipLabel }}
+                        formatter={(value) => [
+                          `${Number(value).toFixed(2)} PLN`,
+                          "Cena",
+                        ]}
+                        labelFormatter={(label) => `Data: ${label}`}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="price"
+                        stroke="#ff7043"
+                        strokeWidth={2}
+                        dot={{ fill: "#ff7043", strokeWidth: 2, r: 4 }}
+                        activeDot={{ r: 6, fill: "#ff7043" }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+
+              {/* Best Prices by Store */}
+              {storePrices.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-3">
+                    Najlepsza cena w sklepach
+                  </h4>
+                  <div className="space-y-2">
+                    {storePrices.map((store, index) => (
+                      <div
+                        key={store.store_name}
+                        className="flex items-center justify-between bg-muted rounded-lg p-3"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-lg font-bold text-muted-foreground w-6">
+                            #{index + 1}
+                          </span>
+                          <span className="text-foreground font-medium">
+                            {store.store_name}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[#ff7043] dark:text-[#ff7043] font-bold">
+                            {store.min_price.toFixed(2)} PLN
+                          </span>
+                          <span className="text-muted-foreground text-xs ml-2">
+                            ({formatDate(store.date)})
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Brak danych cenowych dla tego produktu</p>
+            </div>
+          )}
+        </ProFeatureGate>
 
         {/* Empty state for product with no history */}
         {selectedProduct && !loading && priceHistory.length === 0 && (
