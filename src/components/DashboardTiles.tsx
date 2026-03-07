@@ -168,7 +168,7 @@ const BudgetMonitor: React.FC<BudgetMonitorProps> = ({}) => {
 
   if (loading) {
     return (
-      <div className="bg-[#1a1a1a] border border-border/50 rounded-xl p-6 shadow-lg">
+      <div className="bg-card border border-border/50 rounded-xl p-6 shadow-lg">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
         <p className="text-center text-muted-foreground mt-2">Ładowanie...</p>
       </div>
@@ -177,7 +177,7 @@ const BudgetMonitor: React.FC<BudgetMonitorProps> = ({}) => {
 
   if (error) {
     return (
-      <div className="bg-[#1a1a1a] border border-border/50 rounded-xl p-6 shadow-lg">
+      <div className="bg-card border border-border/50 rounded-xl p-6 shadow-lg">
         <p className="text-red-500 text-center">{error}</p>
       </div>
     );
@@ -185,7 +185,7 @@ const BudgetMonitor: React.FC<BudgetMonitorProps> = ({}) => {
 
   if (budgets.length === 0) {
     return (
-      <div className="bg-[#1a1a1a] border border-border/50 rounded-xl p-6 shadow-lg">
+      <div className="bg-card border border-border/50 rounded-xl p-6 shadow-lg">
         <div className="text-center">
           <p className="text-muted-foreground mb-4">
             Nie masz jeszcze ustawionych budżetów. Przejdź do sekcji Budżet, aby
@@ -206,7 +206,7 @@ const BudgetMonitor: React.FC<BudgetMonitorProps> = ({}) => {
   });
 
   return (
-    <div className="bg-[#1a1a1a] border border-border/50 rounded-xl p-6 shadow-lg">
+    <div className="bg-card border border-border/50 rounded-xl p-6 shadow-lg">
       {/* Header with month information */}
       <div className="text-center mb-4">
         <h3 className="text-lg font-semibold text-muted-foreground">

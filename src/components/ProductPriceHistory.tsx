@@ -361,7 +361,7 @@ export default function ProductPriceHistory({
                 <select
                   value={selectedProduct}
                   onChange={handleProductChange}
-                  className="w-full px-3 py-2 bg-white dark:bg-zinc-800/50 border border-slate-300 dark:border-zinc-700/50 rounded-md text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-slate-400 dark:focus:border-zinc-600/50"
+                  className="w-full px-3 py-2 bg-background text-foreground border border-input focus:ring-ring rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
                 >
                   <option value="">-- Wybierz produkt --</option>
                   {productList.map((product) => (

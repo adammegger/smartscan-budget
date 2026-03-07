@@ -78,6 +78,11 @@ body {
   --category-shopping: #db2777;
   --category-multi: #0891b2;
   --category-default: #52525b;
+
+  /* BIO Badge Colors - Light Mode */
+  --bio-badge-bg: 142 71% 85%; /* Light pastel green */
+  --bio-badge-text: 142 76% 25%; /* Dark green text */
+  --bio-badge-border: 142 71% 75%; /* Light green border */
 }
 
 /* Dark Theme */
@@ -111,6 +116,11 @@ body {
   --category-shopping: #ec4899;
   --category-multi: #06b6d4;
   --category-default: #6b7280;
+
+  /* BIO Badge Colors - Dark Mode */
+  --bio-badge-bg: 142 71% 15%; /* Dark subdued green */
+  --bio-badge-text: 142 71% 65%; /* Bright green text */
+  --bio-badge-border: 142 71% 25%; /* Dark green border */
 }
 
 /* Base styles using CSS variables */

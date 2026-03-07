@@ -548,7 +548,17 @@ export default function FavoriteProducts() {
                               <div className="font-medium text-foreground flex items-center">
                                 {product.name}
                                 {isBioProduct(product.name) && (
-                                  <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800">
+                                  <span
+                                    className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border"
+                                    style={{
+                                      backgroundColor:
+                                        "hsl(var(--bio-badge-bg))",
+                                      color: "hsl(var(--bio-badge-text))",
+                                      borderColor:
+                                        "hsl(var(--bio-badge-border))",
+                                    }}
+                                    title="Produkt BIO"
+                                  >
                                     BIO
                                   </span>
                                 )}

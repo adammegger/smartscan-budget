@@ -871,7 +871,7 @@ export default function ReceiptVerification({
           <Button
             onClick={handleReject}
             variant="outline"
-            className="gap-2 text-destructive border-destructive/30 hover:bg-destructive/10"
+            className="gap-2 text-destructive border-destructive/30 hover:bg-destructive/10 cursor-pointer"
           >
             <XCircle size={16} />
             Odrzuć
