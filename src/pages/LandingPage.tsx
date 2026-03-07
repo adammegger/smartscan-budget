@@ -200,24 +200,27 @@ export default function LandingPage() {
 
               {/* Preview */}
               <div className="relative">
-                <div className="relative bg-gradient-to-br from-orange-500/20 to-red-500/20 border border-border/50 rounded-2xl p-8">
-                  <div className="absolute top-4 left-4 right-4 h-1 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
-                  <div className="grid grid-cols-2 gap-4 mt-8">
-                    <div className="space-y-4">
-                      <div className="h-16 bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-border/50 rounded-lg"></div>
-                      <div className="h-16 bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-border/50 rounded-lg"></div>
-                      <div className="h-16 bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-border/50 rounded-lg"></div>
-                    </div>
-                    <div className="space-y-4">
-                      <div className="h-16 bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-border/50 rounded-lg"></div>
-                      <div className="h-16 bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-border/50 rounded-lg"></div>
-                      <div className="h-16 bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-border/50 rounded-lg"></div>
-                    </div>
+                {/* Main Screenshot Container */}
+                <div className="relative z-10 rounded-2xl overflow-hidden border border-border/50 shadow-2xl bg-card">
+                  {/* Optional Mac-like window controls for a polished look */}
+                  <div className="h-8 bg-muted/50 border-b border-border/50 flex items-center px-4 gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
                   </div>
-                  <div className="absolute bottom-4 left-4 right-4 h-2 bg-gradient-to-r from-orange-500/30 to-red-500/30 rounded-full"></div>
+
+                  {/* The App Screenshot */}
+                  <img
+                    src="/app1.png"
+                    alt="Paragonly App Interface"
+                    className="w-full h-auto object-cover"
+                    loading="lazy"
+                  />
                 </div>
-                <div className="absolute -top-4 -right-4 w-32 h-32 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-full blur-3xl"></div>
-                <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-3xl"></div>
+
+                {/* Decorative glowing background blobs (kept from original) */}
+                <div className="absolute -top-6 -right-6 w-40 h-40 bg-gradient-to-r from-orange-500/30 to-red-500/30 rounded-full blur-3xl -z-10"></div>
+                <div className="absolute -bottom-6 -left-6 w-40 h-40 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-3xl -z-10"></div>
               </div>
             </div>
           </div>
