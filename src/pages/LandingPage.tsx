@@ -348,6 +348,10 @@ export default function LandingPage() {
                     <Check size={16} className="text-green-500" />
                     Trendy wydatków
                   </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-green-500" />
+                    Eksport wydatków do CSV
+                  </li>
                 </ul>
               </div>
 
@@ -512,6 +516,10 @@ export default function LandingPage() {
                     <span className="text-foreground">
                       Zaawansowana analiza wahań cen
                     </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Check size={20} className="text-green-500" />
+                    <span className="text-foreground">Eksport do CSV</span>
                   </div>
                 </div>
               </div>

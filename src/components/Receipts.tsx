@@ -4,7 +4,7 @@ import { getCategoryColor, getCategoryIcon } from "../lib/categoryCache";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import CategoryIcon from "./CategoryIcon";
-import { AlertTriangle, Trash2 } from "lucide-react";
+import { AlertTriangle, Trash2, Download, Lock } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "./ui/card";
 import { isBioProduct } from "../lib/eco";
 import { getItemTags } from "../lib/categories";
@@ -68,6 +68,8 @@ export default function Receipts(props: ReceiptsProps) {
   >(props.timeFilter || "month");
   // Stan do śledzenia pierwszego załadowania
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  // Stan do modalu PRO
+  const [showProModal, setShowProModal] = useState(false);
 
   // Data cache
   const { receiptCache, setReceiptCache } = useDataCache();
@@ -392,6 +394,112 @@ export default function Receipts(props: ReceiptsProps) {
     );
   };
 
+  const handleExportCSV = async () => {
+    try {
+      // Get user ID
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        alert("Musisz być zalogowany, aby wyeksportować dane.");
+        return;
+      }
+
+      // Get user's subscription tier from profile
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("subscription_tier")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError) {
+        console.error("Error fetching profile:", profileError);
+        alert("Wystąpił błąd podczas pobierania informacji o subskrypcji.");
+        return;
+      }
+
+      // Check if user has PRO access
+      const subscriptionTier = profileData?.subscription_tier || "free";
+      if (subscriptionTier === "free") {
+        setShowProModal(true);
+        return;
+      }
+
+      // Fetch all receipts for the user
+      const { data: receiptsData, error: receiptsError } = await supabase
+        .from("receipts")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("date", { ascending: false });
+
+      if (receiptsError) {
+        console.error("Error fetching receipts:", receiptsError);
+        alert("Wystąpił błąd podczas pobierania paragonów.");
+        return;
+      }
+
+      if (!receiptsData || receiptsData.length === 0) {
+        alert("Brak danych do wyeksportowania.");
+        return;
+      }
+
+      // Fetch all items for the user
+      const { data: itemsData, error: itemsError } = await supabase
+        .from("items")
+        .select("id, receipt_id, name, price, category")
+        .eq("user_id", user.id);
+
+      if (itemsError) {
+        console.error("Error fetching items:", itemsError);
+        alert("Wystąpił błąd podczas pobierania produktów.");
+        return;
+      }
+
+      // Create CSV content with UTF-8 BOM for Polish characters
+      let csvContent = "\uFEFF"; // UTF-8 BOM
+      csvContent += "Data,Sklep,Produkt,Kategoria,Cena,Czy_BIO\n";
+
+      // Process each receipt and its items
+      receiptsData.forEach((receipt) => {
+        const receiptItems =
+          itemsData?.filter((item) => item.receipt_id === receipt.id) || [];
+
+        if (receiptItems.length === 0) {
+          // If no items, add receipt with empty product
+          csvContent += `"${receipt.date}","${receipt.store_name}","","${receipt.category}","${receipt.total_amount.toFixed(2)}",""\n`;
+        } else {
+          // Add each item from the receipt
+          receiptItems.forEach((item) => {
+            const isBio = isBioProduct(item.name) ? "TAK" : "NIE";
+            const price =
+              typeof item.price === "number"
+                ? item.price.toFixed(2)
+                : parseFloat(String(item.price).replace(",", ".")).toFixed(2);
+
+            csvContent += `"${receipt.date}","${receipt.store_name}","${item.name.replace(/"/g, '""')}","${item.category}","${price}","${isBio}"\n`;
+          });
+        }
+      });
+
+      // Create and trigger download
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", "paragonly_wydatki.csv");
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      alert("Eksport zakończony pomyślnie!");
+    } catch (error) {
+      console.error("Error exporting CSV:", error);
+      alert("Wystąpił błąd podczas eksportowania danych.");
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -400,10 +508,13 @@ export default function Receipts(props: ReceiptsProps) {
           <h1 className="text-2xl font-bold text-foreground">Paragony</h1>
           <p className="text-muted-foreground">Twoje zapisane paragony</p>
         </div>
-        {/* <div className="flex items-center gap-2">
-          <Calendar size={20} className="text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">Ostatnie zakupy</span>
-        </div> */}
+        <button
+          onClick={handleExportCSV}
+          className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold rounded-lg transition-all duration-200 hover:scale-105 shadow-lg"
+        >
+          <Download size={16} />
+          Eksportuj do CSV
+        </button>
       </div>
 
       {/* Time Filter */}
@@ -656,6 +767,66 @@ export default function Receipts(props: ReceiptsProps) {
           </TableBody>
         </Table>
       </div>
+
+      {/* Modal upsell PRO */}
+      {showProModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setShowProModal(false)} // Zamykanie kliknięciem w tło
+        >
+          <div
+            className="bg-card border border-orange-500/30 rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()} // Zapobiega zamykaniu po kliknięciu w sam modal
+          >
+            {/* Górny kolorowy akcent */}
+            <div className="h-2 w-full bg-gradient-to-r from-orange-500 to-red-500"></div>
+
+            <div className="p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="bg-orange-500/10 p-3 rounded-full text-orange-500">
+                  <Lock size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-foreground">
+                    Funkcja Premium
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Eksport danych do pliku CSV
+                  </p>
+                </div>
+              </div>
+
+              <p className="text-foreground/80 mb-6 mt-2">
+                Eksport danych do pliku CSV to funkcja Premium. Przejdź na plan
+                PRO, aby pobierać i analizować swoje dane w Excelu.
+              </p>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowProModal(false);
+                  }}
+                  className="px-4 py-2 rounded-lg font-medium text-muted-foreground hover:bg-muted transition-colors cursor-pointer"
+                >
+                  Zamknij
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowProModal(false);
+                    // TODO: Add navigation to PRO plan page
+                    console.log("Navigate to PRO plan");
+                  }}
+                  className="px-4 py-2 rounded-lg font-medium bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 shadow-md shadow-orange-500/20 transition-all cursor-pointer"
+                >
+                  Odblokuj z PRO
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal usuwania paragonu */}
       {receiptToDelete && (
