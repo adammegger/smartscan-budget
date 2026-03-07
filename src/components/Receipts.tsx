@@ -45,8 +45,6 @@ interface Item {
 }
 
 interface ReceiptsProps {
-  selectedReceiptId: number | null;
-  onReceiptSelect: (id: number | null) => void;
   onProductClick?: (productName: string) => void;
   timeFilter?: "today" | "week" | "month" | "year" | "all";
 }
@@ -55,10 +53,16 @@ export default function Receipts(props: ReceiptsProps) {
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedItems, setSelectedItems] = useState<Item[]>([]);
+  const [itemsByReceipt, setItemsByReceipt] = useState<Record<number, Item[]>>(
+    {},
+  );
   const [itemsLoading, setItemsLoading] = useState(false);
   const [itemCounts, setItemCounts] = useState<Record<number, number>>({});
   const [overBudgetCategories, setOverBudgetCategories] = useState<Set<string>>(
+    new Set(),
+  );
+  // Stan do zarządzania rozwiniętymi paragonami
+  const [expandedReceiptIds, setExpandedReceiptIds] = useState<Set<number>>(
     new Set(),
   );
   // Stan do zarządzania otwartym modalem
@@ -71,6 +75,20 @@ export default function Receipts(props: ReceiptsProps) {
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   // Stan do modalu PRO
   const [showProModal, setShowProModal] = useState(false);
+
+  // Funkcja do przełączania rozwinięcia paragonu
+  const handleToggleReceipt = (receiptId: number) => {
+    setExpandedReceiptIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(receiptId)) {
+        newSet.delete(receiptId);
+      } else {
+        newSet.add(receiptId);
+        fetchItemsForReceipt(receiptId); // Fetch items if not already fetched
+      }
+      return newSet;
+    });
+  };
 
   // Data cache
   const { receiptCache, setReceiptCache } = useDataCache();
@@ -200,7 +218,7 @@ export default function Receipts(props: ReceiptsProps) {
         data: { user: authUser },
       } = await supabase.auth.getUser();
       if (!authUser) {
-        setSelectedItems([]);
+        setItemsByReceipt((prev) => ({ ...prev, [receiptId]: [] }));
         return;
       }
       const { data, error } = await supabase
@@ -212,19 +230,23 @@ export default function Receipts(props: ReceiptsProps) {
         .eq("user_id", authUser.id)
         .order("date", { foreignTable: "receipts", ascending: true });
       if (error) throw error;
-      setSelectedItems(data || []);
+      setItemsByReceipt((prev) => ({ ...prev, [receiptId]: data || [] }));
     } catch (err) {
       console.error("Error fetching items:", err);
-      setSelectedItems([]);
+      setItemsByReceipt((prev) => ({ ...prev, [receiptId]: [] }));
     } finally {
       setItemsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (props.selectedReceiptId) fetchItemsForReceipt(props.selectedReceiptId);
-    else setSelectedItems([]);
-  }, [props.selectedReceiptId]);
+    // Fetch items for newly expanded receipts
+    expandedReceiptIds.forEach((receiptId) => {
+      if (!itemsByReceipt[receiptId]) {
+        fetchItemsForReceipt(receiptId);
+      }
+    });
+  }, [expandedReceiptIds]);
 
   const handleDeleteReceipt = async (receiptId: number) => {
     try {
@@ -252,11 +274,12 @@ export default function Receipts(props: ReceiptsProps) {
         return newCounts;
       });
 
-      // Clear selected items if deleted receipt was selected
-      if (props.selectedReceiptId === receiptId) {
-        setSelectedItems([]);
-        props.onReceiptSelect(null);
-      }
+      // Clear items for deleted receipt
+      setItemsByReceipt((prev) => {
+        const newItems = { ...prev };
+        delete newItems[receiptId];
+        return newItems;
+      });
 
       console.log("Paragon usunięty pomyślnie");
     } catch (error) {
@@ -596,14 +619,8 @@ export default function Receipts(props: ReceiptsProps) {
               receipts.map((receipt) => (
                 <React.Fragment key={receipt.id}>
                   <TableRow
-                    onClick={() =>
-                      props.onReceiptSelect(
-                        props.selectedReceiptId === receipt.id
-                          ? null
-                          : receipt.id,
-                      )
-                    }
-                    className={`border-t border-border hover:bg-muted cursor-pointer transition-colors ${props.selectedReceiptId === receipt.id ? "bg-muted" : ""}`}
+                    onClick={() => handleToggleReceipt(receipt.id)}
+                    className={`border-t border-border hover:bg-muted cursor-pointer transition-colors ${expandedReceiptIds.has(receipt.id) ? "bg-muted" : ""}`}
                   >
                     <TableCell className="px-4 py-3">
                       <div className="text-muted-foreground">
@@ -641,13 +658,14 @@ export default function Receipts(props: ReceiptsProps) {
                       </button>
                     </TableCell>
                   </TableRow>
-                  {props.selectedReceiptId === receipt.id && (
+                  {expandedReceiptIds.has(receipt.id) && (
                     <TableRow className="bg-muted/50">
                       <TableCell colSpan={6} className="p-0">
                         <div className="w-full p-6 space-y-6">
                           <div>
                             <h4 className="font-semibold text-foreground text-lg mb-4">
-                              Pozycje na paragonie ({selectedItems.length})
+                              Pozycje na paragonie (
+                              {itemsByReceipt[receipt.id]?.length || 0})
                             </h4>
 
                             {/* Column Headers */}
@@ -664,8 +682,8 @@ export default function Receipts(props: ReceiptsProps) {
                                 <div className="text-center py-6 text-muted-foreground">
                                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500 mx-auto"></div>
                                 </div>
-                              ) : selectedItems.length > 0 ? (
-                                selectedItems.map((item) => {
+                              ) : itemsByReceipt[receipt.id]?.length > 0 ? (
+                                itemsByReceipt[receipt.id]?.map((item) => {
                                   const isBio = isBioProduct(item.name);
                                   const tags = getItemTags(item);
 
@@ -752,8 +770,8 @@ export default function Receipts(props: ReceiptsProps) {
                               )}
                             </span>
                             <button
-                              onClick={() => props.onReceiptSelect(null)}
-                              className="text-orange-500 hover:text-orange-400 text-sm font-medium"
+                              onClick={() => handleToggleReceipt(receipt.id)}
+                              className="text-orange-500 hover:text-orange-400 text-sm font-medium cursor-pointer"
                             >
                               Ukryj szczegóły
                             </button>
