@@ -6,15 +6,24 @@ import {
   Trash2,
   ArrowLeft,
   CheckCircle,
+  Edit3,
 } from "lucide-react";
 import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 import { supabase } from "../lib/supabase";
 import { useNavigate } from "react-router-dom";
 import ConfirmationModal from "./ConfirmationModal";
 import { deleteUserAccount, getUserDataSummary } from "../lib/userDeletion";
+import { useDataCache } from "../lib/cacheUtils";
 
 export default function Profile() {
   const [userEmail, setUserEmail] = useState<string>("");
+  const [firstName, setFirstName] = useState<string>("");
+  const [lastName, setLastName] = useState<string>("");
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [isSavingName, setIsSavingName] = useState(false);
+  const [nameSaveMessage, setNameSaveMessage] = useState<string>("");
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [resetMessage, setResetMessage] = useState("");
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
@@ -25,6 +34,9 @@ export default function Profile() {
     profile_exists: boolean;
   } | null>(null);
   const navigate = useNavigate();
+
+  // Data cache for updating profile data
+  const { setUserProfile, refreshUserProfile } = useDataCache();
 
   // Toast state for notifications
   const [toastMsg, setToastMsg] = useState<{
@@ -39,7 +51,7 @@ export default function Profile() {
   };
 
   useEffect(() => {
-    // Get current user email
+    // Get current user email and profile data
     const getCurrentUser = async () => {
       try {
         const {
@@ -48,6 +60,20 @@ export default function Profile() {
 
         if (user) {
           setUserEmail(user.email || "");
+
+          // Fetch profile data to get current first_name and last_name
+          const { data: profile, error } = await supabase
+            .from("profiles")
+            .select("first_name, last_name")
+            .eq("id", user.id)
+            .single();
+
+          if (error && error.code !== "PGRST116") {
+            console.error("Error fetching profile:", error);
+          } else if (profile) {
+            setFirstName(profile.first_name || "");
+            setLastName(profile.last_name || "");
+          }
         }
       } catch (error) {
         console.error("Error fetching user:", error);
@@ -83,6 +109,48 @@ export default function Profile() {
       );
     } finally {
       setIsResettingPassword(false);
+    }
+  };
+
+  const handleSaveName = async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        setNameSaveMessage("Nie jesteś zalogowany");
+        return;
+      }
+
+      setIsSavingName(true);
+      setNameSaveMessage("");
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+        })
+        .eq("id", user.id);
+
+      if (error) {
+        throw error;
+      }
+
+      setNameSaveMessage("Dane zostały zapisane pomyślnie!");
+      setIsEditingName(false);
+
+      // Update the data cache to reflect changes immediately
+      await refreshUserProfile();
+
+      // Show success toast
+      showToast("Dane profilu zostały zaktualizowane", "success");
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      setNameSaveMessage("Wystąpił błąd podczas zapisywania danych.");
+    } finally {
+      setIsSavingName(false);
     }
   };
 
@@ -182,7 +250,7 @@ export default function Profile() {
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                 <div>
                   <p className="text-sm text-muted-foreground">Adres e-mail</p>
@@ -191,6 +259,88 @@ export default function Profile() {
                 <div className="text-xs text-muted-foreground bg-green-500/20 text-green-600 px-2 py-1 rounded-full">
                   Aktywne
                 </div>
+              </div>
+
+              {/* Name Editing Section */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground">
+                      Imię i nazwisko
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Zaktualizuj swoje dane osobowe
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditingName(!isEditingName)}
+                    className="border-orange-500/30 text-orange-500 hover:bg-orange-500/10 hover:text-orange-400"
+                  >
+                    <Edit3 size={16} className="mr-2" />
+                    {isEditingName ? "Anuluj" : "Edytuj"}
+                  </Button>
+                </div>
+
+                {nameSaveMessage && (
+                  <div
+                    className={`p-3 rounded-lg ${
+                      nameSaveMessage.includes("Błąd")
+                        ? "bg-red-500/10 border border-red-500/20 text-red-600"
+                        : "bg-green-500/10 border border-green-500/20 text-green-600"
+                    }`}
+                  >
+                    {nameSaveMessage}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName" className="text-sm font-medium">
+                      Imię
+                    </Label>
+                    <Input
+                      id="firstName"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      disabled={!isEditingName}
+                      className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-orange-500 focus:ring-orange-500"
+                      placeholder="Wprowadź imię"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName" className="text-sm font-medium">
+                      Nazwisko
+                    </Label>
+                    <Input
+                      id="lastName"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      disabled={!isEditingName}
+                      className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-orange-500 focus:ring-orange-500"
+                      placeholder="Wprowadź nazwisko"
+                    />
+                  </div>
+                </div>
+
+                {isEditingName && (
+                  <div className="flex gap-4">
+                    <Button
+                      onClick={handleSaveName}
+                      disabled={isSavingName}
+                      className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6 py-2 rounded-full transition-all duration-200 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSavingName ? (
+                        <div className="flex items-center gap-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          Zapisywanie...
+                        </div>
+                      ) : (
+                        "Zapisz zmiany"
+                      )}
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

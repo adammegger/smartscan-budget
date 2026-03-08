@@ -315,7 +315,16 @@ function DashboardLayout() {
           </div>
 
           {/* User Info */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
+            {/* Greeting */}
+            <div className="text-right">
+              <p className="text-sm text-muted-foreground">
+                {userProfile?.first_name
+                  ? `Cześć, ${userProfile.first_name}!`
+                  : "Cześć, użytkowniku!"}
+              </p>
+            </div>
+
             <ThemeToggle />
             <Link
               to="/profile"
