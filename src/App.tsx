@@ -41,6 +41,7 @@ import Success from "./pages/Success";
 import ScrollToTop from "./components/ScrollToTop";
 import { useDataCache } from "./lib/cacheUtils";
 import { RefreshContext, useRefresh } from "./lib/refreshContext";
+import CookieBanner from "./components/CookieBanner";
 
 // Import the correct ReceiptData type from receiptVerification
 import type { ReceiptData } from "./lib/receiptVerification";
@@ -577,6 +578,8 @@ function App() {
       <ThemeProvider>
         <TooltipProvider>
           <ScrollToTop />
+          {/* Global Cookie Banner - appears on all routes */}
+          <CookieBanner />
           <Routes>
             {/* Public routes - accessible without authentication */}
             <Route path="/" element={<LandingPage />} />
