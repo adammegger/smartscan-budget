@@ -37,6 +37,7 @@ import Privacy from "./pages/Privacy";
 import Contact from "./pages/Contact";
 import Faq from "./pages/Faq";
 import LandingPage from "./pages/LandingPage";
+import Success from "./pages/Success";
 import ScrollToTop from "./components/ScrollToTop";
 import { useDataCache } from "./lib/cacheUtils";
 import { RefreshContext, useRefresh } from "./lib/refreshContext";
@@ -573,6 +574,7 @@ function App() {
               element={<ResetPassword onResetSuccess={() => {}} />}
             />
             <Route path="/update-password" element={<UpdatePassword />} />
+            <Route path="/success" element={<Success />} />
 
             {/* Dashboard route - requires authentication */}
             <Route path="/dashboard" element={<DashboardLayout />}>

@@ -68,7 +68,7 @@ export default function ProFeatureGate({
         <div className="flex justify-center">
           <button
             onClick={handleUpgrade}
-            className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6 py-3 rounded-full transition-all duration-200 hover:scale-105 shadow-lg border border-orange-500/50"
+            className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6 py-3 rounded-full transition-all duration-200 hover:scale-105 shadow-lg border border-orange-500/50 cursor-pointer"
           >
             Odblokuj z PRO
           </button>
