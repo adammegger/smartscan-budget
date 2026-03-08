@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Lock } from "lucide-react";
+import { supabase } from "../lib/supabase";
 
 interface ProModalGateProps {
   isOpen: boolean;
@@ -35,6 +36,22 @@ export default function ProModalGate({
     }
   };
 
+  const handleUpgrade = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      console.error("No user found");
+      return;
+    }
+
+    const STRIPE_PAYMENT_LINK =
+      "https://buy.stripe.com/test_28E4gB1N67PO5kUdrf9IQ00";
+    // Append the user's ID so the Stripe Webhook knows who paid
+    const checkoutUrl = `${STRIPE_PAYMENT_LINK}?client_reference_id=${user.id}`;
+    window.location.href = checkoutUrl;
+  };
+
   return (
     <div
       className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
@@ -58,10 +75,7 @@ export default function ProModalGate({
             Zamknij
           </button>
           <button
-            onClick={() => {
-              onClose();
-              // TODO: Navigate to upgrade page
-            }}
+            onClick={handleUpgrade}
             className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105 shadow-lg cursor-pointer"
           >
             Odblokuj z PRO

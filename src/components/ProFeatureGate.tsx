@@ -1,5 +1,6 @@
 import { Lock } from "lucide-react";
 import { useDataCache } from "../lib/cacheUtils";
+import { supabase } from "../lib/supabase";
 
 interface ProFeatureGateProps {
   children: React.ReactNode;
@@ -26,6 +27,22 @@ export default function ProFeatureGate({
   }
 
   // If user is on FREE tier, show the locked state
+  const handleUpgrade = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      console.error("No user found");
+      return;
+    }
+
+    const STRIPE_PAYMENT_LINK =
+      "https://buy.stripe.com/test_28E4gB1N67PO5kUdrf9IQ00";
+    // Append the user's ID so the Stripe Webhook knows who paid
+    const checkoutUrl = `${STRIPE_PAYMENT_LINK}?client_reference_id=${user.id}`;
+    window.location.href = checkoutUrl;
+  };
+
   return (
     <div className="relative bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/30 rounded-xl p-8 text-center">
       {/* Simple gradient background without blur effects */}
@@ -49,7 +66,10 @@ export default function ProFeatureGate({
 
         {/* CTA Button */}
         <div className="flex justify-center">
-          <button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6 py-3 rounded-full transition-all duration-200 hover:scale-105 shadow-lg border border-orange-500/50">
+          <button
+            onClick={handleUpgrade}
+            className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6 py-3 rounded-full transition-all duration-200 hover:scale-105 shadow-lg border border-orange-500/50"
+          >
             Odblokuj z PRO
           </button>
         </div>
