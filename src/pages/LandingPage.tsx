@@ -18,6 +18,7 @@ import { Button } from "../components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import Logo from "../components/Logo";
+import { FREE_TIER_LIMITS, getReceiptsText } from "../lib/config";
 
 // Smooth scrolling function
 const scrollToSection = (id: string) => {
@@ -494,7 +495,9 @@ export default function LandingPage() {
                   <div className="flex items-center gap-3">
                     <Check size={20} className="text-green-500" />
                     <span className="text-foreground">
-                      Do 25 zeskanowanych paragonów miesięcznie
+                      Do{" "}
+                      {getReceiptsText(FREE_TIER_LIMITS.MAX_RECEIPTS_PER_MONTH)}{" "}
+                      miesięcznie
                     </span>
                   </div>
                   <div className="flex items-center gap-3">

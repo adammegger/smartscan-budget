@@ -6,6 +6,7 @@ import CategoryIcon from "./CategoryIcon";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDataCache, useCacheValid } from "../lib/cacheUtils";
 import ProModalGate from "./ProModalGate";
+import { FREE_TIER_LIMITS, getBudgetsText } from "../lib/config";
 
 interface Budget {
   id: number;
@@ -182,7 +183,10 @@ export default function Budgets(props: BudgetsProps) {
       .single();
 
     // Check if user is on free tier and has reached the limit
-    if (profile?.subscription_tier === "free" && budgets.length >= 3) {
+    if (
+      profile?.subscription_tier === "free" &&
+      budgets.length >= FREE_TIER_LIMITS.MAX_BUDGETS
+    ) {
       setShowProLimitModal(true);
       return;
     }
@@ -624,7 +628,7 @@ export default function Budgets(props: BudgetsProps) {
         isOpen={showProLimitModal}
         onClose={() => setShowProLimitModal(false)}
         title="Osiągnięto limit budżetów"
-        message="W darmowym planie możesz śledzić maksymalnie 3 kategorie wydatków. Przejdź na plan PRO, aby tworzyć nielimitowaną liczbę budżetów i mieć pełną kontrolę nad każdą złotówką."
+        message={`W darmowym planie możesz śledzić maksymalnie ${getBudgetsText(FREE_TIER_LIMITS.MAX_BUDGETS)}. Przejdź na plan PRO, aby tworzyć nielimitowaną liczbę budżetów i mieć pełną kontrolę nad każdą złotówką.`}
       />
     </div>
   );

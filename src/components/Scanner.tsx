@@ -8,6 +8,7 @@ import {
   CATEGORY_IDS,
 } from "../lib/categories";
 import { isBioProduct } from "../lib/eco";
+import { FREE_TIER_LIMITS, getReceiptsText } from "../lib/config";
 
 // Mock data for testing
 const MOCK_STORES = [
@@ -128,7 +129,7 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
         console.log("On-the-fly fetch count:", currentMonthCount);
 
         // 3. ENFORCE THE LIMIT
-        if (currentMonthCount >= 3) {
+        if (currentMonthCount >= FREE_TIER_LIMITS.MAX_RECEIPTS_PER_MONTH) {
           console.log("BLOCKING! Real count is >=", currentMonthCount);
           setShowProModal(true); // SHOW IT LOCALLY IN SCANNER
           return; // Stop the function from continuing the scan!
@@ -322,7 +323,7 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
           console.log("On-the-fly fetch count:", currentMonthCount);
 
           // 3. ENFORCE THE LIMIT
-          if (currentMonthCount >= 3) {
+          if (currentMonthCount >= FREE_TIER_LIMITS.MAX_RECEIPTS_PER_MONTH) {
             console.log("BLOCKING! Real count is >=", currentMonthCount);
             setShowProModal(true); // SHOW IT LOCALLY IN SCANNER
             return; // Stop the function from continuing the scan!
@@ -472,7 +473,8 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
               </h3>
             </div>
             <p className="text-foreground/80 mb-6">
-              W darmowym planie możesz zeskanować maksymalnie 3 paragony w
+              W darmowym planie możesz zeskanować maksymalnie{" "}
+              {getReceiptsText(FREE_TIER_LIMITS.MAX_RECEIPTS_PER_MONTH)} w
               miesiącu. Przejdź na plan PRO, aby odblokować nielimitowane
               skanowanie!
             </p>
