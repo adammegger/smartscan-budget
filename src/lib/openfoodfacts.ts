@@ -55,10 +55,17 @@ export const NUTRI_SCORE_TEXT_COLORS: Record<string, string> = {
 };
 
 // Search for a product by name using Supabase Edge Function (to avoid CORS)
+// DISABLED: Open Food Facts integration temporarily disabled for MVP
 export async function searchProduct(
   searchTerm: string,
-  supabaseClient?: any,
+  supabaseClient?: unknown,
 ): Promise<OpenFoodFactsProduct | null> {
+  // Temporarily disabled to make scanning faster and independent of external APIs
+  console.log("Open Food Facts search disabled for MVP - returning null");
+  return null;
+
+  // Original implementation commented out:
+  /*
   try {
     // If we have a Supabase client, use the Edge Function
     if (supabaseClient) {
@@ -113,6 +120,7 @@ export async function searchProduct(
     console.error("Error fetching product from OpenFoodFacts:", error);
     return null;
   }
+  */
 }
 
 // Check if product is BIO (organic)
@@ -185,11 +193,18 @@ export interface ProductTags {
 }
 
 // Fetch and cache product tags
+// DISABLED: Open Food Facts integration temporarily disabled for MVP
 export async function fetchAndCacheProductTags(
   productName: string,
-  supabase: any,
+  supabase: unknown,
   userId: string,
 ): Promise<ProductTags | null> {
+  // Temporarily disabled to make scanning faster and independent of external APIs
+  console.log("Open Food Facts tag fetching disabled for MVP - returning null");
+  return null;
+
+  // Original implementation commented out:
+  /*
   // First check if we have cached tags in the database
   const { data: existingItem } = await supabase
     .from("items")
@@ -222,7 +237,7 @@ export async function fetchAndCacheProductTags(
   // Create full tags object for JSONB column
   const tags: ProductTags = {
     nutriscore: product.nutrition_grades?.toUpperCase() || undefined,
-    isBio: isBioProduct(product),
+    isBio: isBioProduct(product.name),
     isHighSalt: isHighSalt(product),
     isHighSugar: isHighSugar(product),
     isHighFat: isHighFat(product),
@@ -247,4 +262,5 @@ export async function fetchAndCacheProductTags(
     .eq("user_id", userId);
 
   return tags;
+  */
 }

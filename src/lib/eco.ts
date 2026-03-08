@@ -16,9 +16,6 @@ const BIO_KEYWORDS = [
   "naturalny",
 ];
 
-// Nutri-Score mapping (lower is better)
-const NUTRI_SCORE_ORDER = ["a", "b", "c", "d", "e"];
-
 /**
  * Check if a product name contains BIO/EKO/ORGANIC/VEGE keywords
  */
@@ -37,10 +34,19 @@ export function calculateGreenLeaves(amount: number): number {
 
 /**
  * Fetch Nutri-Score from Open Food Facts API
+ * DISABLED: Open Food Facts integration temporarily disabled for MVP
  */
 export async function getNutriScore(
   productName: string,
 ): Promise<string | null> {
+  // Temporarily disabled to make scanning faster and independent of external APIs
+  console.log(
+    "Open Food Facts Nutri-Score fetching disabled for MVP - returning null",
+  );
+  return null;
+
+  // Original implementation commented out:
+  /*
   try {
     // Clean up product name for search
     const searchTerm = productName
@@ -96,6 +102,7 @@ export async function getNutriScore(
     console.error("Error fetching Nutri-Score:", error);
     return null;
   }
+  */
 }
 
 /**

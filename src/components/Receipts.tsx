@@ -13,8 +13,6 @@ import {
 } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "./ui/card";
 import { isBioProduct } from "../lib/eco";
-import { getItemTags } from "../lib/categories";
-import { NUTRI_SCORE_COLORS } from "../lib/openfoodfacts";
 import {
   Table,
   TableHeader,
@@ -902,13 +900,6 @@ export default function Receipts(props: ReceiptsProps) {
                               ) : itemsByReceipt[receipt.id]?.length > 0 ? (
                                 itemsByReceipt[receipt.id]?.map((item) => {
                                   const isBio = isBioProduct(item.name);
-                                  const tags = getItemTags(item);
-
-                                  // Extract nutriscore from tags if present (single letter A-E)
-                                  const nutriscore = tags.find((t) =>
-                                    /^[A-E]$/i.test(t),
-                                  );
-
                                   // Calculate unit price and total
                                   const quantity = item.quantity || 1;
                                   const unitPrice = item.price; // item.price is already the unit price
@@ -953,15 +944,6 @@ export default function Receipts(props: ReceiptsProps) {
                                       {/* Col 4: Category with icons */}
                                       <div className="flex items-center gap-2">
                                         {renderCategoryBadge(item.category)}
-                                        {/* Nutri-Score Icon */}
-                                        {nutriscore && (
-                                          <span
-                                            className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-[10px] font-bold text-white ${NUTRI_SCORE_COLORS[nutriscore.toLowerCase()] || "bg-gray-400"}`}
-                                            title={`Nutri-Score: ${nutriscore.toUpperCase()}`}
-                                          >
-                                            {nutriscore.toUpperCase()}
-                                          </span>
-                                        )}
                                       </div>
 
                                       {/* Col 5: Total Price */}
