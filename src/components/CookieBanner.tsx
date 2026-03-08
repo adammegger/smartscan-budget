@@ -38,13 +38,13 @@ export default function CookieBanner() {
         <div className="flex gap-2">
           <button
             onClick={handleAccept}
-            className="bg-orange-500 hover:bg-orange-600 text-white rounded-md px-4 py-2 text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+            className="bg-orange-500 hover:bg-orange-600 text-white rounded-md px-4 py-2 text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-gray-900 cursor-pointer"
           >
             Akceptuję
           </button>
           <button
             onClick={handleReject}
-            className="border border-gray-600 text-gray-300 hover:text-white hover:border-gray-500 rounded-md px-4 py-2 text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+            className="border border-gray-600 text-gray-300 hover:text-white hover:border-gray-500 rounded-md px-4 py-2 text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900 cursor-pointer"
           >
             Odrzuć
           </button>
