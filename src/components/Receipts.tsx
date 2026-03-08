@@ -550,13 +550,17 @@ export default function Receipts(props: ReceiptsProps) {
 
       if (deleteError) throw deleteError;
 
-      // Insert new items
+      // Insert new items with all required fields
       if (finalData.items && finalData.items.length > 0) {
         const itemsToInsert = finalData.items.map((item) => ({
           receipt_id: receiptId,
           name: item.name,
           price: item.price,
           category: item.category,
+          category_id: item.category_id || null,
+          unit: item.unit || "szt",
+          quantity: item.quantity || 1,
+          is_bio: item.is_bio || false,
           user_id: authUser.id,
         }));
 
@@ -575,7 +579,12 @@ export default function Receipts(props: ReceiptsProps) {
       alert("Paragon został pomyślnie zaktualizowany!");
 
       // Re-fetch receipts to update the UI
-      fetchReceipts();
+      await fetchReceipts();
+
+      // If the edited receipt was expanded, refresh its items to show updated data
+      if (expandedReceiptIds.has(receiptId)) {
+        await fetchItemsForReceipt(receiptId);
+      }
     } catch (error) {
       console.error("Error saving edit:", error);
       alert("Wystąpił błąd podczas zapisywania zmian.");
