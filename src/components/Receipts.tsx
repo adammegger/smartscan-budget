@@ -868,9 +868,10 @@ export default function Receipts(props: ReceiptsProps) {
                                     /^[A-E]$/i.test(t),
                                   );
 
-                                  // Calculate unit price
+                                  // Calculate unit price and total
                                   const quantity = item.quantity || 1;
-                                  const unitPrice = item.price / quantity;
+                                  const unitPrice = item.price; // item.price is already the unit price
+                                  const totalPrice = item.price * quantity; // Calculate total as unit price * quantity
 
                                   return (
                                     <div
@@ -924,7 +925,7 @@ export default function Receipts(props: ReceiptsProps) {
 
                                       {/* Col 5: Total Price */}
                                       <div className="font-semibold text-foreground text-right">
-                                        {item.price.toFixed(2)} PLN
+                                        {totalPrice.toFixed(2)} PLN
                                       </div>
                                     </div>
                                   );

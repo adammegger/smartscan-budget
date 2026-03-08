@@ -80,9 +80,6 @@ interface ScannerProps {
     }>;
   }) => void;
   onAnalysisError: (error: string) => void;
-  userProfile?: {
-    subscription_tier?: string;
-  } | null;
 }
 
 const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
@@ -97,53 +94,56 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
   const triggerMockScan = async () => {
     if (isSimulating) return;
 
-    // 1. Determine if PRO
-    const isPro =
-      userProfile?.subscription_tier === "pro" ||
-      userProfile?.subscription_tier === "premium";
+    // 1. Securely fetch the user and their REAL profile directly from DB
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError || !user) return;
 
-    // 2. If NOT PRO, fetch the real receipt count directly from Supabase right now
-    if (!isPro) {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) return; // Must be logged in
+    const { data: profileData, error: profileError } = await supabase
+      .from("profiles")
+      .select("subscription_tier")
+      .eq("id", user.id)
+      .single();
 
-        // Get current month start date (YYYY-MM-DD format)
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, "0");
-        const startOfMonth = `${year}-${month}-01`;
-
-        // Fetch JUST the IDs of receipts from this month
-        const { data: receiptsData, error: countError } = await supabase
-          .from("receipts")
-          .select("id")
-          .eq("user_id", user.id)
-          .gte("date", startOfMonth);
-
-        if (countError) throw countError;
-
-        const currentMonthCount = receiptsData ? receiptsData.length : 0;
-        console.log("On-the-fly fetch count:", currentMonthCount);
-
-        // 3. ENFORCE THE LIMIT
-        if (currentMonthCount >= FREE_TIER_LIMITS.MAX_RECEIPTS_PER_MONTH) {
-          console.log("BLOCKING! Real count is >=", currentMonthCount);
-          setShowProModal(true); // SHOW IT LOCALLY IN SCANNER
-          return; // Stop the function from continuing the scan!
-        }
-      } catch (error) {
-        console.error("Error checking receipt limit:", error);
-        // Optional: Decide if you want to block or allow on error. Let's allow for now.
-      }
+    if (profileError) {
+      console.error("Failed to fetch profile for scan limits:", profileError);
     }
 
-    console.log("--- SCAN TRIGGERED IN SCANNER ---");
-    console.log("User Profile:", userProfile);
-    console.log("Is PRO?", isPro);
-    console.log("ALLOWING SCAN...");
+    console.log("--- REAL-TIME PROFILE CHECK ---");
+    console.log("User ID:", user.id);
+    console.log("Profile Data:", profileData);
+
+    const currentTier = profileData?.subscription_tier || "free";
+    const isPro = currentTier === "pro" || currentTier === "premium";
+
+    console.log("Determined Status - isPro:", isPro, "Tier:", currentTier);
+
+    // 2. ONLY if they are genuinely Free, do we count the receipts
+    if (!isPro) {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const startOfMonth = `${year}-${month}-01`;
+
+      const { data: receiptsData, error: countError } = await supabase
+        .from("receipts")
+        .select("id")
+        .eq("user_id", user.id)
+        .gte("date", startOfMonth);
+
+      const currentMonthCount = receiptsData ? receiptsData.length : 0;
+      console.log("Free User Month Count:", currentMonthCount);
+
+      if (currentMonthCount >= FREE_TIER_LIMITS.MAX_RECEIPTS_PER_MONTH) {
+        console.log("BLOCKING! Limit reached.");
+        setShowProModal(true);
+        return;
+      }
+    } else {
+      console.log("User is PRO! Bypassing receipt limits.");
+    }
 
     setIsSimulating(true);
     onImageCaptured("mock-image-data");
@@ -291,51 +291,59 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
   ) => {
     const file = event.target.files?.[0];
     if (file) {
-      // 1. Determine if PRO
-      const isPro =
-        userProfile?.subscription_tier === "pro" ||
-        userProfile?.subscription_tier === "premium";
+      // 1. Securely fetch the user and their REAL profile directly from DB
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError || !user) return;
 
-      // 2. If NOT PRO, fetch the real receipt count directly from Supabase right now
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("subscription_tier")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError) {
+        console.error("Failed to fetch profile for scan limits:", profileError);
+      }
+
+      console.log("--- REAL-TIME PROFILE CHECK ---");
+      console.log("User ID:", user.id);
+      console.log("Profile Data:", profileData);
+
+      const currentTier = profileData?.subscription_tier || "free";
+      const isPro = currentTier === "pro" || currentTier === "premium";
+
+      console.log("Determined Status - isPro:", isPro, "Tier:", currentTier);
+
+      // 2. ONLY if they are genuinely Free, do we count the receipts
       if (!isPro) {
-        try {
-          const {
-            data: { user },
-          } = await supabase.auth.getUser();
-          if (!user) return; // Must be logged in
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const startOfMonth = `${year}-${month}-01`;
 
-          // Get current month start date (YYYY-MM-DD format)
-          const now = new Date();
-          const year = now.getFullYear();
-          const month = String(now.getMonth() + 1).padStart(2, "0");
-          const startOfMonth = `${year}-${month}-01`;
+        const { data: receiptsData, error: countError } = await supabase
+          .from("receipts")
+          .select("id")
+          .eq("user_id", user.id)
+          .gte("date", startOfMonth);
 
-          // Fetch JUST the IDs of receipts from this month
-          const { data: receiptsData, error: countError } = await supabase
-            .from("receipts")
-            .select("id")
-            .eq("user_id", user.id)
-            .gte("date", startOfMonth);
+        const currentMonthCount = receiptsData ? receiptsData.length : 0;
+        console.log("Free User Month Count:", currentMonthCount);
 
-          if (countError) throw countError;
-
-          const currentMonthCount = receiptsData ? receiptsData.length : 0;
-          console.log("On-the-fly fetch count:", currentMonthCount);
-
-          // 3. ENFORCE THE LIMIT
-          if (currentMonthCount >= FREE_TIER_LIMITS.MAX_RECEIPTS_PER_MONTH) {
-            console.log("BLOCKING! Real count is >=", currentMonthCount);
-            setShowProModal(true); // SHOW IT LOCALLY IN SCANNER
-            return; // Stop the function from continuing the scan!
-          }
-        } catch (error) {
-          console.error("Error checking receipt limit:", error);
-          // Optional: Decide if you want to block or allow on error. Let's allow for now.
+        if (currentMonthCount >= FREE_TIER_LIMITS.MAX_RECEIPTS_PER_MONTH) {
+          console.log("BLOCKING! Limit reached.");
+          setShowProModal(true);
+          return;
         }
+      } else {
+        console.log("User is PRO! Bypassing receipt limits.");
       }
 
       console.log("--- FILE UPLOAD TRIGGERED IN SCANNER ---");
-      console.log("User Profile:", userProfile);
+      console.log("User Profile:", profileData);
       console.log("Is PRO?", isPro);
       console.log("ALLOWING FILE UPLOAD...");
 

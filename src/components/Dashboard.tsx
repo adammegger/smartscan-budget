@@ -55,9 +55,8 @@ export default function Dashboard() {
       // Save to Supabase with the final edited data
       await saveReceiptToSupabase(finalData);
 
-      console.log(
-        "Saved receipt! Incrementing count and triggering refresh...",
-      );
+      console.log("Saved receipt! Incrementing refresh key...");
+      // Force remount of all visual components
       setRefreshKey((prev) => prev + 1);
       setVerificationReceipt(null);
     } catch (error) {
@@ -75,13 +74,13 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       {/* Scanner component - hidden but functional */}
       <Scanner
+        key={`scanner-${refreshKey}`}
         ref={setScannerRef}
         onImageCaptured={() => {
           // Handle image capture if needed
         }}
         onAnalysisComplete={handleAnalysisComplete}
         onAnalysisError={handleAnalysisError}
-        userProfile={userProfile}
       />
 
       {/* Main Dashboard Content */}
@@ -118,7 +117,7 @@ export default function Dashboard() {
 
         {/* Dashboard Tiles */}
         <div className="mt-8">
-          <DashboardTiles refreshTrigger={refreshKey} />
+          <DashboardTiles key={refreshKey} refreshTrigger={refreshKey} />
         </div>
 
         {/* Instructions */}
