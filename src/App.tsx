@@ -318,11 +318,27 @@ function DashboardLayout() {
           <div className="flex items-center gap-6">
             {/* Greeting */}
             <div className="text-right">
-              <p className="text-sm text-muted-foreground">
-                {userProfile?.first_name
-                  ? `Cześć, ${userProfile.first_name}!`
-                  : "Cześć, użytkowniku!"}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-muted-foreground">
+                  {userProfile?.first_name
+                    ? `Cześć, ${userProfile.first_name}!`
+                    : "Cześć, użytkowniku!"}
+                </p>
+                {/* Subscription Tier Badge */}
+                <span
+                  className={`text-xs font-bold uppercase px-2 py-0.5 rounded-full ${
+                    userProfile?.subscription_tier === "pro"
+                      ? "bg-gradient-to-r from-orange-400 to-orange-600 text-white shadow-lg shadow-orange-500/30"
+                      : "bg-gray-700 text-gray-300"
+                  }`}
+                >
+                  {userProfile?.subscription_tier === "pro" ? (
+                    <span className="flex items-center gap-1">✨ PRO</span>
+                  ) : (
+                    "FREE"
+                  )}
+                </span>
+              </div>
             </div>
 
             <ThemeToggle />
@@ -346,12 +362,12 @@ function DashboardLayout() {
               Profil
             </Link>
             {/* Subscription Tier Badge */}
-            <div className="flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-md bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
+            {/* <div className="flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-md bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
               <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
               <span className="text-orange-600 dark:text-orange-400">
                 {userProfile?.subscription_tier?.toUpperCase() || "FREE"}
               </span>
-            </div>
+            </div> */}
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors cursor-pointer"
