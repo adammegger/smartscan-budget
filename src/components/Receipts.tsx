@@ -61,7 +61,7 @@ export default function Receipts(props: ReceiptsProps) {
   const [itemsByReceipt, setItemsByReceipt] = useState<Record<number, Item[]>>(
     {},
   );
-  const [itemsLoading, setItemsLoading] = useState(false);
+  const [itemsLoading, setItemsLoading] = useState<Record<number, boolean>>({});
   const [itemCounts, setItemCounts] = useState<Record<number, number>>({});
   const [overBudgetCategories, setOverBudgetCategories] = useState<Set<string>>(
     new Set(),
@@ -242,8 +242,11 @@ export default function Receipts(props: ReceiptsProps) {
   }, [receipts]);
 
   const fetchItemsForReceipt = async (receiptId: number) => {
+    // If we already fetched these items, don't do it again!
+    if (itemsByReceipt[receiptId]) return;
+
     try {
-      setItemsLoading(true);
+      setItemsLoading((prev) => ({ ...prev, [receiptId]: true }));
       const {
         data: { user: authUser },
       } = await supabase.auth.getUser();
@@ -265,7 +268,7 @@ export default function Receipts(props: ReceiptsProps) {
       console.error("Error fetching items:", err);
       setItemsByReceipt((prev) => ({ ...prev, [receiptId]: [] }));
     } finally {
-      setItemsLoading(false);
+      setItemsLoading((prev) => ({ ...prev, [receiptId]: false }));
     }
   };
 
@@ -863,7 +866,7 @@ export default function Receipts(props: ReceiptsProps) {
                             </div>
 
                             <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-orange-300 scrollbar-track-transparent">
-                              {itemsLoading ? (
+                              {itemsLoading[receipt.id] ? (
                                 <div className="text-center py-6 text-muted-foreground">
                                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500 mx-auto"></div>
                                 </div>
