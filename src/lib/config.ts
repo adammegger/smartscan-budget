@@ -5,8 +5,8 @@
  */
 
 export const FREE_TIER_LIMITS = {
-  MAX_RECEIPTS_PER_MONTH: 3,
-  MAX_BUDGETS: 2,
+  MAX_RECEIPTS_PER_MONTH: 15,
+  MAX_BUDGETS: 3,
   // Add any other free limits here in the future
 };
 
@@ -44,7 +44,7 @@ export const PRICING_PLANS = {
  */
 export function getReceiptsText(count: number): string {
   if (count === 1) return "1 paragon";
-  if (count >= 2 && count <= 4) return `${count} paragony`;
+  if (count >= 2 && count <= 4) return `${count} paragonów`;
   return `${count} paragonów`;
 }
 
@@ -55,6 +55,6 @@ export function getReceiptsText(count: number): string {
  */
 export function getBudgetsText(count: number): string {
   if (count === 1) return "1 budżet";
-  if (count >= 2 && count <= 4) return `${count} budżety`;
+  if (count >= 2 && count <= 4) return `${count} budżetów`;
   return `${count} budżetów`;
 }
