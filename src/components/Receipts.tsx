@@ -4,7 +4,13 @@ import { getCategoryColor, getCategoryIcon } from "../lib/categoryCache";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import CategoryIcon from "./CategoryIcon";
-import { AlertTriangle, Trash2, Download, Pencil } from "lucide-react";
+import {
+  AlertTriangle,
+  Trash2,
+  Download,
+  Pencil,
+  CheckCircle,
+} from "lucide-react";
 import { Card, CardHeader, CardTitle } from "./ui/card";
 import { isBioProduct } from "../lib/eco";
 import { getItemTags } from "../lib/categories";
@@ -98,6 +104,18 @@ export default function Receipts(props: ReceiptsProps) {
     }>;
   } | null>(null);
   const [editingReceiptId, setEditingReceiptId] = useState<number | null>(null);
+
+  // Toast state for notifications
+  const [toastMsg, setToastMsg] = useState<{
+    title: string;
+    type: "success" | "error";
+  } | null>(null);
+
+  // Helper to show toast that auto-hides after 3 seconds
+  const showToast = (title: string, type: "success" | "error" = "success") => {
+    setToastMsg({ title, type });
+    setTimeout(() => setToastMsg(null), 3000);
+  };
 
   // Funkcja do przełączania rozwinięcia paragonu
   const handleToggleReceipt = (receiptId: number) => {
@@ -459,7 +477,7 @@ export default function Receipts(props: ReceiptsProps) {
         data: { user: authUser },
       } = await supabase.auth.getUser();
       if (!authUser) {
-        alert("Musisz być zalogowany, aby edytować paragon.");
+        showToast("Musisz być zalogowany, aby edytować paragon.", "error");
         return;
       }
 
@@ -471,7 +489,10 @@ export default function Receipts(props: ReceiptsProps) {
 
       if (error) {
         console.error("Error fetching items for edit:", error);
-        alert("Wystąpił błąd podczas pobierania produktów do edycji.");
+        showToast(
+          "Wystąpił błąd podczas pobierania produktów do edycji.",
+          "error",
+        );
         return;
       }
 
@@ -498,7 +519,10 @@ export default function Receipts(props: ReceiptsProps) {
       setReceiptToEdit(formattedData);
     } catch (error) {
       console.error("Error preparing edit data:", error);
-      alert("Wystąpił błąd podczas przygotowywania danych do edycji.");
+      showToast(
+        "Wystąpił błąd podczas przygotowywania danych do edycji.",
+        "error",
+      );
     }
   };
 
@@ -579,7 +603,7 @@ export default function Receipts(props: ReceiptsProps) {
       setEditingReceiptId(null);
 
       // Show success message
-      alert("Paragon został pomyślnie zaktualizowany!");
+      showToast("Paragon został pomyślnie zaktualizowany!", "success");
 
       // Re-fetch receipts to update the UI
       await fetchReceipts();
@@ -590,7 +614,7 @@ export default function Receipts(props: ReceiptsProps) {
       }
     } catch (error) {
       console.error("Error saving edit:", error);
-      alert("Wystąpił błąd podczas zapisywania zmian.");
+      showToast("Wystąpił błąd podczas zapisywania zmian.", "error");
     }
   };
 
@@ -601,7 +625,7 @@ export default function Receipts(props: ReceiptsProps) {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        alert("Musisz być zalogowany, aby wyeksportować dane.");
+        showToast("Musisz być zalogowany, aby wyeksportować dane.", "error");
         return;
       }
 
@@ -614,7 +638,10 @@ export default function Receipts(props: ReceiptsProps) {
 
       if (profileError) {
         console.error("Error fetching profile:", profileError);
-        alert("Wystąpił błąd podczas pobierania informacji o subskrypcji.");
+        showToast(
+          "Wystąpił błąd podczas pobierania informacji o subskrypcji.",
+          "error",
+        );
         return;
       }
 
@@ -634,12 +661,12 @@ export default function Receipts(props: ReceiptsProps) {
 
       if (receiptsError) {
         console.error("Error fetching receipts:", receiptsError);
-        alert("Wystąpił błąd podczas pobierania paragonów.");
+        showToast("Wystąpił błąd podczas pobierania paragonów.", "error");
         return;
       }
 
       if (!receiptsData || receiptsData.length === 0) {
-        alert("Brak danych do wyeksportowania.");
+        showToast("Brak danych do wyeksportowania.", "error");
         return;
       }
 
@@ -651,7 +678,7 @@ export default function Receipts(props: ReceiptsProps) {
 
       if (itemsError) {
         console.error("Error fetching items:", itemsError);
-        alert("Wystąpił błąd podczas pobierania produktów.");
+        showToast("Wystąpił błąd podczas pobierania produktów.", "error");
         return;
       }
 
@@ -693,10 +720,10 @@ export default function Receipts(props: ReceiptsProps) {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      alert("Eksport zakończony pomyślnie!");
+      showToast("Eksport zakończony pomyślnie!", "success");
     } catch (error) {
       console.error("Error exporting CSV:", error);
-      alert("Wystąpił błąd podczas eksportowania danych.");
+      showToast("Wystąpił błąd podczas eksportowania danych.", "error");
     }
   };
 
@@ -1056,6 +1083,26 @@ export default function Receipts(props: ReceiptsProps) {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toastMsg && (
+        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-right duration-300">
+          <div
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${
+              toastMsg.type === "success"
+                ? "bg-green-500/95 text-white"
+                : "bg-red-500/95 text-white"
+            }`}
+          >
+            {toastMsg.type === "success" ? (
+              <CheckCircle size={20} />
+            ) : (
+              <AlertTriangle size={20} />
+            )}
+            <span className="font-medium">{toastMsg.title}</span>
           </div>
         </div>
       )}

@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
-import { User, Key, AlertTriangle, Trash2, ArrowLeft } from "lucide-react";
+import {
+  User,
+  Key,
+  AlertTriangle,
+  Trash2,
+  ArrowLeft,
+  CheckCircle,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { supabase } from "../lib/supabase";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +25,18 @@ export default function Profile() {
     profile_exists: boolean;
   } | null>(null);
   const navigate = useNavigate();
+
+  // Toast state for notifications
+  const [toastMsg, setToastMsg] = useState<{
+    title: string;
+    type: "success" | "error";
+  } | null>(null);
+
+  // Helper to show toast that auto-hides after 3 seconds
+  const showToast = (title: string, type: "success" | "error" = "success") => {
+    setToastMsg({ title, type });
+    setTimeout(() => setToastMsg(null), 3000);
+  };
 
   useEffect(() => {
     // Get current user email
@@ -103,12 +122,12 @@ export default function Profile() {
         navigate("/", { replace: true });
       } else {
         // Show error message
-        alert(`Błąd podczas usuwania konta: ${result.error}`);
+        showToast(`Błąd podczas usuwania konta: ${result.error}`, "error");
         setIsDeletingAccount(false);
       }
     } catch (error) {
       console.error("Delete account error:", error);
-      alert("Wystąpił nieoczekiwany błąd podczas usuwania konta.");
+      showToast("Wystąpił nieoczekiwany błąd podczas usuwania konta.", "error");
       setIsDeletingAccount(false);
     }
   };
@@ -292,6 +311,26 @@ ${
           </div>
         </div>
       </main>
+
+      {/* Toast Notification */}
+      {toastMsg && (
+        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-right duration-300">
+          <div
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${
+              toastMsg.type === "success"
+                ? "bg-green-500/95 text-white"
+                : "bg-red-500/95 text-white"
+            }`}
+          >
+            {toastMsg.type === "success" ? (
+              <CheckCircle size={20} />
+            ) : (
+              <AlertTriangle size={20} />
+            )}
+            <span className="font-medium">{toastMsg.title}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
