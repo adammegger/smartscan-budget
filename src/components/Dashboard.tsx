@@ -3,6 +3,8 @@ import { Camera } from "lucide-react";
 import { Button } from "./ui/button";
 import Scanner from "./Scanner";
 import ReceiptVerification from "./ReceiptVerification";
+import DashboardTiles from "./DashboardTiles";
+import { useDataCache } from "../lib/cacheUtils";
 import type { ReceiptData } from "../lib/receiptVerification";
 import type { ScannerRef } from "./Scanner";
 
@@ -11,8 +13,16 @@ export default function Dashboard() {
   const [verificationReceipt, setVerificationReceipt] =
     useState<ReceiptData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Get user profile from cache
+  const { userProfile } = useDataCache();
 
   const handleTriggerMockScan = async () => {
+    console.log("--- SCAN TRIGGERED ---");
+    console.log("User Profile:", userProfile);
+
+    // Continue with normal scanner logic - Scanner handles the limit internally
     if (scannerRef && scannerRef.triggerMockScan) {
       setIsAnalyzing(true);
       try {
@@ -45,11 +55,11 @@ export default function Dashboard() {
       // Save to Supabase with the final edited data
       await saveReceiptToSupabase(finalData);
 
-      // Close modal and reset state
+      console.log(
+        "Saved receipt! Incrementing count and triggering refresh...",
+      );
+      setRefreshKey((prev) => prev + 1);
       setVerificationReceipt(null);
-
-      // Optional: Show success toast
-      console.log("Receipt saved successfully!");
     } catch (error) {
       console.error("Error saving receipt:", error);
       // Handle error (show error toast, etc.)
@@ -71,6 +81,7 @@ export default function Dashboard() {
         }}
         onAnalysisComplete={handleAnalysisComplete}
         onAnalysisError={handleAnalysisError}
+        userProfile={userProfile}
       />
 
       {/* Main Dashboard Content */}
@@ -103,6 +114,11 @@ export default function Dashboard() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Dashboard Tiles */}
+        <div className="mt-8">
+          <DashboardTiles refreshTrigger={refreshKey} />
         </div>
 
         {/* Instructions */}

@@ -39,6 +39,7 @@ interface ReceiptVerificationProps {
   onClose: () => void;
   onReject: () => void;
   onSave: (finalData: ReceiptData) => Promise<void>;
+  isEditMode?: boolean;
 }
 
 interface Category {
@@ -278,6 +279,7 @@ export default function ReceiptVerification({
   onClose,
   onReject,
   onSave,
+  isEditMode,
 }: ReceiptVerificationProps) {
   console.log("🔍 ReceiptVerification: Component rendered with:", {
     isOpen,
@@ -578,10 +580,12 @@ export default function ReceiptVerification({
             </div>
             <div>
               <h2 className="text-xl font-bold text-foreground">
-                Weryfikacja paragonu
+                {isEditMode ? "Edycja paragonu" : "Weryfikacja paragonu"}
               </h2>
               <p className="text-sm text-muted-foreground">
-                Przejrzyj i popraw dane przed zapisaniem
+                {isEditMode
+                  ? "Edytuj dane zapisanego paragonu"
+                  : "Przejrzyj i popraw dane przed zapisaniem"}
               </p>
             </div>
           </div>

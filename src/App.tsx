@@ -39,6 +39,7 @@ import Faq from "./pages/Faq";
 import LandingPage from "./pages/LandingPage";
 import ScrollToTop from "./components/ScrollToTop";
 import { useDataCache } from "./lib/cacheUtils";
+import { RefreshContext, useRefresh } from "./lib/refreshContext";
 
 // Import the correct ReceiptData type from receiptVerification
 import type { ReceiptData } from "./lib/receiptVerification";
@@ -81,10 +82,17 @@ function DashboardLayout() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [verificationReceipt, setVerificationReceipt] =
     useState<ReceiptData | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const scannerRef = useRef<React.ElementRef<typeof Scanner>>(null);
 
   // Data cache for user profile
   const { setUserProfile, refreshUserProfile, userProfile } = useDataCache();
+
+  // Refresh context value
+  const refreshContextValue = {
+    refreshKey,
+    triggerRefresh: () => setRefreshKey((prev) => prev + 1),
+  };
 
   const handleLoginSuccess = () => {
     setIsAuthenticated(true);
@@ -475,7 +483,9 @@ function DashboardLayout() {
 
       {/* Main Content - using Outlet for nested routes */}
       <section className="px-6 lg:px-12 xl:px-16 2xl:px-24 pb-8">
-        <Outlet />
+        <RefreshContext.Provider value={refreshContextValue}>
+          <Outlet />
+        </RefreshContext.Provider>
       </section>
 
       {/* Hidden Scanner Component */}
@@ -499,6 +509,8 @@ function DashboardLayout() {
               await saveReceiptToSupabase(finalData);
               setVerificationReceipt(null); // Zamknij modal po zapisie
               setCaptureMessage("Paragon zweryfikowany i zapisany!");
+              // Trigger refresh of all dashboard components
+              setRefreshKey((prev) => prev + 1);
             } catch (error) {
               console.error("Błąd zapisu zweryfikowanego paragonu:", error);
               setCaptureMessage("Błąd zapisu paragonu. Spróbuj ponownie.");
@@ -516,6 +528,7 @@ function ReceiptsWrapper() {
   const [selectedReceiptId, setSelectedReceiptId] = useState<number | null>(
     null,
   );
+  const { refreshKey } = useRefresh();
 
   return (
     <Receipts
@@ -527,6 +540,7 @@ function ReceiptsWrapper() {
           `/dashboard/price-history?product=${encodeURIComponent(productName)}`,
         );
       }}
+      refreshKey={refreshKey}
     />
   );
 }

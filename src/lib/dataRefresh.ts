@@ -95,14 +95,15 @@ export const refreshFavoriteProducts = async () => {
     } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data: products } = await supabase
-      .from("favorite_products")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
+    // SAFE FALLBACK - Table doesn't exist, return empty array immediately
+    // DANGEROUS - CRASHES APP
+    // const { data: products } = await supabase.from('favorite_products').select('*');
+
+    // SAFE FALLBACK (REPLACE WITH THIS)
+    const data: unknown[] = []; // Mock empty response because table doesn't exist
 
     return {
-      products: products || [],
+      products: data || [],
       lastFetched: Date.now(),
     } as FavoriteProductCache;
   } catch (error) {

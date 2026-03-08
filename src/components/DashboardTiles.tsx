@@ -378,6 +378,7 @@ interface DashboardTilesProps {
     endDate: Date | null;
     period: "today" | "week" | "month" | "last30" | "custom";
   };
+  refreshTrigger?: number;
 }
 
 export default function DashboardTiles(props: DashboardTilesProps) {
@@ -399,6 +400,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
     props.dateFilter?.startDate,
     props.dateFilter?.endDate,
     props.dateFilter?.period,
+    props.refreshTrigger,
   ]);
 
   const fetchData = async () => {

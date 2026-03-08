@@ -1,5 +1,4 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { Camera } from "lucide-react";
 import { processReceipt } from "../lib/gemini";
 import { supabase } from "../lib/supabase";
 import {
@@ -80,18 +79,70 @@ interface ScannerProps {
     }>;
   }) => void;
   onAnalysisError: (error: string) => void;
+  userProfile?: {
+    subscription_tier?: string;
+  } | null;
 }
 
 const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
-  { onImageCaptured, onAnalysisComplete, onAnalysisError },
+  { onImageCaptured, onAnalysisComplete, onAnalysisError, userProfile },
   ref,
 ) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSimulating, setIsSimulating] = useState(false);
+  const [showProModal, setShowProModal] = useState(false);
 
   // Mock scan function for testing achievements
   const triggerMockScan = async () => {
     if (isSimulating) return;
+
+    // 1. Determine if PRO
+    const isPro =
+      userProfile?.subscription_tier === "pro" ||
+      userProfile?.subscription_tier === "premium";
+
+    // 2. If NOT PRO, fetch the real receipt count directly from Supabase right now
+    if (!isPro) {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return; // Must be logged in
+
+        // Get current month start date (YYYY-MM-DD format)
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const startOfMonth = `${year}-${month}-01`;
+
+        // Fetch JUST the IDs of receipts from this month
+        const { data: receiptsData, error: countError } = await supabase
+          .from("receipts")
+          .select("id")
+          .eq("user_id", user.id)
+          .gte("date", startOfMonth);
+
+        if (countError) throw countError;
+
+        const currentMonthCount = receiptsData ? receiptsData.length : 0;
+        console.log("On-the-fly fetch count:", currentMonthCount);
+
+        // 3. ENFORCE THE LIMIT
+        if (currentMonthCount >= 3) {
+          console.log("BLOCKING! Real count is >=", currentMonthCount);
+          setShowProModal(true); // SHOW IT LOCALLY IN SCANNER
+          return; // Stop the function from continuing the scan!
+        }
+      } catch (error) {
+        console.error("Error checking receipt limit:", error);
+        // Optional: Decide if you want to block or allow on error. Let's allow for now.
+      }
+    }
+
+    console.log("--- SCAN TRIGGERED IN SCANNER ---");
+    console.log("User Profile:", userProfile);
+    console.log("Is PRO?", isPro);
+    console.log("ALLOWING SCAN...");
 
     setIsSimulating(true);
     onImageCaptured("mock-image-data");
@@ -239,6 +290,54 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
   ) => {
     const file = event.target.files?.[0];
     if (file) {
+      // 1. Determine if PRO
+      const isPro =
+        userProfile?.subscription_tier === "pro" ||
+        userProfile?.subscription_tier === "premium";
+
+      // 2. If NOT PRO, fetch the real receipt count directly from Supabase right now
+      if (!isPro) {
+        try {
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+          if (!user) return; // Must be logged in
+
+          // Get current month start date (YYYY-MM-DD format)
+          const now = new Date();
+          const year = now.getFullYear();
+          const month = String(now.getMonth() + 1).padStart(2, "0");
+          const startOfMonth = `${year}-${month}-01`;
+
+          // Fetch JUST the IDs of receipts from this month
+          const { data: receiptsData, error: countError } = await supabase
+            .from("receipts")
+            .select("id")
+            .eq("user_id", user.id)
+            .gte("date", startOfMonth);
+
+          if (countError) throw countError;
+
+          const currentMonthCount = receiptsData ? receiptsData.length : 0;
+          console.log("On-the-fly fetch count:", currentMonthCount);
+
+          // 3. ENFORCE THE LIMIT
+          if (currentMonthCount >= 3) {
+            console.log("BLOCKING! Real count is >=", currentMonthCount);
+            setShowProModal(true); // SHOW IT LOCALLY IN SCANNER
+            return; // Stop the function from continuing the scan!
+          }
+        } catch (error) {
+          console.error("Error checking receipt limit:", error);
+          // Optional: Decide if you want to block or allow on error. Let's allow for now.
+        }
+      }
+
+      console.log("--- FILE UPLOAD TRIGGERED IN SCANNER ---");
+      console.log("User Profile:", userProfile);
+      console.log("Is PRO?", isPro);
+      console.log("ALLOWING FILE UPLOAD...");
+
       // Convert to Base64
       const reader = new FileReader();
       reader.onload = async (e) => {
@@ -362,6 +461,38 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
         onChange={handleFileChange}
         className="hidden"
       />
+
+      {/* Scanner Limit Upsell Modal - Inline */}
+      {showProModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-card border border-orange-500/30 rounded-xl shadow-2xl w-full max-w-md overflow-hidden p-6 animate-in zoom-in duration-200">
+            <div className="flex items-center gap-4 mb-4">
+              <h3 className="text-xl font-bold text-foreground">
+                Osiągnięto limit skanowania!
+              </h3>
+            </div>
+            <p className="text-foreground/80 mb-6">
+              W darmowym planie możesz zeskanować maksymalnie 3 paragony w
+              miesiącu. Przejdź na plan PRO, aby odblokować nielimitowane
+              skanowanie!
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => setShowProModal(false)}
+                className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-2 rounded-md hover:opacity-90 cursor-pointer"
+              >
+                Odblokuj PRO
+              </button>
+              <button
+                onClick={() => setShowProModal(false)}
+                className="w-full border border-border/50 text-muted-foreground py-2 rounded-md hover:bg-muted cursor-pointer"
+              >
+                Może później
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 });

@@ -4,7 +4,7 @@ import { getCategoryColor, getCategoryIcon } from "../lib/categoryCache";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import CategoryIcon from "./CategoryIcon";
-import { AlertTriangle, Trash2, Download } from "lucide-react";
+import { AlertTriangle, Trash2, Download, Pencil } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "./ui/card";
 import { isBioProduct } from "../lib/eco";
 import { getItemTags } from "../lib/categories";
@@ -20,6 +20,7 @@ import {
 import TimeFilter from "./TimeFilter";
 import { useDataCache, useCacheValid } from "../lib/cacheUtils";
 import ProModalGate from "./ProModalGate";
+import ReceiptVerification from "./ReceiptVerification";
 
 interface Receipt {
   id: number;
@@ -27,6 +28,7 @@ interface Receipt {
   date: string;
   total_amount: number;
   category: string;
+  category_id?: string | null;
   isVisible: boolean;
   created_at: string;
 }
@@ -47,6 +49,9 @@ interface Item {
 interface ReceiptsProps {
   onProductClick?: (productName: string) => void;
   timeFilter?: "today" | "week" | "month" | "year" | "all";
+  refreshKey?: number;
+  selectedReceiptId?: number | null;
+  onReceiptSelect?: (receiptId: number | null) => void;
 }
 
 export default function Receipts(props: ReceiptsProps) {
@@ -75,6 +80,24 @@ export default function Receipts(props: ReceiptsProps) {
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   // Stan do modalu PRO
   const [showProModal, setShowProModal] = useState(false);
+  // Stan do edycji paragonu
+  const [receiptToEdit, setReceiptToEdit] = useState<{
+    store_name: string;
+    date: string;
+    total_amount: number;
+    category: string;
+    category_id: string | null;
+    items: Array<{
+      name: string;
+      price: number;
+      category: string;
+      category_id: string | null;
+      unit: string;
+      quantity: number;
+      is_bio: boolean;
+    }>;
+  } | null>(null);
+  const [editingReceiptId, setEditingReceiptId] = useState<number | null>(null);
 
   // Funkcja do przełączania rozwinięcia paragonu
   const handleToggleReceipt = (receiptId: number) => {
@@ -170,6 +193,13 @@ export default function Receipts(props: ReceiptsProps) {
   useEffect(() => {
     fetchReceipts();
   }, [timeFilter]);
+
+  // Watch for refreshKey changes to force a refresh
+  useEffect(() => {
+    if (props.refreshKey !== undefined) {
+      fetchReceipts();
+    }
+  }, [props.refreshKey]);
 
   // Initialize with cached data if available
   useEffect(() => {
@@ -418,6 +448,140 @@ export default function Receipts(props: ReceiptsProps) {
     );
   };
 
+  const handleEditClick = async (receipt: Receipt) => {
+    try {
+      // Always fetch items directly from database when editing
+      // This ensures we have the latest data regardless of whether receipt was expanded
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+      if (!authUser) {
+        alert("Musisz być zalogowany, aby edytować paragon.");
+        return;
+      }
+
+      const { data: itemsData, error } = await supabase
+        .from("items")
+        .select("*")
+        .eq("receipt_id", receipt.id)
+        .eq("user_id", authUser.id);
+
+      if (error) {
+        console.error("Error fetching items for edit:", error);
+        alert("Wystąpił błąd podczas pobierania produktów do edycji.");
+        return;
+      }
+
+      // Map the receipt and its items into the ReceiptData structure
+      const receiptItems = itemsData || [];
+      const formattedData = {
+        store_name: receipt.store_name,
+        date: receipt.date,
+        total_amount: receipt.total_amount,
+        category: receipt.category,
+        category_id: receipt.category_id || null, // Ensure it's never undefined
+        items: receiptItems.map((item) => ({
+          name: item.name,
+          price: item.price,
+          category: item.category, // Use the exact category name from database
+          category_id: item.category_id || null, // Ensure it's never undefined
+          unit: item.unit || "szt",
+          quantity: item.quantity || 1,
+          is_bio: isBioProduct(item.name),
+        })),
+      };
+
+      setEditingReceiptId(receipt.id);
+      setReceiptToEdit(formattedData);
+    } catch (error) {
+      console.error("Error preparing edit data:", error);
+      alert("Wystąpił błąd podczas przygotowywania danych do edycji.");
+    }
+  };
+
+  const handleSaveEdit = async (finalData: {
+    store_name: string;
+    date: string;
+    total_amount: number;
+    category: string;
+    items: Array<{
+      name: string;
+      price: number;
+      category: string;
+      category_id?: string | null;
+      unit?: string;
+      quantity?: number;
+      is_bio?: boolean;
+    }>;
+  }) => {
+    try {
+      const receiptId = editingReceiptId;
+      if (!receiptId) {
+        throw new Error("No receipt ID to edit");
+      }
+
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+      if (!authUser) {
+        throw new Error("User not authenticated");
+      }
+
+      // Update the receipt
+      const { error: receiptError } = await supabase
+        .from("receipts")
+        .update({
+          store_name: finalData.store_name,
+          date: finalData.date,
+          total_amount: finalData.total_amount,
+          category: finalData.category,
+        })
+        .eq("id", receiptId)
+        .eq("user_id", authUser.id);
+
+      if (receiptError) throw receiptError;
+
+      // Delete existing items for this receipt
+      const { error: deleteError } = await supabase
+        .from("items")
+        .delete()
+        .eq("receipt_id", receiptId)
+        .eq("user_id", authUser.id);
+
+      if (deleteError) throw deleteError;
+
+      // Insert new items
+      if (finalData.items && finalData.items.length > 0) {
+        const itemsToInsert = finalData.items.map((item) => ({
+          receipt_id: receiptId,
+          name: item.name,
+          price: item.price,
+          category: item.category,
+          user_id: authUser.id,
+        }));
+
+        const { error: insertError } = await supabase
+          .from("items")
+          .insert(itemsToInsert);
+
+        if (insertError) throw insertError;
+      }
+
+      // Clear edit states
+      setReceiptToEdit(null);
+      setEditingReceiptId(null);
+
+      // Show success message
+      alert("Paragon został pomyślnie zaktualizowany!");
+
+      // Re-fetch receipts to update the UI
+      fetchReceipts();
+    } catch (error) {
+      console.error("Error saving edit:", error);
+      alert("Wystąpił błąd podczas zapisywania zmian.");
+    }
+  };
+
   const handleExportCSV = async () => {
     try {
       // Get user ID
@@ -646,16 +810,28 @@ export default function Receipts(props: ReceiptsProps) {
                       </div>
                     </TableCell>
                     <TableCell className="px-4 py-3 text-center">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setReceiptToDelete(receipt.id);
-                        }}
-                        className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors cursor-pointer"
-                        title="Usuń paragon"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      <div className="flex justify-center gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditClick(receipt);
+                          }}
+                          className="p-2 text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 rounded-md transition-colors cursor-pointer"
+                          title="Edytuj paragon"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setReceiptToDelete(receipt.id);
+                          }}
+                          className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors cursor-pointer"
+                          title="Usuń paragon"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </TableCell>
                   </TableRow>
                   {expandedReceiptIds.has(receipt.id) && (
@@ -794,6 +970,17 @@ export default function Receipts(props: ReceiptsProps) {
         title="Funkcja Premium"
         message="Eksport danych do pliku CSV to funkcja Premium. Przejdź na plan PRO, aby pobierać i analizować swoje dane w Excelu."
       />
+
+      {/* Modal edycji paragonu */}
+      {receiptToEdit && (
+        <ReceiptVerification
+          receiptData={receiptToEdit}
+          isOpen={true}
+          onClose={() => setReceiptToEdit(null)}
+          onReject={() => setReceiptToEdit(null)}
+          onSave={handleSaveEdit}
+        />
+      )}
 
       {/* Modal usuwania paragonu */}
       {receiptToDelete && (
