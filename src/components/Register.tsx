@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import AuthLayout from "./AuthLayout";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, CheckCircle2, Circle } from "lucide-react";
+import { Eye, EyeOff, CheckCircle2, Circle, Check } from "lucide-react";
 
 interface RegisterProps {
   onRegisterSuccess: () => void;
@@ -12,6 +12,7 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -23,6 +24,13 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    // Terms validation
+    if (!acceptedTerms) {
+      setError("Musisz zaakceptować regulamin, aby kontynuować.");
+      setLoading(false);
+      return;
+    }
 
     // Password validation - only check mismatch since visual checklist handles strength
     if (password !== confirmPassword) {
@@ -276,6 +284,38 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
               </div>
             </div>
 
+            {/* Terms and Privacy Policy Checkbox */}
+            <div className="flex items-start space-x-3">
+              <div className="flex items-center h-5">
+                <input
+                  id="acceptedTerms"
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="w-4 h-4 text-orange-500 bg-muted border-border rounded focus:ring-orange-500 focus:ring-2 cursor-pointer"
+                />
+              </div>
+              <div className="text-sm text-gray-400">
+                <label htmlFor="acceptedTerms" className="cursor-pointer">
+                  Akceptuję{" "}
+                  <Link
+                    to="/regulamin"
+                    className="text-orange-500 hover:text-orange-400 font-medium"
+                  >
+                    Regulamin
+                  </Link>{" "}
+                  i{" "}
+                  <Link
+                    to="/polityka-prywatnosci"
+                    className="text-orange-500 hover:text-orange-400 font-medium"
+                  >
+                    Politykę Prywatności
+                  </Link>
+                  .
+                </label>
+              </div>
+            </div>
+
             <div className="min-h-[20px]">
               {error && (
                 <div className="bg-destructive/10 border border-destructive/50 rounded-md p-3">
@@ -286,7 +326,7 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !acceptedTerms}
               className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-primary-foreground font-bold py-3 px-4 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer relative z-50"
             >
               {loading ? (
