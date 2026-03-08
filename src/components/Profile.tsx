@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   CheckCircle,
   Edit3,
+  CreditCard,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -36,7 +37,7 @@ export default function Profile() {
   const navigate = useNavigate();
 
   // Data cache for updating profile data
-  const { setUserProfile, refreshUserProfile } = useDataCache();
+  const { setUserProfile, refreshUserProfile, userProfile } = useDataCache();
 
   // Toast state for notifications
   const [toastMsg, setToastMsg] = useState<{
@@ -275,7 +276,7 @@ export default function Profile() {
                   <Button
                     variant="outline"
                     onClick={() => setIsEditingName(!isEditingName)}
-                    className="border-orange-500/30 text-orange-500 hover:bg-orange-500/10 hover:text-orange-400"
+                    className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6 py-2 rounded-full transition-all duration-200 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   >
                     <Edit3 size={16} className="mr-2" />
                     {isEditingName ? "Anuluj" : "Edytuj"}
@@ -344,6 +345,48 @@ export default function Profile() {
               </div>
             </div>
           </div>
+
+          {/* Subscription Management Section */}
+          {userProfile?.subscription_tier === "pro" && (
+            <div className="bg-card border border-border/50 rounded-xl p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 p-3 rounded-lg">
+                  <CreditCard size={24} className="text-orange-500" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-foreground">
+                    Zarządzanie Subskrypcją
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Faktury i anulowanie subskrypcji
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Zarządzaj swoją subskrypcją PRO, przeglądaj faktury i anuluj
+                  subskrypcję w dowolnym momencie.
+                </p>
+
+                <div className="flex gap-4">
+                  <Button
+                    onClick={() =>
+                      window.open(
+                        "https://billing.stripe.com/p/login/test_28E4gB1N67PO5kUdrf9IQ00",
+                        "_blank",
+                        "noopener,noreferrer",
+                      )
+                    }
+                    variant="outline"
+                    className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6 py-2 rounded-full transition-all duration-200 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    Faktury i anulowanie
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Change Password Section */}
           <div className="bg-card border border-border/50 rounded-xl p-6">
@@ -430,7 +473,7 @@ export default function Profile() {
                 <Button
                   onClick={handleDeleteAccount}
                   variant="destructive"
-                  className="bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-2 rounded-full transition-all duration-200 hover:scale-105 shadow-lg"
+                  className="bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-2 rounded-full transition-all duration-200 hover:scale-105 shadow-lg cursor-pointer"
                 >
                   <Trash2 size={16} className="mr-2" />
                   Usuń konto
