@@ -17,6 +17,7 @@ export default function Success() {
   const navigate = useNavigate();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshComplete, setRefreshComplete] = useState(false);
+  const [countdown, setCountdown] = useState(30);
   const [windowDimensions, setWindowDimensions] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -67,6 +68,25 @@ export default function Success() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Auto-redirect countdown logic
+  useEffect(() => {
+    const countdownInterval = setInterval(() => {
+      setCountdown((prevCountdown) => {
+        if (prevCountdown <= 1) {
+          // Navigate to dashboard when countdown reaches 0
+          navigate("/dashboard");
+          return 0;
+        }
+        return prevCountdown - 1;
+      });
+    }, 1000);
+
+    // Clear interval on component unmount
+    return () => {
+      clearInterval(countdownInterval);
+    };
+  }, [navigate]);
+
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Confetti Animation */}
@@ -90,26 +110,21 @@ export default function Success() {
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
       {/* Main Content Card */}
-      <Card className="w-full max-w-md shadow-2xl relative z-20 bg-gray-800/80 backdrop-blur-sm border-orange-500/20">
-        <CardHeader className="text-center relative">
-          {/* Orange Border Glow */}
-          <div className="absolute inset-0 rounded-xl border-2 border-orange-500/30 shadow-2xl shadow-orange-500/20 pointer-events-none"></div>
-
-          <div className="flex justify-center mb-6 relative">
-            <CheckCircle className="h-20 w-20 text-orange-400 drop-shadow-lg" />
-            {/* Orange ring effect */}
-            <div className="absolute -inset-2 rounded-full border-2 border-orange-400/50 animate-ping"></div>
+      <Card className="w-full max-w-md shadow-xl relative z-20 bg-gray-800 rounded-2xl border border-gray-700">
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-8">
+            <CheckCircle className="h-20 w-20 text-green-400 drop-shadow-lg" />
           </div>
 
           <CardTitle className="text-3xl font-bold text-white tracking-wide">
             Dziękujemy za zakup Paragonly PRO!
           </CardTitle>
-          <CardDescription className="text-gray-300 mt-3 text-lg font-medium">
+          <CardDescription className="text-gray-300 mt-4 text-lg font-medium">
             Twoje konto zostało uaktualnione
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-6 relative">
+        <CardContent className="space-y-8">
           {/* Status Indicators */}
           {isRefreshing && (
             <div className="text-center text-sm text-gray-400 font-medium bg-gray-700/50 rounded-lg p-3 border border-gray-600/50">
@@ -148,7 +163,7 @@ export default function Success() {
 
           {/* Footer Text */}
           <p className="text-xs text-gray-500 text-center opacity-80">
-            Strona automatycznie przekieruje Cię za 5 sekund
+            Strona automatycznie przekieruje Cię za {countdown} sekund
           </p>
         </CardContent>
       </Card>
