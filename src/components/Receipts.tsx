@@ -332,10 +332,12 @@ export default function Receipts(props: ReceiptsProps) {
         return newItems;
       });
 
-      console.log("Paragon usunięty pomyślnie");
+      // Show success toast
+      showToast("Paragon został usunięty", "success");
     } catch (error) {
       console.error("Błąd podczas usuwania paragonu:", error);
-      setError("Wystąpił błąd podczas usuwania paragonu");
+      // Show error toast instead of setting error state
+      showToast("Nie udało się usunąć paragonu", "error");
     }
   };
 
