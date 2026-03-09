@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import logoLight from "@assets/logoLight.png";
-import logoDark from "@assets/logoDark.png";
+import logoLight from "../assets/logoLight.png";
+import logoDark from "@/assets/logoDark.png";
 
 interface LogoProps {
   className?: string; // Pozwoli na customizację szerokości/wysokości w różnych miejscach
