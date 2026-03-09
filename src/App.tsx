@@ -27,6 +27,7 @@ import Budgets from "./components/Budgets";
 import Achievements from "./components/Achievements";
 import ReceiptVerification from "./components/ReceiptVerification";
 import Profile from "./components/Profile";
+import SplashScreen from "./components/SplashScreen";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { saveReceiptToSupabase } from "./lib/receiptVerification";
 import { DataCacheProvider } from "./lib/dataCache";
@@ -88,7 +89,7 @@ function DashboardLayout() {
   const scannerRef = useRef<React.ElementRef<typeof Scanner>>(null);
 
   // Data cache for user profile
-  const { setUserProfile, refreshUserProfile, userProfile } = useDataCache();
+  const { refreshUserProfile, userProfile } = useDataCache();
 
   // Refresh context value
   const refreshContextValue = {
@@ -573,6 +574,22 @@ function ReceiptsWrapper() {
 }
 
 function App() {
+  const [isAppLoading, setIsAppLoading] = useState(true);
+
+  useEffect(() => {
+    // Simple initialization - just wait a bit to show splash screen
+    const timer = setTimeout(() => {
+      setIsAppLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Show splash screen while app is loading
+  if (isAppLoading) {
+    return <SplashScreen />;
+  }
+
   return (
     <DataCacheProvider>
       <ThemeProvider>
