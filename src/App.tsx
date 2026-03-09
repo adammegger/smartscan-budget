@@ -38,6 +38,7 @@ import Privacy from "./pages/Privacy";
 import Contact from "./pages/Contact";
 import Faq from "./pages/Faq";
 import LandingPage from "./pages/LandingPage";
+import UnderConstruction from "./pages/UnderConstruction";
 import Success from "./pages/Success";
 import ScrollToTop from "./components/ScrollToTop";
 import { useDataCache } from "./lib/cacheUtils";
@@ -46,6 +47,20 @@ import CookieBanner from "./components/CookieBanner";
 
 // Import the correct ReceiptData type from receiptVerification
 import type { ReceiptData } from "./lib/receiptVerification";
+
+// Preview protection constants
+const PREVIEW_TOKEN = "paragonly-preview-2026";
+
+// Helper function to get preview token from URL
+function getPreviewToken(): string | null {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get("preview");
+}
+
+// Helper function to check if preview is enabled
+function isPreviewEnabled(): boolean {
+  return getPreviewToken() === PREVIEW_TOKEN;
+}
 
 // Theme Toggle Button Component
 function ThemeToggle() {
@@ -588,6 +603,11 @@ function App() {
   // Show splash screen while app is loading
   if (isAppLoading) {
     return <SplashScreen />;
+  }
+
+  // Global preview protection - check if preview token is valid
+  if (!isPreviewEnabled()) {
+    return <UnderConstruction />;
   }
 
   return (
