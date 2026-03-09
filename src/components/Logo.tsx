@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import logoLight from "@assets/logoLight.png";
+import logoDark from "@assets/logoDark.png";
 
 interface LogoProps {
   className?: string; // Pozwoli na customizację szerokości/wysokości w różnych miejscach
@@ -25,12 +27,12 @@ export default function Logo({
       `}
     >
       <img
-        src="/logoLight.png"
+        src={logoLight}
         alt="Paragonly Logo"
         className={`dark:hidden object-contain ${className}`}
       />
       <img
-        src="/logoDark.png"
+        src={logoDark}
         alt="Paragonly Logo"
         className={`hidden dark:block object-contain ${className}`}
       />
