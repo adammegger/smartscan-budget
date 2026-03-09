@@ -6,7 +6,7 @@ import App from "./App.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter basename="/smartscan-budget">
+    <BrowserRouter basename="/">
       <App />
     </BrowserRouter>
   </StrictMode>,
