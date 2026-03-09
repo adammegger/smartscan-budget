@@ -23,6 +23,7 @@ import {
   getBudgetsText,
   getReceiptsText,
 } from "../lib/config";
+import app1 from "assets/app1.png";
 
 // Smooth scrolling function
 const scrollToSection = (id: string) => {
@@ -259,7 +260,7 @@ export default function LandingPage() {
 
                   {/* The App Screenshot */}
                   <img
-                    src="src/assets/app1.png"
+                    src={app1}
                     alt="Paragonly App Interface"
                     className="w-full h-auto object-cover"
                     loading="lazy"
