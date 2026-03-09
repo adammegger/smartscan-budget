@@ -1,0 +1,3 @@
+# This file prevents GitHub Pages from processing the site with Jekyll
+
+# which is necessary for React apps to serve files with underscores correctly
