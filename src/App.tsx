@@ -13,7 +13,14 @@ import {
 import { useEffect, useRef, useState, lazy, Suspense } from "react";
 import { supabase } from "./lib/supabase";
 import { ThemeProvider, useTheme } from "./lib/theme";
-import { Routes, Route, Link, useNavigate, Outlet } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  Link,
+  useNavigate,
+  Outlet,
+  useLocation,
+} from "react-router-dom";
 import Scanner from "./components/Scanner";
 import Receipts from "./components/Receipts";
 import DashboardTiles from "./components/DashboardTiles";
@@ -91,7 +98,7 @@ function ThemeToggle() {
 // Dashboard Layout Component
 function DashboardLayout() {
   const navigate = useNavigate();
-  // const location = useLocation();
+  const location = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [, setUserEmail] = useState<string>("");
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
@@ -244,7 +251,7 @@ function DashboardLayout() {
   }
 
   // Check current path for auth-protected routes
-  const currentPath = window.location.pathname;
+  const currentPath = location.pathname;
 
   // For /login, /register, /reset-password, and /update-password routes, always show the respective components
   if (
@@ -494,23 +501,23 @@ function DashboardLayout() {
                 style={{
                   // Ten styl wymusza tło i tekst tylko na podstawie aktualnej ścieżki
                   backgroundColor:
-                    window.location.pathname === tab.path
+                    location.pathname === tab.path
                       ? "var(--secondary)"
                       : "transparent",
                   color:
-                    window.location.pathname === tab.path
+                    location.pathname === tab.path
                       ? "var(--secondary-foreground)"
                       : "var(--muted-foreground)",
                   borderRadius: "0px",
                 }}
                 onMouseEnter={(e) => {
-                  if (window.location.pathname !== tab.path) {
+                  if (location.pathname !== tab.path) {
                     e.currentTarget.style.backgroundColor = "var(--muted)";
                     e.currentTarget.style.color = "var(--foreground)";
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (window.location.pathname !== tab.path) {
+                  if (location.pathname !== tab.path) {
                     e.currentTarget.style.backgroundColor = "transparent";
                     e.currentTarget.style.color = "var(--muted-foreground)";
                   }

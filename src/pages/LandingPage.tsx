@@ -259,7 +259,7 @@ export default function LandingPage() {
 
                   {/* The App Screenshot */}
                   <img
-                    src="/app1.png"
+                    src="src/assets/app1.png"
                     alt="Paragonly App Interface"
                     className="w-full h-auto object-cover"
                     loading="lazy"
