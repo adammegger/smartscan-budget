@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useDataCache, useCacheValid } from "../lib/cacheUtils";
 import ProModalGate from "./ProModalGate";
 import { FREE_TIER_LIMITS, getBudgetsText } from "../lib/config";
+import { useRefresh } from "../lib/refreshContext";
 
 interface Budget {
   id: number;
@@ -51,6 +52,9 @@ export default function Budgets(props: BudgetsProps) {
   const { budgetCache, setBudgetCache } = useDataCache();
   const isCacheValid = useCacheValid(budgetCache);
 
+  // Use refresh context to listen for refresh triggers
+  const { refreshKey } = useRefresh();
+
   // Fetch initial data
   useEffect(() => {
     fetchData();
@@ -65,7 +69,7 @@ export default function Budgets(props: BudgetsProps) {
     } else {
       fetchData();
     }
-  }, [budgetCache, isCacheValid]);
+  }, [budgetCache, isCacheValid, refreshKey]);
 
   const fetchData = async () => {
     try {

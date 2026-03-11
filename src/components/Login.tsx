@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import AuthLayout from "./AuthLayout";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 interface LoginProps {
   onLoginSuccess: () => void;
@@ -12,6 +12,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,10 +29,10 @@ export default function Login({ onLoginSuccess }: LoginProps) {
         throw signInError;
       }
 
-      // Successful login - redirect to dashboard
+      // Successful login - notify parent and let DashboardLayout handle navigation
       onLoginSuccess();
       // Navigate to dashboard after successful login
-      window.location.href = "/dashboard";
+      navigate("/dashboard");
     } catch (err) {
       console.error("Login error:", err);
       setError(

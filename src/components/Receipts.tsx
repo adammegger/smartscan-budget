@@ -25,6 +25,7 @@ import TimeFilter from "./TimeFilter";
 import { useDataCache, useCacheValid } from "../lib/cacheUtils";
 import ProModalGate from "./ProModalGate";
 import ReceiptVerification from "./ReceiptVerification";
+import { useRefresh } from "../lib/refreshContext";
 
 interface Receipt {
   id: number;
@@ -133,6 +134,9 @@ export default function Receipts(props: ReceiptsProps) {
   const { receiptCache, setReceiptCache } = useDataCache();
   const isCacheValid = useCacheValid(receiptCache);
 
+  // Use refresh context to listen for refresh triggers
+  const { refreshKey } = useRefresh();
+
   // Fetch budgets and check which categories are over budget
   useEffect(() => {
     const fetchBudgetStatus = async () => {
@@ -215,7 +219,7 @@ export default function Receipts(props: ReceiptsProps) {
     if (props.refreshKey !== undefined) {
       fetchReceipts();
     }
-  }, [props.refreshKey]);
+  }, [props.refreshKey, refreshKey]);
 
   // Initialize with cached data if available
   useEffect(() => {

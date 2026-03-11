@@ -57,6 +57,7 @@ import type { ReceiptData } from "./lib/receiptVerification";
 
 // Preview protection constants
 const PREVIEW_TOKEN = "paragonly-preview-2026";
+const PREVIEW_STORAGE_KEY = "paragonly_preview_enabled";
 
 // Helper function to get preview token from URL
 function getPreviewToken(): string | null {
@@ -66,7 +67,21 @@ function getPreviewToken(): string | null {
 
 // Helper function to check if preview is enabled
 function isPreviewEnabled(): boolean {
-  return getPreviewToken() === PREVIEW_TOKEN;
+  // First check if we have the token in the URL
+  const urlToken = getPreviewToken();
+  if (urlToken === PREVIEW_TOKEN) {
+    // Store the preview flag in localStorage so it persists across navigation
+    localStorage.setItem(PREVIEW_STORAGE_KEY, "true");
+    return true;
+  }
+
+  // If no URL token, check if we previously stored the preview flag
+  return localStorage.getItem(PREVIEW_STORAGE_KEY) === "true";
+}
+
+// Helper function to clear preview flag (for logout)
+function clearPreviewFlag(): void {
+  localStorage.removeItem(PREVIEW_STORAGE_KEY);
 }
 
 // Theme Toggle Button Component
@@ -100,6 +115,7 @@ function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [, setUserEmail] = useState<string>("");
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -128,6 +144,8 @@ function DashboardLayout() {
     await supabase.auth.signOut();
     setIsAuthenticated(false);
     setUserEmail("");
+    // Clear preview flag when user logs out
+    clearPreviewFlag();
     // Redirect to home page after logout using client-side routing
     navigate("/");
   };
@@ -172,6 +190,7 @@ function DashboardLayout() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        setIsLoadingAuth(true);
         const {
           data: { session },
         } = await supabase.auth.getSession();
@@ -190,6 +209,8 @@ function DashboardLayout() {
         console.error("Auth check error:", error);
         // Don't throw - just log and continue
         setIsAuthenticated(false);
+      } finally {
+        setIsLoadingAuth(false);
       }
     };
 
@@ -242,7 +263,7 @@ function DashboardLayout() {
   }, []); // Remove refreshUserProfile from dependencies to prevent infinite loop
 
   // Show loading while checking auth
-  if (isAuthenticated === null) {
+  if (isLoadingAuth || isAuthenticated === null) {
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>

@@ -10,6 +10,7 @@ import {
 import CategoryIcon from "./CategoryIcon";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { useRefresh } from "../lib/refreshContext";
 
 // Budget Monitor Component
 interface BudgetMonitorProps {
@@ -394,6 +395,9 @@ export default function DashboardTiles(props: DashboardTilesProps) {
   const [greenLeavesCount, setGreenLeavesCount] = useState<number>(0);
   const [bioPercentage, setBioPercentage] = useState<number>(0);
 
+  // Use refresh context to listen for refresh triggers
+  const { refreshKey } = useRefresh();
+
   useEffect(() => {
     fetchData();
   }, [
@@ -401,6 +405,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
     props.dateFilter?.endDate,
     props.dateFilter?.period,
     props.refreshTrigger,
+    refreshKey, // Add refreshKey dependency
   ]);
 
   const fetchData = async () => {

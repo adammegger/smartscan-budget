@@ -11,6 +11,7 @@ import {
 import CategoryIcon from "../../components/CategoryIcon";
 import { isBioProduct } from "../../lib/eco";
 import { useDataCache, useCacheValid } from "../../lib/cacheUtils";
+import { useRefresh } from "../../lib/refreshContext";
 
 // Format currency function
 const formatCurrency = (amount: number): string => {
@@ -61,6 +62,9 @@ export default function FavoriteProducts() {
   // Data cache
   const { favoriteProductCache, setFavoriteProductCache } = useDataCache();
   const isCacheValid = useCacheValid(favoriteProductCache);
+
+  // Use refresh context to listen for refresh triggers
+  const { refreshKey } = useRefresh();
 
   // Fetch favorite products from Supabase
   const fetchFavoriteProducts = async () => {
@@ -236,7 +240,7 @@ export default function FavoriteProducts() {
     } else {
       fetchFavoriteProducts();
     }
-  }, [favoriteProductCache, isCacheValid]);
+  }, [favoriteProductCache, isCacheValid, refreshKey]);
 
   useEffect(() => {
     const fetchCategories = async () => {
