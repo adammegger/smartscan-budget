@@ -24,6 +24,7 @@ import {
   getReceiptsText,
 } from "../lib/config";
 import app1 from "assets/app1.png";
+import SuppiBadge from "../components/SuppiBadge";
 
 // Smooth scrolling function
 const scrollToSection = (id: string) => {
@@ -718,6 +719,9 @@ export default function LandingPage() {
             </div>
           </div>
         </footer>
+
+        {/* Suppi Support Badge */}
+        <SuppiBadge />
       </main>
     </div>
   );
