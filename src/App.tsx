@@ -49,8 +49,10 @@ import UnderConstruction from "./pages/UnderConstruction";
 import Success from "./pages/Success";
 import ScrollToTop from "./components/ScrollToTop";
 import { useDataCache } from "./lib/cacheUtils";
-import { RefreshContext, useRefresh } from "./lib/refreshContext";
+import { RefreshProvider, useRefresh } from "./lib/refreshContext";
 import CookieBanner from "./components/CookieBanner";
+import { ScanningProvider, useScanning } from "./lib/scanningContext";
+import ScanningOverlay from "./components/ScanningOverlay";
 
 // Import the correct ReceiptData type from receiptVerification
 import type { ReceiptData } from "./lib/receiptVerification";
@@ -114,6 +116,8 @@ function ThemeToggle() {
 function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { triggerRefresh } = useRefresh();
+  const { isScanning, startScanning, stopScanning } = useScanning();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [, setUserEmail] = useState<string>("");
@@ -123,17 +127,10 @@ function DashboardLayout() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [verificationReceipt, setVerificationReceipt] =
     useState<ReceiptData | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
   const scannerRef = useRef<React.ElementRef<typeof Scanner>>(null);
 
   // Data cache for user profile
   const { refreshUserProfile, userProfile } = useDataCache();
-
-  // Refresh context value
-  const refreshContextValue = {
-    refreshKey,
-    triggerRefresh: () => setRefreshKey((prev) => prev + 1),
-  };
 
   const handleLoginSuccess = () => {
     setIsAuthenticated(true);
@@ -554,9 +551,7 @@ function DashboardLayout() {
 
       {/* Main Content - using Outlet for nested routes */}
       <section className="px-6 lg:px-12 xl:px-16 2xl:px-24 pb-8">
-        <RefreshContext.Provider value={refreshContextValue}>
-          <Outlet />
-        </RefreshContext.Provider>
+        <Outlet />
       </section>
 
       {/* Hidden Scanner Component */}
@@ -576,19 +571,30 @@ function DashboardLayout() {
           onReject={() => setVerificationReceipt(null)}
           onSave={async (finalData: ReceiptData) => {
             try {
+              // Start scanning overlay when saving begins
+              startScanning();
+
               // Zapisz zweryfikowany paragon do bazy danych
               await saveReceiptToSupabase(finalData);
               setVerificationReceipt(null); // Zamknij modal po zapisie
               setCaptureMessage("Paragon zweryfikowany i zapisany!");
+
               // Trigger refresh of all dashboard components
-              setRefreshKey((prev) => prev + 1);
+              triggerRefresh();
+
+              // Stop scanning overlay when all operations are complete
+              stopScanning();
             } catch (error) {
               console.error("Błąd zapisu zweryfikowanego paragonu:", error);
               setCaptureMessage("Błąd zapisu paragonu. Spróbuj ponownie.");
+              stopScanning();
             }
           }}
         />
       )}
+
+      {/* Smart Scan Loading Overlay */}
+      <ScanningOverlay isVisible={isScanning} />
     </div>
   );
 }
@@ -639,51 +645,61 @@ function App() {
   }
 
   return (
-    <DataCacheProvider>
-      <ThemeProvider>
-        <TooltipProvider>
-          <ScrollToTop />
-          {/* Global Cookie Banner - appears on all routes */}
-          <CookieBanner />
-          <Routes>
-            {/* Public routes - accessible without authentication */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/regulamin" element={<Terms />} />
-            <Route path="/polityka-prywatnosci" element={<Privacy />} />
-            <Route path="/kontakt" element={<Contact />} />
-            <Route path="/faq" element={<Faq />} />
+    <ScanningProvider>
+      <DataCacheProvider>
+        <ThemeProvider>
+          <TooltipProvider>
+            <ScrollToTop />
+            {/* Global Cookie Banner - appears on all routes */}
+            <CookieBanner />
+            <RefreshProvider>
+              <Routes>
+                {/* Public routes - accessible without authentication */}
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/regulamin" element={<Terms />} />
+                <Route path="/polityka-prywatnosci" element={<Privacy />} />
+                <Route path="/kontakt" element={<Contact />} />
+                <Route path="/faq" element={<Faq />} />
 
-            {/* Auth routes - always show regardless of authentication */}
-            <Route
-              path="/login"
-              element={<Login onLoginSuccess={() => {}} />}
-            />
-            <Route
-              path="/register"
-              element={<Register onRegisterSuccess={() => {}} />}
-            />
-            <Route
-              path="/reset-password"
-              element={<ResetPassword onResetSuccess={() => {}} />}
-            />
-            <Route path="/update-password" element={<UpdatePassword />} />
-            <Route path="/success" element={<Success />} />
+                {/* Auth routes - always show regardless of authentication */}
+                <Route
+                  path="/login"
+                  element={<Login onLoginSuccess={() => {}} />}
+                />
+                <Route
+                  path="/register"
+                  element={<Register onRegisterSuccess={() => {}} />}
+                />
+                <Route
+                  path="/reset-password"
+                  element={<ResetPassword onResetSuccess={() => {}} />}
+                />
+                <Route path="/update-password" element={<UpdatePassword />} />
+                <Route path="/success" element={<Success />} />
 
-            {/* Dashboard route - requires authentication */}
-            <Route path="/dashboard" element={<DashboardLayout />}>
-              <Route index element={<DashboardTiles />} />
-              <Route path="receipts" element={<ReceiptsWrapper />} />
-              <Route path="budgets" element={<Budgets />} />
-              <Route path="price-history" element={<ProductPriceHistory />} />
-              <Route path="favorite-products" element={<FavoriteProducts />} />
-              <Route path="achievements" element={<Achievements />} />
-            </Route>
-            {/* Profile route - requires authentication */}
-            <Route path="/profile" element={<Profile />} />
-          </Routes>
-        </TooltipProvider>
-      </ThemeProvider>
-    </DataCacheProvider>
+                {/* Dashboard route - requires authentication */}
+                <Route path="/dashboard" element={<DashboardLayout />}>
+                  <Route index element={<DashboardTiles />} />
+                  <Route path="receipts" element={<ReceiptsWrapper />} />
+                  <Route path="budgets" element={<Budgets />} />
+                  <Route
+                    path="price-history"
+                    element={<ProductPriceHistory />}
+                  />
+                  <Route
+                    path="favorite-products"
+                    element={<FavoriteProducts />}
+                  />
+                  <Route path="achievements" element={<Achievements />} />
+                </Route>
+                {/* Profile route - requires authentication */}
+                <Route path="/profile" element={<Profile />} />
+              </Routes>
+            </RefreshProvider>
+          </TooltipProvider>
+        </ThemeProvider>
+      </DataCacheProvider>
+    </ScanningProvider>
   );
 }
 

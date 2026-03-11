@@ -26,6 +26,7 @@ import { useDataCache, useCacheValid } from "../lib/cacheUtils";
 import ProModalGate from "./ProModalGate";
 import ReceiptVerification from "./ReceiptVerification";
 import { useRefresh } from "../lib/refreshContext";
+import { useScanning } from "../lib/scanningContext";
 
 interface Receipt {
   id: number;

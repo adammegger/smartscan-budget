@@ -233,7 +233,7 @@ const BudgetMonitor: React.FC<BudgetMonitorProps> = ({}) => {
         )}
         <div className="w-full bg-muted rounded-full h-3 overflow-hidden mb-1">
           <div
-            className={`h-full transition-all duration-300 ${
+            className={`h-full transition-all duration-500 ease-out ${
               overallPercentage >= 100 ? "bg-red-500" : "bg-green-500"
             }`}
             style={{ width: `${Math.min(overallPercentage, 100)}%` }}
@@ -295,7 +295,7 @@ const BudgetMonitor: React.FC<BudgetMonitorProps> = ({}) => {
                     }}
                   >
                     <div
-                      className={`h-full rounded-full transition-all duration-300 ${
+                      className={`h-full rounded-full transition-all duration-500 ease-out ${
                         isOverBudget ? "bg-red-500" : "bg-green-500"
                       }`}
                       style={{ width: `${Math.min(percentage, 100)}%` }}
@@ -408,9 +408,22 @@ export default function DashboardTiles(props: DashboardTilesProps) {
     refreshKey, // Add refreshKey dependency
   ]);
 
+  // Listen for global receiptAdded event to refresh data
+  useEffect(() => {
+    const handleReceiptAdded = () => {
+      fetchData();
+    };
+
+    window.addEventListener("receiptAdded", handleReceiptAdded);
+    return () => window.removeEventListener("receiptAdded", handleReceiptAdded);
+  }, []);
+
   const fetchData = async () => {
     try {
-      setLoading(true);
+      // Only show loading state on initial mount, not during background refreshes
+      if (stats.totalSpent === 0 && stats.receiptCount === 0) {
+        setLoading(true);
+      }
       setError(null);
 
       const {

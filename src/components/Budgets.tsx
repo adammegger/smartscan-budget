@@ -8,6 +8,7 @@ import { useDataCache, useCacheValid } from "../lib/cacheUtils";
 import ProModalGate from "./ProModalGate";
 import { FREE_TIER_LIMITS, getBudgetsText } from "../lib/config";
 import { useRefresh } from "../lib/refreshContext";
+import { useScanning } from "../lib/scanningContext";
 
 interface Budget {
   id: number;
@@ -71,9 +72,23 @@ export default function Budgets(props: BudgetsProps) {
     }
   }, [budgetCache, isCacheValid, refreshKey]);
 
+  // Listen for global receiptAdded event to refresh data
+  useEffect(() => {
+    const handleReceiptAdded = () => {
+      fetchData();
+    };
+
+    window.addEventListener("receiptAdded", handleReceiptAdded);
+    return () => window.removeEventListener("receiptAdded", handleReceiptAdded);
+  }, []);
+
   const fetchData = async () => {
     try {
-      setLoading(true);
+      // Only show loading state on initial mount, not during background refreshes
+      if (budgets.length === 0) {
+        setLoading(true);
+      }
+
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -121,35 +136,19 @@ export default function Budgets(props: BudgetsProps) {
     const today = new Date();
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-    let receiptsQuery = supabase
+    // Always fetch current month spending for budgets, regardless of global date filter
+    const receiptsQuery = supabase
       .from("receipts")
       .select("id")
       .eq("user_id", userId)
       .gte("date", startOfMonth.toISOString().split("T")[0]);
-
-    if (props.dateFilter && props.dateFilter.period !== "month") {
-      const { startDate, period } = props.dateFilter;
-      if (period === "today") {
-        const todayStr = new Date().toISOString().split("T")[0];
-        receiptsQuery = supabase
-          .from("receipts")
-          .select("id")
-          .eq("user_id", userId)
-          .eq("date", todayStr);
-      } else if (period === "week" && startDate) {
-        receiptsQuery = supabase
-          .from("receipts")
-          .select("id")
-          .eq("user_id", userId)
-          .gte("date", startDate.toISOString().split("T")[0]);
-      }
-    }
 
     const { data: receipts } = await receiptsQuery;
     const receiptIds = receipts?.map((r) => r.id) || [];
 
     if (receiptIds.length === 0) return {};
 
+    // Fetch items with category matching - use category field for budget matching
     const { data: items } = await supabase
       .from("items")
       .select("price, category")
@@ -162,7 +161,10 @@ export default function Budgets(props: BudgetsProps) {
         typeof item.price === "number"
           ? item.price
           : parseFloat(String(item.price).replace(",", "."));
-      spending[item.category] = (spending[item.category] || 0) + price;
+
+      // Use category name for matching with budgets.category_name
+      const categoryName = item.category;
+      spending[categoryName] = (spending[categoryName] || 0) + price;
     });
 
     return spending;
@@ -382,7 +384,7 @@ export default function Budgets(props: BudgetsProps) {
         {totalBudget > 0 && (
           <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
             <div
-              className={`h-full ${getProgressColor((totalSpent / totalBudget) * 100)} transition-all duration-300`}
+              className={`h-full ${getProgressColor((totalSpent / totalBudget) * 100)} transition-all duration-500 ease-out`}
               style={{
                 width: `${Math.min((totalSpent / totalBudget) * 100, 100)}%`,
               }}
@@ -495,14 +497,14 @@ export default function Budgets(props: BudgetsProps) {
                               <div className="flex items-center gap-2 mt-1">
                                 <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                                   <div
-                                    className={`h-full ${getProgressColor(percentage)} transition-all duration-300`}
+                                    className={`h-full ${getProgressColor(percentage)} transition-all duration-500 ease-out`}
                                     style={{
                                       width: `${Math.min(percentage, 100)}%`,
                                     }}
                                   />
                                 </div>
                                 <span
-                                  className={`text-xs whitespace-nowrap ${getProgressTextColor(percentage)}`}
+                                  className={`text-xs whitespace-nowrap ${getProgressTextColor(percentage)} transition-all duration-500 ease-out`}
                                 >
                                   {budget.spent.toFixed(0)}/
                                   {budget.amount.toFixed(0)} PLN

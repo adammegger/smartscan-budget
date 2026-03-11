@@ -53,7 +53,7 @@ export default function FavoriteProducts() {
     FavoriteProductLocal[]
   >([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start with loading true
   const [error, setError] = useState<string | null>(null);
   const [editingProduct, setEditingProduct] = useState<string | null>(null);
   const [newCategory, setNewCategory] = useState<string>("");
@@ -241,6 +241,16 @@ export default function FavoriteProducts() {
       fetchFavoriteProducts();
     }
   }, [favoriteProductCache, isCacheValid, refreshKey]);
+
+  // Listen for global receiptAdded event to refresh data
+  useEffect(() => {
+    const handleReceiptAdded = () => {
+      fetchFavoriteProducts();
+    };
+
+    window.addEventListener("receiptAdded", handleReceiptAdded);
+    return () => window.removeEventListener("receiptAdded", handleReceiptAdded);
+  }, []);
 
   useEffect(() => {
     const fetchCategories = async () => {

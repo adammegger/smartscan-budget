@@ -7,6 +7,7 @@ import DashboardTiles from "./DashboardTiles";
 import { useDataCache } from "../lib/cacheUtils";
 import type { ReceiptData } from "../lib/receiptVerification";
 import type { ScannerRef } from "./Scanner";
+import { useScanning } from "../lib/scanningContext";
 
 export default function Dashboard() {
   const [scannerRef, setScannerRef] = useState<ScannerRef | null>(null);
