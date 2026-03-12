@@ -29,3 +29,4 @@ dist-ssr
 
 #app
 .env
+.env.development
