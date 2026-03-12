@@ -629,11 +629,22 @@ export default function Budgets(props: BudgetsProps) {
                           </div>
                         ) : (
                           <div className="flex items-center gap-3">
-                            <CategoryIcon
-                              icon={cat.icon}
-                              color={cat.color}
-                              size={20}
-                            />
+                            <div
+                              className="p-1 rounded-full flex items-center justify-center"
+                              style={{ backgroundColor: `${cat.color}20` }}
+                            >
+                              {(() => {
+                                const IconComponent = getIconComponent(
+                                  cat.name,
+                                );
+                                return (
+                                  <IconComponent
+                                    className="w-3 h-3"
+                                    style={{ color: cat.color }}
+                                  />
+                                );
+                              })()}
+                            </div>
                             <span className="font-medium flex-1 text-muted-foreground">
                               {cat.name}
                             </span>
