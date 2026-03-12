@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "../../components/ui/card";
 import CategoryIcon from "../../components/CategoryIcon";
+import { getIconComponent } from "../../lib/categories";
 import { isBioProduct } from "../../lib/eco";
 import { useDataCache, useCacheValid } from "../../lib/cacheUtils";
 import { useRefresh } from "../../lib/refreshContext";
@@ -354,6 +355,12 @@ export default function FavoriteProducts() {
     const color = getCategoryColor(categoryName);
     const icon = getCategoryIcon(categoryName);
 
+    // Debug: Log category data
+    console.log(
+      "FavoriteProducts - Category value passed to getIconComponent:",
+      categoryName,
+    );
+
     if (editingProduct === productName) {
       return (
         <div className="flex items-center gap-2">
@@ -407,7 +414,15 @@ export default function FavoriteProducts() {
           className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-semibold rounded-full"
           style={{ backgroundColor: `${color}20`, color }}
         >
-          <CategoryIcon icon={icon} color={color} size={12} />
+          <div
+            className="p-1 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: `${color}20` }}
+          >
+            {(() => {
+              const IconComponent = getIconComponent(categoryName);
+              return <IconComponent className="w-3 h-3" style={{ color }} />;
+            })()}
+          </div>
           {categoryName}
         </span>
         <button

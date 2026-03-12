@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 import { getCategoryColor, getCategoryIcon } from "../lib/categoryCache";
 import { Wallet, Pencil, AlertTriangle, Check, X } from "lucide-react";
 import CategoryIcon from "./CategoryIcon";
+import { getIconComponent } from "../lib/categories";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDataCache, useCacheValid } from "../lib/cacheUtils";
 import ProModalGate from "./ProModalGate";
@@ -27,6 +28,8 @@ interface Category {
 
 interface BudgetWithSpending extends Budget {
   spent: number;
+  category_icon?: string;
+  category_color?: string;
 }
 
 interface BudgetsProps {
@@ -101,7 +104,7 @@ export default function Budgets(props: BudgetsProps) {
           .order("name", { ascending: true }),
         supabase
           .from("budgets")
-          .select("*")
+          .select("*, categories(name, icon, color)")
           .eq("user_id", user.id)
           .order("category_name", { ascending: true }),
         fetchSpending(user.id),
@@ -112,6 +115,9 @@ export default function Budgets(props: BudgetsProps) {
       const budgetsWithSpent = (budgetsRes.data || []).map((b) => ({
         ...b,
         spent: spendingData[b.category_name] || 0,
+        // Extract category details from the joined data
+        category_icon: b.categories?.icon,
+        category_color: b.categories?.color,
       }));
 
       setBudgets(budgetsWithSpent);
@@ -347,6 +353,9 @@ export default function Budgets(props: BudgetsProps) {
       ),
   );
 
+  // Debug: Log budget data to verify icon data
+  console.log("Budgets data:", budgets);
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -436,8 +445,14 @@ export default function Budgets(props: BudgetsProps) {
                         {isEditing ? (
                           <div className="flex items-center gap-2">
                             <CategoryIcon
-                              icon={getCategoryIcon(budget.category_name)}
-                              color={getCategoryColor(budget.category_name)}
+                              icon={
+                                budget.category_icon ||
+                                getCategoryIcon(budget.category_name)
+                              }
+                              color={
+                                budget.category_color ||
+                                getCategoryColor(budget.category_name)
+                              }
                               size={20}
                             />
                             <span className="font-medium flex-1">
@@ -477,11 +492,28 @@ export default function Budgets(props: BudgetsProps) {
                           </div>
                         ) : (
                           <div className="flex items-center gap-3">
-                            <CategoryIcon
-                              icon={getCategoryIcon(budget.category_name)}
-                              color={getCategoryColor(budget.category_name)}
-                              size={20}
-                            />
+                            <div
+                              className="p-1 rounded-full flex items-center justify-center"
+                              style={{
+                                backgroundColor: `${getCategoryColor(budget.category_name)}20`,
+                              }}
+                            >
+                              {(() => {
+                                const IconComponent = getIconComponent(
+                                  budget.category_name,
+                                );
+                                return (
+                                  <IconComponent
+                                    className="w-3 h-3"
+                                    style={{
+                                      color: getCategoryColor(
+                                        budget.category_name,
+                                      ),
+                                    }}
+                                  />
+                                );
+                              })()}
+                            </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
                                 <span className="font-medium truncate">

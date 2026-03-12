@@ -4,9 +4,15 @@ import { Loader2 } from "lucide-react";
 
 interface ScanningOverlayProps {
   isVisible: boolean;
+  message?: string;
+  subMessage?: string;
 }
 
-const ScanningOverlay: React.FC<ScanningOverlayProps> = ({ isVisible }) => {
+const ScanningOverlay: React.FC<ScanningOverlayProps> = ({
+  isVisible,
+  message = "Analizowanie paragonu...",
+  subMessage = "Trwa kategoryzowanie wydatków i aktualizacja budżetu",
+}) => {
   return (
     <AnimatePresence>
       {isVisible && (
@@ -65,13 +71,13 @@ const ScanningOverlay: React.FC<ScanningOverlayProps> = ({ isVisible }) => {
             {/* Status Text */}
             <div className="flex flex-col items-center gap-2 text-white">
               <div className="flex items-center gap-3">
-                <Loader2 size={24} className="animate-spin text-blue-400" />
+                <Loader2 size={24} className="animate-spin text-orange-500" />
                 <h3 className="text-xl font-semibold tracking-tight">
-                  Analizowanie paragonu...
+                  {message}
                 </h3>
               </div>
               <p className="text-slate-400 text-sm animate-pulse">
-                Trwa kategoryzowanie wydatków i aktualizacja budżetu
+                {subMessage}
               </p>
             </div>
           </div>

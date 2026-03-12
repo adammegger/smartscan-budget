@@ -14,7 +14,10 @@ export default function CategoryIcon({
   size = 16,
   className = "",
 }: CategoryIconProps) {
-  const IconComponent = iconMap[icon] || iconMap["MoreHorizontal"];
+  // Handle empty or invalid icon names
+  const safeIcon = icon && icon.trim() ? icon : "MoreHorizontal";
+
+  const IconComponent = iconMap[safeIcon] || iconMap["MoreHorizontal"];
 
   if (!IconComponent) {
     return null;

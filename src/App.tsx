@@ -120,6 +120,7 @@ function DashboardLayout() {
   const { isScanning, startScanning, stopScanning } = useScanning();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
+  const [isLoadingApp, setIsLoadingApp] = useState(false);
   const [, setUserEmail] = useState<string>("");
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -195,10 +196,16 @@ function DashboardLayout() {
         if (session) {
           setIsAuthenticated(true);
           setUserEmail(session.user.email || "");
+          // Start app loading state
+          setIsLoadingApp(true);
+
           // Fetch and store user profile with subscription_tier
           await refreshUserProfile();
           // Preload categories when user logs in
           await preloadCategories();
+
+          // All initial data is loaded, stop app loading
+          setIsLoadingApp(false);
         } else {
           setIsAuthenticated(false);
         }
@@ -222,27 +229,38 @@ function DashboardLayout() {
       if (event === "SIGNED_IN" && session) {
         setIsAuthenticated(true);
         setUserEmail(session.user.email || "");
+        // Start app loading state for new sessions
+        setIsLoadingApp(true);
+
         // Fetch and store user profile with subscription_tier
         refreshUserProfile();
         // Preload categories when user logs in
         preloadCategories();
+
+        // All initial data is loaded, stop app loading
+        setIsLoadingApp(false);
       } else if (event === "SIGNED_OUT" || !session) {
         setIsAuthenticated(false);
         setUserEmail("");
+        setIsLoadingApp(false);
       } else if (event === "TOKEN_REFRESHED" && session) {
-        // Token refresh successful
+        // Token refresh successful - no need to reload data
         setIsAuthenticated(true);
         setUserEmail(session.user.email || "");
-        // Fetch and store user profile with subscription_tier
-        refreshUserProfile();
       } else if (event === "INITIAL_SESSION" && session) {
         // Initial session loaded
         setIsAuthenticated(true);
         setUserEmail(session.user.email || "");
+        // Start app loading state
+        setIsLoadingApp(true);
+
         // Fetch and store user profile with subscription_tier
         refreshUserProfile();
         // Preload categories when initial session is loaded
         preloadCategories();
+
+        // All initial data is loaded, stop app loading
+        setIsLoadingApp(false);
       } else if (event === "PASSWORD_RECOVERY") {
         // Password recovery event - don't change auth state
         console.log("Password recovery event");
@@ -259,12 +277,14 @@ function DashboardLayout() {
     return () => subscription.unsubscribe();
   }, []); // Remove refreshUserProfile from dependencies to prevent infinite loop
 
-  // Show loading while checking auth
-  if (isLoadingAuth || isAuthenticated === null) {
+  // Show loading while checking auth or loading app data
+  if (isLoadingAuth || isLoadingApp || isAuthenticated === null) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-      </div>
+      <ScanningOverlay
+        isVisible={true}
+        message="Przygotowuję Twój panel..."
+        subMessage="Trwa wczytywanie danych i inicjalizacja aplikacji"
+      />
     );
   }
 

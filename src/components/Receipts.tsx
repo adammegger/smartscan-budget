@@ -4,6 +4,7 @@ import { getCategoryColor, getCategoryIcon } from "../lib/categoryCache";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import CategoryIcon from "./CategoryIcon";
+import { getIconComponent } from "../lib/categories";
 import {
   AlertTriangle,
   Trash2,
@@ -457,12 +458,27 @@ export default function Receipts(props: ReceiptsProps) {
     const color = getCategoryColor(categoryName);
     const icon = getCategoryIcon(categoryName);
     const isOverBudget = overBudgetCategories.has(categoryName);
+
+    // Debug: Log category data
+    console.log(
+      "Receipts - Category value passed to getIconComponent:",
+      categoryName,
+    );
+
     return (
       <span
         className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-semibold rounded-full"
         style={{ backgroundColor: `${color}20`, color }}
       >
-        <CategoryIcon icon={icon} color={color} size={12} />
+        <div
+          className="p-1 rounded-full flex items-center justify-center"
+          style={{ backgroundColor: `${color}20` }}
+        >
+          {(() => {
+            const IconComponent = getIconComponent(categoryName);
+            return <IconComponent className="w-3 h-3" style={{ color }} />;
+          })()}
+        </div>
         {categoryName}
         {isOverBudget && (
           <AlertTriangle
