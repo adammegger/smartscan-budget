@@ -12,6 +12,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import ProFeatureGate from "./ProFeatureGate";
+import { Button } from "./ui/button";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface PriceHistoryItem {
   price: number;
@@ -40,6 +42,7 @@ export default function ProductPriceHistory({
   const [priceHistory, setPriceHistory] = useState<PriceHistoryItem[]>([]);
   const [storePrices, setStorePrices] = useState<StorePrice[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Refs to prevent infinite loops
   const productListFetchedRef = useRef(false);
@@ -110,14 +113,18 @@ export default function ProductPriceHistory({
   }, []); // Empty dependency array - runs only once
 
   // Krok 2: Wybór Produktu - obsługa zmiany wybranego produktu
-  const handleProductChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const product = e.target.value;
+  const handleProductChange = (product: string) => {
     setSelectedProduct(product);
 
     // Reset price history when product changes
     setPriceHistory([]);
     setStorePrices([]);
     priceHistoryFetchedRef.current = false;
+    setIsDropdownOpen(false);
+  };
+
+  const handleDropdownToggle = () => {
+    setIsDropdownOpen(!isDropdownOpen);
   };
 
   // Krok 3: Pobieranie Historii - uruchamia się tylko gdy selectedProduct nie jest pusty
@@ -314,18 +321,70 @@ export default function ProductPriceHistory({
                 <label className="block text-sm font-medium text-muted-foreground mb-2">
                   Wybierz produkt do analizy:
                 </label>
-                <select
-                  value={selectedProduct}
-                  onChange={handleProductChange}
-                  className="w-full px-3 py-2 bg-background text-foreground border border-input focus:ring-ring rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                >
-                  <option value="">-- Wybierz produkt --</option>
-                  {productList.map((product) => (
-                    <option key={product} value={product}>
-                      {product}
-                    </option>
-                  ))}
-                </select>
+                {/* Mobile Dropdown - Hidden on desktop */}
+                <div className="block md:hidden w-full">
+                  <div className="relative">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between items-center bg-card border-border/50 hover:bg-muted transition-colors"
+                      onClick={handleDropdownToggle}
+                    >
+                      <span className="text-foreground font-medium">
+                        {selectedProduct || "Wybierz produkt"}
+                      </span>
+                      {isDropdownOpen ? (
+                        <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                      )}
+                    </Button>
+
+                    {/* Dropdown Content */}
+                    {isDropdownOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-lg shadow-lg z-50 animate-in fade-in-0 zoom-in-95 duration-200 max-h-60 overflow-y-auto">
+                        <button
+                          onClick={() => handleProductChange("")}
+                          className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors ${
+                            !selectedProduct
+                              ? "bg-orange-500/10 text-orange-500 border-l-2 border-orange-500"
+                              : "text-foreground hover:bg-muted"
+                          }`}
+                        >
+                          -- Wybierz produkt --
+                        </button>
+                        {productList.map((product) => (
+                          <button
+                            key={product}
+                            onClick={() => handleProductChange(product)}
+                            className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors ${
+                              selectedProduct === product
+                                ? "bg-orange-500/10 text-orange-500 border-l-2 border-orange-500"
+                                : "text-foreground hover:bg-muted"
+                            }`}
+                          >
+                            {product}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Desktop Select - Hidden on mobile */}
+                <div className="hidden md:block">
+                  <select
+                    value={selectedProduct}
+                    onChange={(e) => handleProductChange(e.target.value)}
+                    className="w-full px-3 py-2 bg-background text-foreground border border-input focus:ring-ring rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  >
+                    <option value="">-- Wybierz produkt --</option>
+                    {productList.map((product) => (
+                      <option key={product} value={product}>
+                        {product}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </>
           )}
@@ -361,9 +420,9 @@ export default function ProductPriceHistory({
           ) : stats ? (
             <div className="mb-6">
               {/* Main stats row */}
-              <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 {/* Min Price - pastel green for light, original for dark */}
-                <div className="bg-emerald-50 dark:bg-green-500/10 border border-emerald-200 dark:border-green-500/30 rounded-lg p-4">
+                <div className="bg-emerald-50 dark:bg-green-500/10 border border-emerald-200 dark:border-green-500/30 rounded-lg p-3 md:p-4">
                   <div className="text-xs text-emerald-700 dark:text-green-400 font-medium mb-1">
                     Najniższa cena
                   </div>
@@ -376,7 +435,7 @@ export default function ProductPriceHistory({
                 </div>
 
                 {/* Max Price - pastel red for light, original for dark */}
-                <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg p-4">
+                <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg p-3 md:p-4">
                   <div className="text-xs text-red-700 dark:text-red-400 font-medium mb-1">
                     Najwyższa cena
                   </div>
@@ -389,7 +448,7 @@ export default function ProductPriceHistory({
                 </div>
 
                 {/* Average Price - pastel blue for light, original for dark */}
-                <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-lg p-4">
+                <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-lg p-3 md:p-4">
                   <div className="text-xs text-blue-700 dark:text-blue-400 font-medium mb-1">
                     Średnia cena
                   </div>

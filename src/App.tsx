@@ -9,6 +9,7 @@ import {
   Trophy,
   Receipt,
   ShoppingCart,
+  Menu,
 } from "lucide-react";
 import { useEffect, useRef, useState, lazy, Suspense } from "react";
 import { supabase } from "./lib/supabase";
@@ -33,6 +34,7 @@ import UpdatePassword from "./components/UpdatePassword";
 import Budgets from "./components/Budgets";
 import Achievements from "./components/Achievements";
 import ReceiptVerification from "./components/ReceiptVerification";
+import MobileNavigation from "./components/MobileNavigation";
 import Profile from "./components/Profile";
 import SplashScreen from "./components/SplashScreen";
 import { TooltipProvider } from "./components/ui/tooltip";
@@ -87,7 +89,7 @@ function clearPreviewFlag(): void {
 }
 
 // Theme Toggle Button Component
-function ThemeToggle() {
+export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
 
   const handleToggle = () => {
@@ -118,6 +120,7 @@ function DashboardLayout() {
   const location = useLocation();
   const { triggerRefresh } = useRefresh();
   const { isScanning, startScanning, stopScanning } = useScanning();
+  const { theme, toggleTheme } = useTheme();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [isLoadingApp, setIsLoadingApp] = useState(false);
@@ -357,53 +360,79 @@ function DashboardLayout() {
 
   return (
     <div className="min-h-screen bg-background text-foreground pt-12">
-      {/* Header */}
-      <header className="px-6 lg:px-12 xl:px-16 2xl:px-24 py-8">
+      {/* Unified Mobile Header - Single row for mobile */}
+      <header className="lg:hidden flex items-center justify-between w-full h-16 px-4 bg-background border-b border-border">
+        {/* LEFT SIDE: Hamburger & Logo */}
+        <div className="flex items-center gap-3">
+          <MobileNavigation onLogout={handleLogout} />
+          <span className="font-bold text-xl tracking-tight text-foreground">
+            PARAGONLY
+          </span>
+        </div>
+
+        {/* RIGHT SIDE: PRO Badge only */}
+        <div className="flex items-center gap-3">
+          <span className="bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)]">
+            PRO
+          </span>
+        </div>
+      </header>
+
+      {/* Desktop Header - Hidden on mobile */}
+      <header className="hidden lg:block px-6 lg:px-12 xl:px-16 2xl:px-24 py-8">
         <div className="flex justify-between items-center">
-          {/* Logo and App Name */}
-          <div className="flex items-center gap-2">
+          {/* Left side: Logo and App Name */}
+          <div className="flex items-center gap-3">
             <Logo className="h-12 w-auto" />
             <span
-              className="font-bold tracking-wider"
+              className="font-bold tracking-tight text-xl"
               style={{
                 fontFamily:
                   "Montserrat, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif",
-                fontSize: "1.25rem",
                 fontWeight: "700",
               }}
             >
               PARAGONLY
             </span>
+            {/* PRO Badge - visible on all screens */}
+            <span
+              className={`text-xs font-bold uppercase px-2 py-0.5 rounded-full ${
+                userProfile?.subscription_tier === "pro"
+                  ? "bg-gradient-to-r from-orange-400 to-orange-600 text-white shadow-lg shadow-orange-500/30"
+                  : "bg-gray-700 text-gray-300"
+              }`}
+            >
+              {userProfile?.subscription_tier === "pro" ? (
+                <span className="flex items-center gap-1">✨ PRO</span>
+              ) : (
+                "FREE"
+              )}
+            </span>
           </div>
 
-          {/* User Info */}
-          <div className="flex items-center gap-6">
-            {/* Greeting */}
-            <div className="text-right">
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-muted-foreground">
-                  {userProfile?.first_name
-                    ? `Cześć, ${userProfile.first_name}!`
-                    : "Cześć, użytkowniku!"}
-                </p>
-                {/* Subscription Tier Badge */}
-                <span
-                  className={`text-xs font-bold uppercase px-2 py-0.5 rounded-full ${
-                    userProfile?.subscription_tier === "pro"
-                      ? "bg-gradient-to-r from-orange-400 to-orange-600 text-white shadow-lg shadow-orange-500/30"
-                      : "bg-gray-700 text-gray-300"
-                  }`}
-                >
-                  {userProfile?.subscription_tier === "pro" ? (
-                    <span className="flex items-center gap-1">✨ PRO</span>
-                  ) : (
-                    "FREE"
-                  )}
-                </span>
-              </div>
-            </div>
+          {/* Right side: User Actions */}
+          <div className="flex items-center gap-3">
+            {/* Theme Toggle - Icon only on mobile, text on desktop */}
+            <button
+              onClick={() => {
+                console.log(
+                  "Current theme:",
+                  theme,
+                  "-> switching to:",
+                  theme === "dark" ? "light" : "dark",
+                );
+                toggleTheme();
+              }}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors cursor-pointer"
+              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+            >
+              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+              <span className="hidden md:inline">
+                {theme === "dark" ? "Jasny" : "Ciemny"}
+              </span>
+            </button>
 
-            <ThemeToggle />
+            {/* Profile Link */}
             <Link
               to="/profile"
               className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors cursor-pointer"
@@ -421,21 +450,16 @@ function DashboardLayout() {
                   d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                 />
               </svg>
-              Profil
+              <span className="hidden md:inline">Profil</span>
             </Link>
-            {/* Subscription Tier Badge */}
-            {/* <div className="flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-md bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
-              <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
-              <span className="text-orange-600 dark:text-orange-400">
-                {userProfile?.subscription_tier?.toUpperCase() || "FREE"}
-              </span>
-            </div> */}
+
+            {/* Logout Button */}
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors cursor-pointer"
             >
               <LogOut size={16} />
-              Wyloguj
+              <span className="hidden md:inline">Wyloguj</span>
             </button>
           </div>
         </div>
@@ -489,8 +513,8 @@ function DashboardLayout() {
         )}
       </section>
 
-      {/* Navigation Tabs */}
-      <nav className="px-6 lg:px-12 xl:px-16 2xl:px-24 pb-6">
+      {/* Navigation Tabs - Hidden on mobile, visible on desktop */}
+      <nav className="px-6 lg:px-12 xl:px-16 2xl:px-24 pb-6 hidden md:block">
         {/* Kontener tylko z ramką, zero paddingu, twarde cięcie */}
         <div className="bg-card border border-border/50 rounded-xl overflow-hidden shadow-sm">
           <div className="flex">

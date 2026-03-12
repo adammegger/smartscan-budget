@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
-import { getCategoryColor, getCategoryIcon } from "../lib/categoryCache";
+import { getCategoryColor } from "../lib/categoryCache";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import CategoryIcon from "./CategoryIcon";
@@ -12,7 +12,7 @@ import {
   Pencil,
   CheckCircle,
 } from "lucide-react";
-import { Card, CardHeader, CardTitle } from "./ui/card";
+import { Card } from "./ui/card";
 import { isBioProduct } from "../lib/eco";
 import {
   Table,
@@ -23,11 +23,11 @@ import {
   TableCell,
 } from "./ui/table";
 import TimeFilter from "./TimeFilter";
+import MobileTimeFilter from "./MobileTimeFilter";
 import { useDataCache, useCacheValid } from "../lib/cacheUtils";
 import ProModalGate from "./ProModalGate";
 import ReceiptVerification from "./ReceiptVerification";
 import { useRefresh } from "../lib/refreshContext";
-import { useScanning } from "../lib/scanningContext";
 
 interface Receipt {
   id: number;
@@ -456,7 +456,6 @@ export default function Receipts(props: ReceiptsProps) {
 
   const renderCategoryBadge = (categoryName: string) => {
     const color = getCategoryColor(categoryName);
-    const icon = getCategoryIcon(categoryName);
     const isOverBudget = overBudgetCategories.has(categoryName);
 
     // Debug: Log category data
@@ -751,14 +750,14 @@ export default function Receipts(props: ReceiptsProps) {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Paragony</h1>
           <p className="text-muted-foreground">Twoje zapisane paragony</p>
         </div>
         <button
           onClick={handleExportCSV}
-          className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold rounded-lg transition-all duration-200 hover:scale-105 shadow-lg"
+          className="cursor-pointer inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold rounded-lg transition-all duration-200 hover:scale-105 shadow-lg text-sm"
         >
           <Download size={16} />
           Eksportuj do CSV
@@ -766,16 +765,25 @@ export default function Receipts(props: ReceiptsProps) {
       </div>
 
       {/* Time Filter */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Filtry</CardTitle>
-            <TimeFilter
+      <Card className="px-4 py-3 md:px-6 md:py-4">
+        {/* Mobile layout - title and select in same flex row */}
+        <div className="flex items-center justify-between gap-3 mb-2 md:hidden">
+          <h3 className="text-base font-semibold leading-none">Filtry</h3>
+          <div className="w-[55%] flex items-center justify-end">
+            <MobileTimeFilter
               timeFilter={timeFilter}
               onTimeFilterChange={setTimeFilter}
             />
           </div>
-        </CardHeader>
+        </div>
+
+        {/* Desktop layout - unchanged */}
+        <div className="hidden md:block space-y-3">
+          <TimeFilter
+            timeFilter={timeFilter}
+            onTimeFilterChange={setTimeFilter}
+          />
+        </div>
       </Card>
 
       <div className="bg-card border border-border/50 rounded-xl overflow-hidden shadow-sm">
