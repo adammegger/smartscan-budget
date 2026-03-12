@@ -573,6 +573,12 @@ export default function LandingPage() {
                   <div className="flex items-center gap-3">
                     <Check size={20} className="text-green-500" />
                     <span className="text-foreground">
+                      Nielimitowane budżety
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Check size={20} className="text-green-500" />
+                    <span className="text-foreground">
                       Zaawansowana analiza wahań cen
                     </span>
                   </div>
