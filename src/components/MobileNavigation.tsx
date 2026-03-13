@@ -129,20 +129,20 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({ onLogout }) => {
       >
         {/* Profile Header Section */}
         <div className="flex items-center gap-3 p-4 mb-2 border-b border-border">
-          <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
+          <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center flex-shrink-0">
             <User size={20} className="text-white" />
           </div>
-          <div>
-            <h2 className="font-semibold text-foreground">
+          <div className="flex-1 min-w-0 overflow-hidden">
+            <h2 className="font-semibold text-foreground truncate">
               Cześć, {userProfile?.first_name || "Użytkowniku"}!
             </h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground truncate">
               {userEmail || "Brak danych"}
             </p>
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="ml-auto p-1 rounded-md hover:bg-muted transition-colors"
+            className="ml-auto p-1 rounded-md hover:bg-muted transition-colors flex-shrink-0"
             aria-label="Zamknij menu"
           >
             <X size={20} />
