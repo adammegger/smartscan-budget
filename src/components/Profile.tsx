@@ -257,9 +257,9 @@ export default function Profile() {
                   <p className="text-sm text-muted-foreground">Adres e-mail</p>
                   <p className="font-medium text-foreground">{userEmail}</p>
                 </div>
-                <div className="text-xs text-muted-foreground bg-green-500/20 text-green-600 px-2 py-1 rounded-full">
+                {/* <div className="text-xs text-muted-foreground bg-green-500/20 text-green-600 px-2 py-1 rounded-full">
                   Aktywne
-                </div>
+                </div> */}
               </div>
 
               {/* Name Editing Section */}
