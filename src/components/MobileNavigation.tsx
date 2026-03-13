@@ -180,7 +180,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({ onLogout }) => {
 
         {/* Bottom area: Theme toggle and logout */}
         <div className="p-4 space-y-2">
-          <ThemeToggle />
+          <ThemeToggle className="hidden" />
           <button
             onClick={handleLogout}
             disabled={isLoggingOut}
