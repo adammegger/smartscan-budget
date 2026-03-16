@@ -35,11 +35,37 @@ export default function Login({ onLoginSuccess }: LoginProps) {
       navigate("/dashboard");
     } catch (err) {
       console.error("Login error:", err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Błąd logowania. Sprawdź swoje dane.",
-      );
+
+      let errorMessage = "Błąd logowania. Spróbuj ponownie.";
+
+      if (err instanceof Error) {
+        const message = err.message.toLowerCase();
+
+        switch (message) {
+          case "invalid login credentials":
+            errorMessage = "Nieprawidłowy adres e-mail lub hasło.";
+            break;
+          case "email not confirmed":
+            errorMessage =
+              "Potwierdź swój adres e-mail przed zalogowaniem. Sprawdź skrzynkę pocztową.";
+            break;
+          case "too many requests":
+            errorMessage =
+              "Zbyt wiele prób logowania. Spróbuj ponownie za chwilę.";
+            break;
+          case "user not found":
+            errorMessage = "Nie znaleziono konta z tym adresem e-mail.";
+            break;
+          case "network":
+            errorMessage =
+              "Błąd połączenia. Sprawdź internet i spróbuj ponownie.";
+            break;
+          default:
+            errorMessage = "Błąd logowania. Spróbuj ponownie.";
+        }
+      }
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
