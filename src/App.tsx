@@ -49,6 +49,7 @@ import Faq from "./pages/Faq";
 import LandingPage from "./pages/LandingPage";
 import UnderConstruction from "./pages/UnderConstruction";
 import Success from "./pages/Success";
+import AuthCallbackPage from "./pages/AuthCallbackPage";
 import ScrollToTop from "./components/ScrollToTop";
 import { useDataCache } from "./lib/cacheUtils";
 import { RefreshProvider, useRefresh } from "./lib/refreshContext";
@@ -720,6 +721,7 @@ function App() {
                 />
                 <Route path="/update-password" element={<UpdatePassword />} />
                 <Route path="/success" element={<Success />} />
+                <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
                 {/* Dashboard route - requires authentication */}
                 <Route path="/dashboard" element={<DashboardLayout />}>
