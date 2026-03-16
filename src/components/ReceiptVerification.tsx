@@ -1,6 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { X, Plus, Trash2, Save, XCircle } from "lucide-react";
+import {
+  X,
+  Plus,
+  Trash2,
+  Save,
+  XCircle,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -269,6 +277,203 @@ const Autocomplete: React.FC<AutocompleteProps> = ({
         inputRef={inputRef}
         onSuggestionMouseDown={handleSuggestionMouseDown}
       />
+    </div>
+  );
+};
+
+// Unit dropdown component similar to MobileTimeFilter
+interface UnitDropdownProps {
+  value: string;
+  onChange: (selectedUnit: string) => void;
+}
+
+const UnitDropdown: React.FC<UnitDropdownProps> = ({ value, onChange }) => {
+  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+
+  // Find the label for the currently selected unit
+  const currentUnitLabel = value || "Wybierz...";
+
+  const handleSelectOption = (selectedUnit: string) => {
+    onChange(selectedUnit);
+    setIsDropdownOpen(false);
+  };
+
+  const unitOptions = [
+    { value: "szt", label: "szt." },
+    { value: "kg", label: "kg" },
+    { value: "g", label: "g" },
+    { value: "l", label: "l" },
+    { value: "ml", label: "ml" },
+    { value: "opak", label: "opak." },
+  ];
+
+  return (
+    <div className="relative">
+      <Button
+        variant="outline"
+        className="h-9 w-full justify-between items-center bg-card border-border/50 hover:bg-muted transition-colors text-sm"
+        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+      >
+        <span className="text-foreground font-medium">{currentUnitLabel}</span>
+        {isDropdownOpen ? (
+          <ChevronUp className="w-4 h-4 text-muted-foreground" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-muted-foreground" />
+        )}
+      </Button>
+
+      {/* Dropdown Content */}
+      {isDropdownOpen && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-lg shadow-lg z-50 animate-in fade-in-0 zoom-in-95 duration-200">
+          {unitOptions.map((unit) => (
+            <button
+              key={unit.value}
+              onClick={() => handleSelectOption(unit.value)}
+              className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors ${
+                value === unit.value
+                  ? "bg-orange-500/10 text-orange-500 border-l-2 border-orange-500"
+                  : "text-foreground hover:bg-muted"
+              }`}
+            >
+              {unit.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Main Category dropdown component for the modal header
+interface MainCategoryDropdownProps {
+  value: string;
+  categories: Category[];
+  onChange: (selectedId: string) => void;
+  showCategoryError: boolean;
+}
+
+const MainCategoryDropdown: React.FC<MainCategoryDropdownProps> = ({
+  value,
+  categories,
+  onChange,
+  showCategoryError,
+}) => {
+  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+
+  // Find the label for the currently selected category
+  const currentCategoryLabel =
+    categories.find((c) => c.id === value)?.name || "Wybierz kategorię...";
+
+  const handleSelectOption = (selectedId: string) => {
+    onChange(selectedId);
+    setIsDropdownOpen(false);
+  };
+
+  return (
+    <div className="relative">
+      <Button
+        variant="outline"
+        className={`h-9 w-full justify-between items-center bg-background border ${
+          showCategoryError
+            ? "border-red-500 ring-1 ring-red-500"
+            : "border-border/50"
+        } hover:bg-muted transition-colors text-sm`}
+        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+      >
+        <span
+          className={`font-medium ${
+            showCategoryError ? "text-red-500" : "text-foreground"
+          }`}
+        >
+          {currentCategoryLabel}
+        </span>
+        {isDropdownOpen ? (
+          <ChevronUp className="w-4 h-4 text-muted-foreground" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-muted-foreground" />
+        )}
+      </Button>
+
+      {/* Dropdown Content */}
+      {isDropdownOpen && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-lg shadow-lg z-50 animate-in fade-in-0 zoom-in-95 duration-200">
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => handleSelectOption(category.id)}
+              className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors ${
+                value === category.id
+                  ? "bg-orange-500/10 text-orange-500 border-l-2 border-orange-500"
+                  : "text-foreground hover:bg-muted"
+              }`}
+            >
+              {category.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Category dropdown component similar to MobileTimeFilter
+interface CategoryDropdownProps {
+  value: string;
+  categories: Category[];
+  onChange: (selectedId: string) => void;
+}
+
+const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
+  value,
+  categories,
+  onChange,
+}) => {
+  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+
+  // Find the label for the currently selected category
+  const currentCategoryLabel =
+    categories.find((c) => c.id === value)?.name || "Wybierz...";
+
+  const handleSelectOption = (selectedId: string) => {
+    onChange(selectedId);
+    setIsDropdownOpen(false);
+  };
+
+  return (
+    <div className="relative">
+      <Button
+        variant="outline"
+        className="h-9 w-full justify-between items-center bg-card border-border/50 hover:bg-muted transition-colors text-sm"
+        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+      >
+        <span className="text-foreground font-medium">
+          {currentCategoryLabel}
+        </span>
+        {isDropdownOpen ? (
+          <ChevronUp className="w-4 h-4 text-muted-foreground" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-muted-foreground" />
+        )}
+      </Button>
+
+      {/* Dropdown Content */}
+      {isDropdownOpen && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-lg shadow-lg z-50 animate-in fade-in-0 zoom-in-95 duration-200">
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => handleSelectOption(category.id)}
+              className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors ${
+                value === category.id
+                  ? "bg-orange-500/10 text-orange-500 border-l-2 border-orange-500"
+                  : "text-foreground hover:bg-muted"
+              }`}
+            >
+              {category.name}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -632,11 +837,10 @@ export default function ReceiptVerification({
               <Label htmlFor="category" className="text-sm font-medium">
                 Kategoria główna <span className="text-red-500">*</span>
               </Label>
-              <select
-                id="category"
+              <MainCategoryDropdown
                 value={editedData.category_id || ""}
-                onChange={(e) => {
-                  const selectedId = e.target.value;
+                categories={categories}
+                onChange={(selectedId) => {
                   const matchedCategory = categories.find(
                     (c) => c.id === selectedId,
                   );
@@ -650,21 +854,8 @@ export default function ReceiptVerification({
                   );
                   setShowCategoryError(false); // Ukryj błąd po dokonaniu wyboru
                 }}
-                className={`w-full px-3 py-2 bg-background border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer ${
-                  showCategoryError
-                    ? "border-red-500 ring-1 ring-red-500"
-                    : "border-border/50"
-                }`}
-              >
-                <option value="" disabled>
-                  Wybierz kategorię...
-                </option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
+                showCategoryError={showCategoryError}
+              />
               {showCategoryError && (
                 <span className="text-xs text-red-500">
                   Kategoria jest wymagana do zapisu.
@@ -690,110 +881,264 @@ export default function ReceiptVerification({
             </div>
 
             <div className="bg-card border border-border/50 rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted">
-                    <TableHead className="w-1/3">Nazwa</TableHead>
-                    <TableHead className="w-1/6">Cena</TableHead>
-                    <TableHead className="w-1/8">Ilość</TableHead>
-                    <TableHead className="w-1/8">Jednostka</TableHead>
-                    <TableHead className="w-1/6">Kategoria</TableHead>
-                    <TableHead className="w-1/6">BIO</TableHead>
-                    <TableHead className="w-12">Akcje</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {editedData.items.map((item, index) => (
-                    <TableRow key={index} className="hover:bg-muted/50">
-                      <TableCell>
-                        <Autocomplete
-                          value={item.name}
-                          onChange={(value) =>
-                            handleItemChange(index, "name", value)
-                          }
-                          onProductSelect={(product) => {
-                            // Auto-fill category when product is selected from autocomplete
-                            const selectedCategory = categories.find(
-                              (cat) => cat.name === product.category,
-                            );
-
-                            setEditedData((prev) => {
-                              const newItems = [...prev.items];
-                              newItems[index] = {
-                                ...newItems[index],
-                                name: product.name,
-                                category: product.category,
-                                category_id:
-                                  selectedCategory?.id || product.category_id,
-                              };
-                              return {
-                                ...prev,
-                                items: newItems,
-                              };
-                            });
-                          }}
-                          suggestions={productNames}
-                          placeholder="Nazwa produktu"
-                          className="bg-background border-border/50"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <input
-                          type="text"
-                          value={item.price}
-                          onChange={(e) => {
-                            // 1. Get raw string, replace comma with dot
-                            const val = e.target.value.replace(",", ".");
-
-                            // 2. Validate format: only digits, optional single dot, up to 2 decimal places
-                            // This Regex allows: "", "1", "1.", "1.2", "1.23", "0.5" etc.
-                            if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
-                              handleItemChange(index, "price", val);
+              {/* Desktop: Table layout */}
+              <div className="hidden sm:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted">
+                      <TableHead className="w-1/3">Nazwa</TableHead>
+                      <TableHead className="w-1/6">Cena</TableHead>
+                      <TableHead className="w-1/8">Ilość</TableHead>
+                      <TableHead className="w-1/8">Jednostka</TableHead>
+                      <TableHead className="w-1/6">Kategoria</TableHead>
+                      <TableHead className="w-1/6">BIO</TableHead>
+                      <TableHead className="w-12">Akcje</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {editedData.items.map((item, index) => (
+                      <TableRow key={index} className="hover:bg-muted/50">
+                        <TableCell>
+                          <Autocomplete
+                            value={item.name}
+                            onChange={(value) =>
+                              handleItemChange(index, "name", value)
                             }
-                          }}
-                          className="w-full px-2 py-1 bg-muted border border-border rounded text-sm text-right"
-                          placeholder="0.00"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <input
-                          type="text"
-                          value={item.quantity}
-                          onChange={(e) => {
-                            // 1. Get raw string, replace comma with dot
-                            const val = e.target.value.replace(",", ".");
+                            onProductSelect={(product) => {
+                              // Auto-fill category when product is selected from autocomplete
+                              const selectedCategory = categories.find(
+                                (cat) => cat.name === product.category,
+                              );
 
-                            // 2. Validate format: only digits, optional single dot, up to 2 decimal places
-                            // This Regex allows: "", "1", "1.", "1.2", "1.23", "0.5" etc.
-                            if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
-                              handleItemChange(index, "quantity", val);
+                              setEditedData((prev) => {
+                                const newItems = [...prev.items];
+                                newItems[index] = {
+                                  ...newItems[index],
+                                  name: product.name,
+                                  category: product.category,
+                                  category_id:
+                                    selectedCategory?.id || product.category_id,
+                                };
+                                return {
+                                  ...prev,
+                                  items: newItems,
+                                };
+                              });
+                            }}
+                            suggestions={productNames}
+                            placeholder="Nazwa produktu"
+                            className="bg-background border-border/50"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <input
+                            type="text"
+                            value={item.price}
+                            onChange={(e) => {
+                              // 1. Get raw string, replace comma with dot
+                              const val = e.target.value.replace(",", ".");
+
+                              // 2. Validate format: only digits, optional single dot, up to 2 decimal places
+                              // This Regex allows: "", "1", "1.", "1.2", "1.23", "0.5" etc.
+                              if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
+                                handleItemChange(index, "price", val);
+                              }
+                            }}
+                            className="w-full px-2 py-1 bg-muted border border-border rounded text-sm text-right"
+                            placeholder="0.00"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <input
+                            type="text"
+                            value={item.quantity}
+                            onChange={(e) => {
+                              // 1. Get raw string, replace comma with dot
+                              const val = e.target.value.replace(",", ".");
+
+                              // 2. Validate format: only digits, optional single dot, up to 2 decimal places
+                              // This Regex allows: "", "1", "1.", "1.2", "1.23", "0.5" etc.
+                              if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
+                                handleItemChange(index, "quantity", val);
+                              }
+                            }}
+                            className="w-full px-2 py-1 bg-muted border border-border rounded text-sm text-right"
+                            placeholder="1"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <select
+                            value={item.unit}
+                            onChange={(
+                              e: React.ChangeEvent<HTMLSelectElement>,
+                            ) =>
+                              handleItemChange(index, "unit", e.target.value)
                             }
-                          }}
-                          className="w-full px-2 py-1 bg-muted border border-border rounded text-sm text-right"
-                          placeholder="1"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <select
-                          value={item.unit}
-                          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                            handleItemChange(index, "unit", e.target.value)
+                            className="w-full px-3 py-2 bg-background border border-border/50 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
+                          >
+                            <option value="szt">szt.</option>
+                            <option value="kg">kg</option>
+                            <option value="g">g</option>
+                            <option value="l">l</option>
+                            <option value="ml">ml</option>
+                            <option value="opak">opak.</option>
+                          </select>
+                        </TableCell>
+                        <TableCell>
+                          <select
+                            value={item.category_id || ""}
+                            onChange={(e) => {
+                              const selectedId = e.target.value;
+                              const matchedCategory = categories.find(
+                                (c) => c.id === selectedId,
+                              );
+
+                              // Update the specific item in the array
+                              setEditedData((prev) => {
+                                const newItems = [...prev.items];
+                                newItems[index] = {
+                                  ...newItems[index],
+                                  category_id: selectedId,
+                                  category: matchedCategory
+                                    ? matchedCategory.name
+                                    : newItems[index].category,
+                                };
+                                return {
+                                  ...prev,
+                                  items: newItems,
+                                };
+                              });
+                            }}
+                            className="w-full px-3 py-2 bg-background border border-border/50 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
+                          >
+                            <option value="" disabled>
+                              Wybierz...
+                            </option>
+                            {categories.map((category) => (
+                              <option key={category.id} value={category.id}>
+                                {category.name}
+                              </option>
+                            ))}
+                          </select>
+                        </TableCell>
+                        <TableCell>
+                          <input
+                            type="checkbox"
+                            checked={item.is_bio}
+                            onChange={(e) =>
+                              handleItemChange(
+                                index,
+                                "is_bio",
+                                e.target.checked,
+                              )
+                            }
+                            className="w-4 h-4 text-green-600 bg-background border-border/50 rounded focus:ring-orange-500"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <button
+                            onClick={() => handleRemoveItem(index)}
+                            className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors cursor-pointer"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile: Card layout */}
+              <div className="sm:hidden space-y-3 p-3">
+                {editedData.items.map((item, index) => (
+                  <div
+                    key={index}
+                    className="bg-gray-800 rounded-lg p-3 mb-2 border border-border/50"
+                  >
+                    {/* Row 1: Nazwa (full width) */}
+                    <div className="mb-3">
+                      <Autocomplete
+                        value={item.name}
+                        onChange={(value) =>
+                          handleItemChange(index, "name", value)
+                        }
+                        onProductSelect={(product) => {
+                          // Auto-fill category when product is selected from autocomplete
+                          const selectedCategory = categories.find(
+                            (cat) => cat.name === product.category,
+                          );
+
+                          setEditedData((prev) => {
+                            const newItems = [...prev.items];
+                            newItems[index] = {
+                              ...newItems[index],
+                              name: product.name,
+                              category: product.category,
+                              category_id:
+                                selectedCategory?.id || product.category_id,
+                            };
+                            return {
+                              ...prev,
+                              items: newItems,
+                            };
+                          });
+                        }}
+                        suggestions={productNames}
+                        placeholder="Nazwa produktu"
+                        className="bg-background border-border/50"
+                      />
+                    </div>
+
+                    {/* Row 2: Cena | Ilość | Jednostka (3 columns) */}
+                    <div className="grid grid-cols-3 gap-2 items-center mb-3">
+                      <input
+                        type="text"
+                        value={item.price}
+                        onChange={(e) => {
+                          // 1. Get raw string, replace comma with dot
+                          const val = e.target.value.replace(",", ".");
+
+                          // 2. Validate format: only digits, optional single dot, up to 2 decimal places
+                          // This Regex allows: "", "1", "1.", "1.2", "1.23", "0.5" etc.
+                          if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
+                            handleItemChange(index, "price", val);
                           }
-                          className="w-full px-3 py-2 bg-background border border-border/50 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
-                        >
-                          <option value="szt">szt.</option>
-                          <option value="kg">kg</option>
-                          <option value="g">g</option>
-                          <option value="l">l</option>
-                          <option value="ml">ml</option>
-                          <option value="opak">opak.</option>
-                        </select>
-                      </TableCell>
-                      <TableCell>
-                        <select
+                        }}
+                        className="w-full px-2 py-1 bg-muted border border-border rounded text-sm text-right"
+                        placeholder="0.00"
+                      />
+                      <input
+                        type="text"
+                        value={item.quantity}
+                        onChange={(e) => {
+                          // 1. Get raw string, replace comma with dot
+                          const val = e.target.value.replace(",", ".");
+
+                          // 2. Validate format: only digits, optional single dot, up to 2 decimal places
+                          // This Regex allows: "", "1", "1.", "1.2", "1.23", "0.5" etc.
+                          if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
+                            handleItemChange(index, "quantity", val);
+                          }
+                        }}
+                        className="w-full px-2 py-1 bg-muted border border-border rounded text-sm text-right"
+                        placeholder="1"
+                      />
+                      <UnitDropdown
+                        value={item.unit}
+                        onChange={(selectedUnit) =>
+                          handleItemChange(index, "unit", selectedUnit)
+                        }
+                      />
+                    </div>
+
+                    {/* Row 3: Kategoria | BIO | Delete (flex row) */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1">
+                        <CategoryDropdown
                           value={item.category_id || ""}
-                          onChange={(e) => {
-                            const selectedId = e.target.value;
+                          categories={categories}
+                          onChange={(selectedId) => {
                             const matchedCategory = categories.find(
                               (c) => c.id === selectedId,
                             );
@@ -814,19 +1159,9 @@ export default function ReceiptVerification({
                               };
                             });
                           }}
-                          className="w-full px-3 py-2 bg-background border border-border/50 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
-                        >
-                          <option value="" disabled>
-                            Wybierz...
-                          </option>
-                          {categories.map((category) => (
-                            <option key={category.id} value={category.id}>
-                              {category.name}
-                            </option>
-                          ))}
-                        </select>
-                      </TableCell>
-                      <TableCell>
+                        />
+                      </div>
+                      <div className="shrink-0 flex items-center">
                         <input
                           type="checkbox"
                           checked={item.is_bio}
@@ -835,19 +1170,19 @@ export default function ReceiptVerification({
                           }
                           className="w-4 h-4 text-green-600 bg-background border-border/50 rounded focus:ring-orange-500"
                         />
-                      </TableCell>
-                      <TableCell>
+                      </div>
+                      <div className="shrink-0">
                         <button
                           onClick={() => handleRemoveItem(index)}
                           className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors cursor-pointer"
                         >
                           <Trash2 size={16} />
                         </button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
