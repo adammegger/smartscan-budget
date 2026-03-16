@@ -295,12 +295,13 @@ function DashboardLayout() {
   // Check current path for auth-protected routes
   const currentPath = location.pathname;
 
-  // For /login, /register, /reset-password, and /update-password routes, always show the respective components
+  // For /login, /register, /reset-password, /update-password, and /auth/callback routes, always show the respective components
   if (
     currentPath === "/login" ||
     currentPath === "/register" ||
     currentPath === "/reset-password" ||
-    currentPath === "/update-password"
+    currentPath === "/update-password" ||
+    currentPath === "/auth/callback"
   ) {
     if (currentPath === "/register") {
       return <Register onRegisterSuccess={() => navigate("/login")} />;
@@ -310,6 +311,15 @@ function DashboardLayout() {
     }
     if (currentPath === "/update-password") {
       return <UpdatePassword />;
+    }
+    if (currentPath === "/auth/callback") {
+      // Import and render AuthCallbackPage
+      const AuthCallbackPage = lazy(() => import("./pages/AuthCallbackPage"));
+      return (
+        <Suspense fallback={<div>Loading...</div>}>
+          <AuthCallbackPage />
+        </Suspense>
+      );
     }
     return <Login onLoginSuccess={handleLoginSuccess} />;
   }
@@ -686,7 +696,18 @@ function App() {
 
   // Global preview protection - check if preview token is valid
   if (!isPreviewEnabled()) {
-    return <UnderConstruction />;
+    const path = window.location.pathname;
+    // Auth routes muszą działać nawet bez preview tokena
+    const authPaths = [
+      "/auth/callback",
+      "/login",
+      "/register",
+      "/reset-password",
+      "/update-password",
+    ];
+    if (!authPaths.includes(path)) {
+      return <UnderConstruction />;
+    }
   }
 
   return (
