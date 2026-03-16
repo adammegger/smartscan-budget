@@ -37,11 +37,17 @@ export default function ResetPassword({ onResetSuccess }: ResetPasswordProps) {
       }, 2000);
     } catch (err) {
       console.error("Reset password error:", err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Błąd podczas wysyłania linku. Spróbuj ponownie.",
-      );
+      if (err instanceof Error) {
+        if (err.message.toLowerCase().includes("for security purposes")) {
+          setError(
+            "Ze względów bezpieczeństwa odczekaj chwilę przed kolejną próbą. Spróbuj ponownie za minutę.",
+          );
+        } else {
+          setError(err.message);
+        }
+      } else {
+        setError("Błąd podczas wysyłania linku. Spróbuj ponownie.");
+      }
     } finally {
       setLoading(false);
     }
