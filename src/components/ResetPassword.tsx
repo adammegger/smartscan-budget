@@ -1,17 +1,14 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import AuthLayout from "./AuthLayout";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-interface ResetPasswordProps {
-  onResetSuccess: () => void;
-}
-
-export default function ResetPassword({ onResetSuccess }: ResetPasswordProps) {
+export default function ResetPassword() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,10 +28,11 @@ export default function ResetPassword({ onResetSuccess }: ResetPasswordProps) {
       }
 
       setSuccess(true);
-      // Wait a moment then call success callback
+      setLoading(false);
+      // Wait a moment then redirect to login
       setTimeout(() => {
-        onResetSuccess();
-      }, 2000);
+        navigate("/login");
+      }, 3000);
     } catch (err) {
       console.error("Reset password error:", err);
       if (err instanceof Error) {
@@ -63,9 +61,8 @@ export default function ResetPassword({ onResetSuccess }: ResetPasswordProps) {
                 Wysłaliśmy link do resetu hasła na Twój e-mail.
               </p>
             </div>
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
-            <p className="text-sm text-muted-foreground mt-2">
-              Przekierowanie do logowania...
+            <p className="text-sm text-muted-foreground">
+              Przekierowanie do logowania za 3 sekundy...
             </p>
           </div>
         ) : (

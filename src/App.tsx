@@ -9,7 +9,6 @@ import {
   Trophy,
   Receipt,
   ShoppingCart,
-  Menu,
 } from "lucide-react";
 import { useEffect, useRef, useState, lazy, Suspense } from "react";
 import { supabase } from "./lib/supabase";
@@ -307,7 +306,7 @@ function DashboardLayout() {
       return <Register onRegisterSuccess={() => navigate("/login")} />;
     }
     if (currentPath === "/reset-password") {
-      return <ResetPassword onResetSuccess={() => navigate("/login")} />;
+      return <ResetPassword />;
     }
     if (currentPath === "/update-password") {
       return <UpdatePassword />;
@@ -736,10 +735,7 @@ function App() {
                   path="/register"
                   element={<Register onRegisterSuccess={() => {}} />}
                 />
-                <Route
-                  path="/reset-password"
-                  element={<ResetPassword onResetSuccess={() => {}} />}
-                />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/update-password" element={<UpdatePassword />} />
                 <Route path="/success" element={<Success />} />
                 <Route path="/auth/callback" element={<AuthCallbackPage />} />
