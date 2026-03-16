@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "../../lib/supabase";
-import { getCategoryColor, getCategoryIcon } from "../../lib/categoryCache";
+import { getCategoryColor } from "../../lib/categoryCache";
 import { ShoppingCart, Star, Calendar, Edit, Save, X } from "lucide-react";
 import {
   Card,
@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "../../components/ui/card";
-import CategoryIcon from "../../components/CategoryIcon";
 import { getIconComponent } from "../../lib/categories";
 import { isBioProduct } from "../../lib/eco";
 import { useDataCache, useCacheValid } from "../../lib/cacheUtils";
@@ -353,7 +352,6 @@ export default function FavoriteProducts() {
   // Function to render colorful category badge with edit button
   const renderCategoryBadge = (categoryName: string, productName: string) => {
     const color = getCategoryColor(categoryName);
-    const icon = getCategoryIcon(categoryName);
 
     // Debug: Log category data
     console.log(

@@ -37,7 +37,7 @@ export default function Profile() {
   const navigate = useNavigate();
 
   // Data cache for updating profile data
-  const { setUserProfile, refreshUserProfile, userProfile } = useDataCache();
+  const { refreshUserProfile, userProfile } = useDataCache();
 
   // Toast state for notifications
   const [toastMsg, setToastMsg] = useState<{

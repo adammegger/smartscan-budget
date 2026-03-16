@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Scanner from "./Scanner";
 import ReceiptVerification from "./ReceiptVerification";
 import { ReceiptData } from "./ReceiptVerification";

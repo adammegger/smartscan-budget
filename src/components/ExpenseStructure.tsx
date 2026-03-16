@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "../lib/supabase";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import CategoryIcon from "./CategoryIcon";

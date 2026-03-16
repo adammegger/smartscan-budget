@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import AuthLayout from "./AuthLayout";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, CheckCircle2, Circle, Check } from "lucide-react";
+import { Eye, EyeOff, CheckCircle2, Circle } from "lucide-react";
 
 interface RegisterProps {
   onRegisterSuccess: () => void;

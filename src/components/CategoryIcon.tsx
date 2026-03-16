@@ -1,4 +1,3 @@
-import React from "react";
 import { iconMap } from "../lib/categories";
 
 interface CategoryIconProps {

@@ -9,7 +9,6 @@ import { useDataCache, useCacheValid } from "../lib/cacheUtils";
 import ProModalGate from "./ProModalGate";
 import { FREE_TIER_LIMITS, getBudgetsText } from "../lib/config";
 import { useRefresh } from "../lib/refreshContext";
-import { useScanning } from "../lib/scanningContext";
 
 interface Budget {
   id: number;

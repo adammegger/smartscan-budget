@@ -3,7 +3,6 @@ import { supabase } from "../lib/supabase";
 import { getCategoryColor } from "../lib/categoryCache";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
-import CategoryIcon from "./CategoryIcon";
 import { getIconComponent } from "../lib/categories";
 import {
   AlertTriangle,

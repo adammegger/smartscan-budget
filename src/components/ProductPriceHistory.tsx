@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { supabase } from "../lib/supabase";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
