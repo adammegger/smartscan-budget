@@ -24,12 +24,29 @@ export default function UpdatePassword() {
       if (hasRecoverySession === null) {
         setHasRecoverySession(false);
       }
-    }, 3000);
+    }, 10000);
+
+    // Sprawdź sesję na mount – jeśli użytkownik już ma sesję recovery
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        setHasRecoverySession(true);
+        clearTimeout(timeout);
+      }
+    };
+    checkSession();
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "PASSWORD_RECOVERY" && session) {
+      console.log("Auth event:", event, session);
+      if (event === "PASSWORD_RECOVERY") {
+        setHasRecoverySession(true);
+        clearTimeout(timeout);
+      } else if (event === "SIGNED_IN" && session) {
+        // Supabase czasem emituje SIGNED_IN zamiast PASSWORD_RECOVERY
         setHasRecoverySession(true);
         clearTimeout(timeout);
       }
