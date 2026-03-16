@@ -4,7 +4,15 @@ import { useNavigate } from "react-router-dom";
 import { ThemeProvider } from "../lib/theme";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Loader2, XCircle, CheckCircle, Eye, EyeOff } from "lucide-react";
+import {
+  Loader2,
+  XCircle,
+  CheckCircle,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  Circle,
+} from "lucide-react";
 
 export default function UpdatePassword() {
   const navigate = useNavigate();
@@ -63,15 +71,20 @@ export default function UpdatePassword() {
     setLoading(true);
     setError(null);
 
-    // Password validation
+    // Password validation - only check mismatch since visual checklist handles strength
     if (newPassword !== confirmPassword) {
       setError("Hasła nie są identyczne.");
       setLoading(false);
       return;
     }
 
-    if (newPassword.length < 8) {
-      setError("Hasło musi mieć co najmniej 8 znaków.");
+    // Check if all password requirements are met
+    const hasMinLength = newPassword.length >= 8;
+    const hasUppercase = /(?=.*[A-Z])/.test(newPassword);
+    const hasNumber = /(?=.*[0-9])/.test(newPassword);
+
+    if (!hasMinLength || !hasUppercase || !hasNumber) {
+      setError("Proszę spełnić wszystkie wymagania dotyczące hasła.");
       setLoading(false);
       return;
     }
@@ -191,7 +204,7 @@ export default function UpdatePassword() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       required
-                      className="w-full px-3 py-2 bg-muted border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-input pr-10"
+                      className="w-full px-3 py-2 bg-muted border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-input pr-12"
                       placeholder="Wprowadź nowe hasło"
                     />
                     <button
@@ -202,6 +215,99 @@ export default function UpdatePassword() {
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
+
+                  {/* Password Requirements */}
+                  {newPassword && (
+                    <div className="mt-2 space-y-1">
+                      <div className="flex items-center gap-2 text-xs">
+                        {newPassword.length >= 8 ? (
+                          <CheckCircle2 size={14} className="text-green-500" />
+                        ) : (
+                          <Circle size={14} className="text-muted-foreground" />
+                        )}
+                        <span
+                          className={
+                            newPassword.length >= 8
+                              ? "text-green-600 dark:text-green-400"
+                              : "text-muted-foreground"
+                          }
+                        >
+                          Minimum 8 znaków
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs">
+                        {/(?=.*[A-Z])/.test(newPassword) ? (
+                          <CheckCircle2 size={14} className="text-green-500" />
+                        ) : (
+                          <Circle size={14} className="text-muted-foreground" />
+                        )}
+                        <span
+                          className={
+                            /(?=.*[A-Z])/.test(newPassword)
+                              ? "text-green-600 dark:text-green-400"
+                              : "text-muted-foreground"
+                          }
+                        >
+                          Przynajmniej 1 duża litera
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs">
+                        {/(?=.*[0-9])/.test(newPassword) ? (
+                          <CheckCircle2 size={14} className="text-green-500" />
+                        ) : (
+                          <Circle size={14} className="text-muted-foreground" />
+                        )}
+                        <span
+                          className={
+                            /(?=.*[0-9])/.test(newPassword)
+                              ? "text-green-600 dark:text-green-400"
+                              : "text-muted-foreground"
+                          }
+                        >
+                          Przynajmniej 1 cyfra
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Password Strength Progress Bar */}
+                  {newPassword && (
+                    <div className="mt-2">
+                      <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                        <span>Siła hasła</span>
+                        <span>
+                          {(() => {
+                            const conditions = [
+                              newPassword.length >= 8,
+                              /(?=.*[A-Z])/.test(newPassword),
+                              /(?=.*[0-9])/.test(newPassword),
+                            ];
+                            const metConditions =
+                              conditions.filter(Boolean).length;
+                            return `${metConditions}/3`;
+                          })()}
+                        </span>
+                      </div>
+                      <div className="w-full bg-border rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full transition-all duration-300 ${(() => {
+                            const conditions = [
+                              newPassword.length >= 8,
+                              /(?=.*[A-Z])/.test(newPassword),
+                              /(?=.*[0-9])/.test(newPassword),
+                            ];
+                            const metConditions =
+                              conditions.filter(Boolean).length;
+                            if (metConditions === 0) return "w-0";
+                            if (metConditions === 1) return "w-1/3 bg-red-500";
+                            if (metConditions === 2)
+                              return "w-2/3 bg-yellow-500";
+                            return "w-full bg-green-500";
+                          })()}`}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -245,8 +351,14 @@ export default function UpdatePassword() {
 
                 <Button
                   type="submit"
-                  disabled={loading}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold"
+                  disabled={
+                    loading ||
+                    !/(?=.*[A-Z])/.test(newPassword) ||
+                    !/(?=.*[0-9])/.test(newPassword) ||
+                    newPassword.length < 8 ||
+                    newPassword !== confirmPassword
+                  }
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <span className="flex items-center justify-center gap-2">
