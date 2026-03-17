@@ -1,5 +1,11 @@
+// ⚠️ DEVELOPMENT ONLY - DO NOT USE IN PRODUCTION ⚠️
+// This file contains direct Gemini API calls that expose the API key in the frontend.
+// For production, use the Supabase Edge Function (scan-receipt) instead.
+// The API key is now securely stored on the server side.
 const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
-const GOOGLE_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GOOGLE_API_KEY}`;
+const GOOGLE_API_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=" +
+  GOOGLE_API_KEY;
 
 export async function processReceipt(base64Image: string) {
   const maxRetries = 1;

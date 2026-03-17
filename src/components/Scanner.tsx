@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { processReceipt } from "../lib/gemini";
+import { scanReceiptViaFunction } from "../lib/receiptScanApi";
 import { supabase } from "../lib/supabase";
 import {
   determineReceiptCategory,
@@ -83,7 +83,7 @@ interface ScannerProps {
 }
 
 const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
-  { onImageCaptured, onAnalysisComplete, onAnalysisError, userProfile },
+  { onImageCaptured, onAnalysisComplete, onAnalysisError },
   ref,
 ) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -127,7 +127,7 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
       const month = String(now.getMonth() + 1).padStart(2, "0");
       const startOfMonth = `${year}-${month}-01`;
 
-      const { data: receiptsData, error: countError } = await supabase
+      const { data: receiptsData } = await supabase
         .from("receipts")
         .select("id")
         .eq("user_id", user.id)
@@ -324,7 +324,7 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
         const month = String(now.getMonth() + 1).padStart(2, "0");
         const startOfMonth = `${year}-${month}-01`;
 
-        const { data: receiptsData, error: countError } = await supabase
+        const { data: receiptsData } = await supabase
           .from("receipts")
           .select("id")
           .eq("user_id", user.id)
@@ -365,8 +365,10 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
               throw new Error("User not authenticated");
             }
 
-            // Process receipt with Gemini AI
-            const receiptData = await processReceipt(imageData as string);
+            // Process receipt with Supabase Edge Function (secure server-side Gemini API call)
+            const receiptData = await scanReceiptViaFunction(
+              imageData as string,
+            );
 
             // Determine smart category based on items
             const smartCategory = determineReceiptCategory(
