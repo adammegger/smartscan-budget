@@ -703,6 +703,7 @@ function App() {
       "/register",
       "/reset-password",
       "/update-password",
+      "/success",
     ];
     if (!authPaths.includes(path)) {
       return <UnderConstruction />;
