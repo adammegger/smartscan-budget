@@ -32,10 +32,21 @@ const BudgetMonitor: React.FC<BudgetMonitorProps> = ({}) => {
   const [budgets, setBudgets] = useState<BudgetData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { refreshKey } = useRefresh();
 
   useEffect(() => {
     fetchBudgetData();
-  }, []); // Removed dateFilter dependency to make it independent
+  }, [refreshKey]); // Added refreshKey dependency
+
+  // Listen for global receiptAdded event to refresh data
+  useEffect(() => {
+    const handleReceiptAdded = () => {
+      fetchBudgetData();
+    };
+
+    window.addEventListener("receiptAdded", handleReceiptAdded);
+    return () => window.removeEventListener("receiptAdded", handleReceiptAdded);
+  }, []);
 
   const fetchBudgetData = async () => {
     try {
@@ -120,7 +131,7 @@ const BudgetMonitor: React.FC<BudgetMonitorProps> = ({}) => {
       // Fetch spending for each budget category
       const { data: items, error: itemsError } = await supabase
         .from("items")
-        .select("price, category")
+        .select("price, category, quantity")
         .eq("user_id", authUser.id)
         .in("receipt_id", receiptIds);
 
@@ -133,9 +144,10 @@ const BudgetMonitor: React.FC<BudgetMonitorProps> = ({}) => {
           typeof item.price === "number"
             ? item.price
             : parseFloat(String(item.price || 0).replace(",", "."));
+        const quantity = item.quantity || 1;
         spendingMap.set(
           item.category,
-          (spendingMap.get(item.category) || 0) + price,
+          (spendingMap.get(item.category) || 0) + price * quantity,
         );
       });
 
@@ -513,7 +525,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
       // Fetch items for category analysis
       const { data: items, error: itemsError } = await supabase
         .from("items")
-        .select("name, price, category")
+        .select("name, price, category, quantity")
         .eq("user_id", authUser.id)
         .in("receipt_id", receiptIds);
 
@@ -624,13 +636,14 @@ export default function DashboardTiles(props: DashboardTilesProps) {
           typeof item.price === "number"
             ? item.price
             : parseFloat(String(item.price).replace(",", "."));
+        const quantity = item.quantity || 1;
 
         const currentData = categoryTotals.get(itemCategory) || {
           total: 0,
           count: 0,
         };
         categoryTotals.set(itemCategory, {
-          total: currentData.total + price,
+          total: currentData.total + price * quantity,
           count: currentData.count + 1,
         });
       });

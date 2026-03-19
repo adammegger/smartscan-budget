@@ -1,6 +1,7 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { scanReceiptViaFunction } from "../lib/receiptScanApi";
+import { scanReceipt } from "../lib/receiptScanApi";
 import { supabase } from "../lib/supabase";
+import { compressImage } from "../lib/imageCompression";
 import {
   determineReceiptCategory,
   autoCategorizeItem,
@@ -88,6 +89,7 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
 ) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSimulating, setIsSimulating] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [showProModal, setShowProModal] = useState(false);
 
   // Mock scan function for testing achievements
@@ -291,6 +293,11 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
   ) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Check if already processing to prevent multiple scans
+      if (isProcessing) {
+        return;
+      }
+      setIsProcessing(true);
       // 1. Securely fetch the user and their REAL profile directly from DB
       const {
         data: { user },
@@ -355,20 +362,11 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
           onImageCaptured(imageData as string);
 
           try {
-            // Get current authenticated user
-            const {
-              data: { user: authUser },
-              error: authError,
-            } = await supabase.auth.getUser();
-
-            if (authError || !authUser) {
-              throw new Error("User not authenticated");
-            }
+            // Compress image before sending to API
+            const compressedImage = await compressImage(imageData as string);
 
             // Process receipt with Supabase Edge Function (secure server-side Gemini API call)
-            const receiptData = await scanReceiptViaFunction(
-              imageData as string,
-            );
+            const receiptData = await scanReceipt(compressedImage);
 
             // Determine smart category based on items
             const smartCategory = determineReceiptCategory(
@@ -376,67 +374,40 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
               receiptData.total_amount,
             );
 
-            // Save to Supabase - save receipt with user_id
-            const { data: receiptDataResult, error: receiptError } =
-              await supabase
-                .from("receipts")
-                .insert({
-                  store_name: receiptData.store_name,
-                  date: receiptData.date,
-                  total_amount: receiptData.total_amount,
-                  category: smartCategory,
-                  user_id: authUser.id,
-                  created_at: new Date().toISOString(),
-                })
-                .select("id")
-                .single();
+            // Build receipt data object for verification
+            const receiptDataForVerification = {
+              store_name: receiptData.store_name,
+              date: receiptData.date,
+              total_amount: receiptData.total_amount,
+              category: smartCategory,
+              category_id: getCategoryId(smartCategory),
+              items:
+                receiptData.items?.map(
+                  (item: {
+                    name: string;
+                    price: number;
+                    category?: string;
+                    unit?: string;
+                    quantity?: number;
+                    brand?: string | null;
+                    is_bio?: boolean;
+                  }) => {
+                    const itemCategory =
+                      item.category || autoCategorizeItem(item.name);
+                    return {
+                      name: item.name,
+                      price: item.price,
+                      category: itemCategory,
+                      category_id: getCategoryId(itemCategory),
+                      unit: item.unit || "szt",
+                      quantity: item.quantity || 1,
+                      is_bio: item.is_bio || false,
+                    };
+                  },
+                ) || [],
+            };
 
-            if (receiptError) {
-              throw receiptError;
-            }
-
-            // Save items to separate table with all new fields
-            if (receiptData.items && Array.isArray(receiptData.items)) {
-              const itemsToInsert = receiptData.items.map(
-                (item: {
-                  name: string;
-                  price: number;
-                  category?: string;
-                  unit?: string;
-                  quantity?: number;
-                  brand?: string | null;
-                  is_bio?: boolean;
-                }) => {
-                  const itemCategory =
-                    item.category || autoCategorizeItem(item.name);
-                  return {
-                    receipt_id: receiptDataResult.id,
-                    name: item.name,
-                    price: item.price,
-                    // Use provided category or auto-categorize based on name
-                    category: itemCategory,
-                    // Also set category_id for foreign key
-                    category_id: getCategoryId(itemCategory),
-                    unit: item.unit || "szt",
-                    quantity: item.quantity || 1,
-                    brand: item.brand || null,
-                    user_id: authUser.id,
-                    is_bio: item.is_bio || false, // Set the is_bio flag directly on the column
-                    tags: {}, // Empty tags object
-                  };
-                },
-              );
-
-              const { error: itemsError } = await supabase
-                .from("items")
-                .insert(itemsToInsert);
-
-              if (itemsError) {
-                throw itemsError;
-              }
-            }
-
-            onAnalysisComplete(receiptData);
+            onAnalysisComplete(receiptDataForVerification);
           } catch (error) {
             console.error("Error processing receipt:", error);
             onAnalysisError(
@@ -444,6 +415,8 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
                 ? error.message
                 : "Nieznany błąd podczas analizy paragonu",
             );
+          } finally {
+            setIsProcessing(false);
           }
         }
       };

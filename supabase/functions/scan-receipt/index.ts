@@ -7,7 +7,75 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-serve(async (req) => {
+const RECEIPT_SCAN_PROMPT = {
+  role: "You are an expert receipt scanner for Polish grocery and retail stores.",
+
+  output_format: {
+    description:
+      "Return ONLY a pure JSON object with no markdown, no code blocks, no explanation.",
+    structure: {
+      store_name: "string",
+      date: "YYYY-MM-DD",
+      total_amount: "number",
+      category: "string",
+      items: [
+        {
+          name: "string – use the full product name as printed on the receipt",
+          price: "number – unit price",
+          category: "string",
+          unit: "string",
+          quantity: "number",
+          brand: "string or null",
+        },
+      ],
+    },
+  },
+
+  rules: {
+    units: [
+      "Use unit 'szt' and quantity 1 for all individually packaged beverages (water, juice, beer, soda, energy drinks, etc.), even if the label shows volume like '1.5l' or '500ml'.",
+      "Use unit 'kg' or 'g' for loose/bulk items sold by weight (deli meat, vegetables, fruit, cheese at deli counter).",
+      "Use unit 'l' or 'ml' only for items truly sold by volume measurement (e.g. fuel, bulk liquid).",
+      "Parse quantity from product name text: '200g' → quantity: 0.2, unit: 'kg'. '2x' prefix → quantity: 2, unit: 'szt'.",
+      "If no quantity or unit is detectable, default to unit: 'szt', quantity: 1.",
+    ],
+    names: [
+      "Expand abbreviated product names to human-readable form. Receipt printers truncate names – your job is to reconstruct the full readable name based on context and visible characters.",
+      "Examples of correct expansion: 'WodaNGaz Muszy1,5l' → 'Woda Niegazowana Muszynianka 1.5l', 'CzekoCoc85%Lindt10' → 'Czekolada Cocoa 85% Lindt 100g'.",
+      "Keep the language of the receipt (Polish store receipts are in Polish – keep Polish product names in Polish).",
+      "Include volume or weight info in the name if it helps identify the product (e.g. '1.5l', '100g').",
+      "Only populate the brand field if the brand name is clearly identifiable in the receipt line (e.g. 'Lindt', 'Tymbark', 'Łaciate').",
+    ],
+    duplicates: [
+      "If two or more line items have identical names AND identical unit prices, merge them into one item and sum their quantities.",
+      "Do NOT merge items with different names or different prices.",
+    ],
+    categories: {
+      per_item:
+        "Assign one of: Food, Beverages, Household, Health, Transport, Entertainment, Other",
+      per_receipt:
+        "Assign the overall receipt category based on the store type and majority of items.",
+    },
+  },
+};
+
+// Build the prompt string from the config
+function buildPrompt(config: typeof RECEIPT_SCAN_PROMPT): string {
+  return `${config.role}
+
+RULES:
+${config.rules.units.map((r) => `- ${r}`).join("\n")}
+${config.rules.names.map((r) => `- ${r}`).join("\n")}
+${config.rules.duplicates.map((r) => `- ${r}`).join("\n")}
+- Per item category, use one of: ${config.rules.categories.per_item}
+- Overall receipt category: ${config.rules.categories.per_receipt}
+
+${config.output_format.description}
+JSON structure:
+${JSON.stringify(config.output_format.structure, null, 2)}`;
+}
+
+serve(async (req: Request) => {
   // 1. Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -62,7 +130,7 @@ serve(async (req) => {
 
     // 5. Prepare Gemini API request
     const GOOGLE_API_URL =
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=" +
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" +
       GOOGLE_API_KEY;
 
     const requestBody = {
@@ -70,7 +138,7 @@ serve(async (req) => {
         {
           parts: [
             {
-              text: 'You are a receipt scanner. Extract: store_name, date (YYYY-MM-DD), total_amount (numeric), and items (array of objects with name, price, category, unit (like "kg", "g", "l", "ml", "szt"), quantity (numeric), and brand if detectable). Parse quantities from text like "200g" -> quantity: 0.2, unit: "kg". For items without unit/quantity, use unit: "szt", quantity: 1. Assign a category to each item based on its name. Categories: Food, Transport, Home, Health, Entertainment, Other. Also assign a category to the entire receipt based on the store and items. Return only pure JSON with this structure: {"store_name": "string", "date": "YYYY-MM-DD", "total_amount": number, "category": "string", "items": [{"name": "string", "price": number, "category": "string", "unit": "string", "quantity": number, "brand": "string|null"}]}',
+              text: buildPrompt(RECEIPT_SCAN_PROMPT),
             },
             {
               inlineData: {
@@ -93,38 +161,19 @@ serve(async (req) => {
     });
 
     // 7. Handle specific HTTP errors with meaningful messages
+    // 7. Handle errors and read the REAL message from Google
     if (!response.ok) {
-      let errorMessage = `Google AI Studio request failed with status ${response.status}: ${response.statusText}`;
+      // Próbujemy odczytać szczegółowy błąd od Google
+      const errorData = await response.json().catch(() => ({}));
+      console.error("Google API Raw Error:", errorData);
 
-      switch (response.status) {
-        case 400:
-          errorMessage =
-            "Invalid image format or request. Please try again with a clear receipt image.";
-          break;
-        case 429:
-          errorMessage =
-            "Too many requests. Please wait a moment before trying again.";
-          break;
-        case 500:
-        case 502:
-        case 503:
-        case 504:
-          errorMessage =
-            "Gemini API is temporarily unavailable. Please try again in a moment.";
-          break;
-        case 401:
-          errorMessage =
-            "Authentication failed. Please check your API key configuration.";
-          break;
-        case 403:
-          errorMessage = "Access forbidden. Please check your API permissions.";
-          break;
-      }
+      const realErrorMessage = errorData?.error?.message || response.statusText;
 
       return new Response(
         JSON.stringify({
           success: false,
-          error: errorMessage,
+          error: `Gemini Error ${response.status}: ${realErrorMessage}`,
+          fullError: errorData,
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },

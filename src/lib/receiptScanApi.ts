@@ -1,38 +1,29 @@
-import { supabase } from "./supabase";
-
 /**
- * Scan a receipt using the Supabase Edge Function instead of calling Gemini directly.
- * This keeps the Google API key secure on the server side.
+ * Scan a receipt using a plain fetch request to the Supabase Edge Function.
+ * This avoids auth issues by not using the Supabase client.
  *
  * @param imageBase64 - The base64 encoded image data URL (e.g., "data:image/jpeg;base64,....")
  * @returns Promise that resolves to the parsed receipt data or throws an error
  */
-export async function scanReceiptViaFunction(imageBase64: string) {
-  try {
-    // Call the Supabase Edge Function
-    const { data, error } = await supabase.functions.invoke("scan-receipt", {
-      body: { imageBase64 },
-    });
+export async function scanReceipt(imageBase64: string) {
+  const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/scan-receipt`;
 
-    if (error) {
-      throw new Error(`Supabase function error: ${error.message}`);
-    }
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ imageBase64 }),
+  });
 
-    // The function returns { success: boolean, data?: ParsedReceipt, error?: string }
-    if (!data) {
-      throw new Error("No response from scan-receipt function");
-    }
+  const json = await res.json();
+  console.log("scan-receipt result", res.status, json);
 
-    if (!data.success) {
-      throw new Error(data.error || "Failed to scan receipt");
-    }
-
-    // Return the parsed receipt data
-    return data.data;
-  } catch (error) {
-    console.error("Error scanning receipt via function:", error);
-    throw error;
+  if (!res.ok || !json.success) {
+    throw new Error(json.error || "Failed to scan receipt");
   }
+
+  return json.data;
 }
 
 /**
@@ -54,6 +45,3 @@ export interface ParsedReceipt {
   category: string;
   items: ReceiptItem[];
 }
-
-// Note: The original processReceipt function in gemini.ts should be kept for local development
-// but should NOT be used in production. It should be clearly marked as development-only.

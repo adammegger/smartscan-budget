@@ -50,6 +50,7 @@ interface Item {
   tags?: string[];
   created_at?: string;
   receipts?: { date: string }[];
+  is_bio?: boolean;
 }
 
 interface ReceiptsProps {
@@ -136,7 +137,7 @@ export default function Receipts(props: ReceiptsProps) {
   const isCacheValid = useCacheValid(receiptCache);
 
   // Use refresh context to listen for refresh triggers
-  const { refreshKey } = useRefresh();
+  const { refreshKey, triggerRefresh } = useRefresh();
 
   // Fetch budgets and check which categories are over budget
   useEffect(() => {
@@ -177,7 +178,7 @@ export default function Receipts(props: ReceiptsProps) {
 
         const { data: items } = await supabase
           .from("items")
-          .select("price, category")
+          .select("price, category, quantity")
           .eq("user_id", user.id)
           .in("receipt_id", receiptIds);
 
@@ -189,8 +190,9 @@ export default function Receipts(props: ReceiptsProps) {
             typeof item.price === "number"
               ? item.price
               : parseFloat(String(item.price).replace(",", "."));
+          const quantity = item.quantity || 1;
           spendingByCategory[category] =
-            (spendingByCategory[category] || 0) + price;
+            (spendingByCategory[category] || 0) + price * quantity;
         });
 
         // Check which budgets are exceeded
@@ -262,9 +264,12 @@ export default function Receipts(props: ReceiptsProps) {
     if (receipts.length > 0) fetchItemCounts();
   }, [receipts]);
 
-  const fetchItemsForReceipt = async (receiptId: number) => {
-    // If we already fetched these items, don't do it again!
-    if (itemsByReceipt[receiptId]) return;
+  const fetchItemsForReceipt = async (
+    receiptId: number,
+    forceRefresh: boolean = false,
+  ) => {
+    // If we already fetched these items and not forcing refresh, don't do it again!
+    if (itemsByReceipt[receiptId] && !forceRefresh) return;
 
     try {
       setItemsLoading((prev) => ({ ...prev, [receiptId]: true }));
@@ -278,7 +283,7 @@ export default function Receipts(props: ReceiptsProps) {
       const { data, error } = await supabase
         .from("items")
         .select(
-          `id, receipt_id, name, price, category, quantity, receipts!fk_items_receipt_id(date)`,
+          `id, receipt_id, name, price, category, quantity, is_bio, receipts!fk_items_receipt_id(date)`,
         )
         .eq("receipt_id", receiptId)
         .eq("user_id", authUser.id)
@@ -381,24 +386,32 @@ export default function Receipts(props: ReceiptsProps) {
         if (timeFilter === "today") {
           query = query.eq("date", toDateString(now));
         } else if (timeFilter === "week") {
-          const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          const sevenDaysAgo = new Date(
+            now.getTime() - 7 * 24 * 60 * 60 * 1000,
+          );
           query = query
-            .gte("date", toDateString(oneWeekAgo))
+            .gte("date", toDateString(sevenDaysAgo))
             .lte("date", toDateString(now));
         } else if (timeFilter === "month") {
-          const oneMonthAgo = new Date(
-            now.getTime() - 30 * 24 * 60 * 60 * 1000,
+          const firstDayOfMonth = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            1,
+          );
+          const lastDayOfMonth = new Date(
+            now.getFullYear(),
+            now.getMonth() + 1,
+            0,
           );
           query = query
-            .gte("date", toDateString(oneMonthAgo))
-            .lte("date", toDateString(now));
+            .gte("date", toDateString(firstDayOfMonth))
+            .lte("date", toDateString(lastDayOfMonth));
         } else if (timeFilter === "year") {
-          const oneYearAgo = new Date(
-            now.getTime() - 365 * 24 * 60 * 60 * 1000,
-          );
+          const firstDayOfYear = new Date(now.getFullYear(), 0, 1);
+          const lastDayOfYear = new Date(now.getFullYear(), 11, 31);
           query = query
-            .gte("date", toDateString(oneYearAgo))
-            .lte("date", toDateString(now));
+            .gte("date", toDateString(firstDayOfYear))
+            .lte("date", toDateString(lastDayOfYear));
         }
         // For "all", we don't apply date filter
       }
@@ -530,7 +543,7 @@ export default function Receipts(props: ReceiptsProps) {
           category_id: item.category_id || null, // Ensure it's never undefined
           unit: item.unit || "szt",
           quantity: item.quantity || 1,
-          is_bio: isBioProduct(item.name),
+          is_bio: Boolean(item.is_bio), // Preserve existing bio status from database
         })),
       };
 
@@ -606,7 +619,7 @@ export default function Receipts(props: ReceiptsProps) {
           category_id: item.category_id || null,
           unit: item.unit || "szt",
           quantity: item.quantity || 1,
-          is_bio: item.is_bio || false,
+          is_bio: Boolean(item.is_bio),
           user_id: authUser.id,
         }));
 
@@ -615,6 +628,66 @@ export default function Receipts(props: ReceiptsProps) {
           .insert(itemsToInsert);
 
         if (insertError) throw insertError;
+
+        // Optimistic update: Update local state directly to avoid UI flicker
+        // Update receipt in local state
+        setReceipts((prev) =>
+          prev.map((r) =>
+            r.id === receiptId
+              ? {
+                  ...r,
+                  store_name: finalData.store_name,
+                  date: finalData.date,
+                  total_amount: finalData.total_amount,
+                  category: finalData.category,
+                }
+              : r,
+          ),
+        );
+
+        // Update items in local state
+        setItemsByReceipt((prev) => ({
+          ...prev,
+          [receiptId]: itemsToInsert.map((item, index) => ({
+            ...item,
+            id: String(index),
+            is_bio: Boolean(item.is_bio), // Ensure is_bio is properly set
+          })),
+        }));
+
+        // Update item count
+        setItemCounts((prev) => ({
+          ...prev,
+          [receiptId]: itemsToInsert.length,
+        }));
+      } else {
+        // Handle case where there are no items
+        // Update receipt in local state
+        setReceipts((prev) =>
+          prev.map((r) =>
+            r.id === receiptId
+              ? {
+                  ...r,
+                  store_name: finalData.store_name,
+                  date: finalData.date,
+                  total_amount: finalData.total_amount,
+                  category: finalData.category,
+                }
+              : r,
+          ),
+        );
+
+        // Clear items for this receipt
+        setItemsByReceipt((prev) => ({
+          ...prev,
+          [receiptId]: [],
+        }));
+
+        // Update item count to 0
+        setItemCounts((prev) => ({
+          ...prev,
+          [receiptId]: 0,
+        }));
       }
 
       // Clear edit states
@@ -624,12 +697,14 @@ export default function Receipts(props: ReceiptsProps) {
       // Show success message
       showToast("Paragon został pomyślnie zaktualizowany!", "success");
 
-      // Re-fetch receipts to update the UI
-      await fetchReceipts();
+      // Trigger refresh to update all dashboard components
+      // This ensures budgets, dashboard tiles, and other components update in real-time
+      triggerRefresh();
 
-      // If the edited receipt was expanded, refresh its items to show updated data
+      // Remove the fetchReceipts() call to prevent UI flicker
+      // Only refresh items if the receipt is expanded and we need to get real IDs from DB
       if (expandedReceiptIds.has(receiptId)) {
-        await fetchItemsForReceipt(receiptId);
+        await fetchItemsForReceipt(receiptId, true); // Force refresh to get updated data with real IDs
       }
     } catch (error) {
       console.error("Error saving edit:", error);
@@ -927,7 +1002,7 @@ export default function Receipts(props: ReceiptsProps) {
                                 </div>
                               ) : itemsByReceipt[receipt.id]?.length > 0 ? (
                                 itemsByReceipt[receipt.id]?.map((item) => {
-                                  const isBio = isBioProduct(item.name);
+                                  const isBio = item.is_bio || false;
                                   // Calculate unit price and total
                                   const quantity = item.quantity || 1;
                                   const unitPrice = item.price; // item.price is already the unit price

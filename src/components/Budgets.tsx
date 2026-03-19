@@ -9,6 +9,7 @@ import { useDataCache, useCacheValid } from "../lib/cacheUtils";
 import ProModalGate from "./ProModalGate";
 import { FREE_TIER_LIMITS, getBudgetsText } from "../lib/config";
 import { useRefresh } from "../lib/refreshContext";
+import type { BudgetCache } from "../lib/dataCache";
 
 interface Budget {
   id: number;
@@ -74,9 +75,52 @@ export default function Budgets(props: BudgetsProps) {
     }
   }, [budgetCache, isCacheValid, refreshKey]);
 
+  // Recalculate budget spending when refreshKey changes (new receipts added)
+  useEffect(() => {
+    const recalculateSpending = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Fetch updated spending data for current month
+        const spendingData = await fetchSpending(user.id);
+
+        // Update budgets with new spending amounts
+        startTransition(() => {
+          setBudgets((prevBudgets) =>
+            prevBudgets.map((budget) => ({
+              ...budget,
+              spent: spendingData[budget.category_name] || 0,
+            })),
+          );
+        });
+
+        // Update cache with new spending data
+        setBudgetCache((prevCache: BudgetCache | null) => {
+          if (!prevCache) return prevCache;
+          return {
+            ...prevCache,
+            budgets: prevCache.budgets.map((budget) => ({
+              ...budget,
+              spent: spendingData[budget.category_name] || 0,
+            })),
+            lastFetched: Date.now(),
+          };
+        });
+      } catch (err) {
+        console.error("Error recalculating spending:", err);
+      }
+    };
+
+    recalculateSpending();
+  }, [refreshKey]);
+
   // Listen for global receiptAdded event to refresh data
   useEffect(() => {
     const handleReceiptAdded = () => {
+      // Refresh budgets when new receipts are added to update spending calculations
       fetchData();
     };
 
@@ -156,7 +200,7 @@ export default function Budgets(props: BudgetsProps) {
     // Fetch items with category matching - use category field for budget matching
     const { data: items } = await supabase
       .from("items")
-      .select("price, category")
+      .select("price, category, quantity")
       .eq("user_id", userId)
       .in("receipt_id", receiptIds);
 
@@ -169,7 +213,8 @@ export default function Budgets(props: BudgetsProps) {
 
       // Use category name for matching with budgets.category_name
       const categoryName = item.category;
-      spending[categoryName] = (spending[categoryName] || 0) + price;
+      const quantity = item.quantity || 1;
+      spending[categoryName] = (spending[categoryName] || 0) + price * quantity;
     });
 
     return spending;
@@ -286,6 +331,9 @@ export default function Budgets(props: BudgetsProps) {
 
       handleCancel();
       props.onBudgetChange?.();
+
+      // CRITICAL FIX: Refresh data after successful save to ensure cache is updated
+      await fetchData();
     } catch (err: unknown) {
       console.error("Error saving:", err);
       // Rollback on error
@@ -313,6 +361,9 @@ export default function Budgets(props: BudgetsProps) {
         .eq("id", budgetId);
       if (error) throw error;
       props.onBudgetChange?.();
+
+      // CRITICAL FIX: Refresh data after successful delete to ensure cache is updated
+      await fetchData();
     } catch (err) {
       console.error("Error deleting:", err);
       // Rollback

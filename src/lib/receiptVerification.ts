@@ -122,6 +122,9 @@ export const saveReceiptToSupabase = async (receiptData: ReceiptData) => {
       console.warn("Failed to refresh cache after saving receipt:", cacheError);
     }
 
+    // Dispatch event to notify components that can't use the refresh hook
+    window.dispatchEvent(new Event("receiptAdded"));
+
     return receiptDataResult;
   } catch (error) {
     console.error("Error saving receipt to Supabase:", error);

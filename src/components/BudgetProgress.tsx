@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { AlertTriangle } from "lucide-react";
 import CategoryIcon from "./CategoryIcon";
+import { useRefresh } from "../lib/refreshContext";
 
 interface Budget {
   id: number;
@@ -34,10 +35,11 @@ export default function BudgetProgress(props: BudgetProgressProps) {
   const [budgets, setBudgets] = useState<BudgetWithSpending[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const { refreshKey } = useRefresh();
 
   useEffect(() => {
     fetchData();
-  }, [props.dateFilter]);
+  }, [props.dateFilter, refreshKey]);
 
   const fetchData = async () => {
     try {
@@ -127,7 +129,7 @@ export default function BudgetProgress(props: BudgetProgressProps) {
       // Get items for these receipts
       const { data: items } = await supabase
         .from("items")
-        .select("price, category")
+        .select("price, category, quantity")
         .eq("user_id", user.id)
         .in("receipt_id", receiptIds);
 
@@ -139,8 +141,9 @@ export default function BudgetProgress(props: BudgetProgressProps) {
           typeof item.price === "number"
             ? item.price
             : parseFloat(String(item.price).replace(",", "."));
+        const quantity = item.quantity || 1;
         spendingByCategory[category] =
-          (spendingByCategory[category] || 0) + price;
+          (spendingByCategory[category] || 0) + price * quantity;
       });
 
       // Update budgets with spending
