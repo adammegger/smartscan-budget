@@ -170,9 +170,8 @@ export default function Terms() {
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
                   Usługodawcą i Administratorem Serwisu jest Adam Megger,
-                  prowadzący działalność z siedzibą przy Osiedle Jagiellońskie
-                  28/23, NIP: 5591913403, adres e-mail: adammegger@int.pl
-                  (dalej: "Usługodawca").
+                  prowadzący działalność, NIP: 5591913403, adres e-mail:
+                  adammegger@int.pl (dalej: "Usługodawca").
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
                   Regulamin jest dokumentem, o którym mowa w art. 8 Ustawy z

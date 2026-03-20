@@ -164,11 +164,9 @@ export default function Privacy() {
                   § 1 Postanowienia ogólne
                 </h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  Administratorem danych osobowych jest firma Adam Megger, z
-                  siedzibą przy Osiedle Jagiellońskie 28/23, o numerze NIP:
-                  5591913403. Z Adam Megger można kontaktować się pisemnie na
-                  adres wskazany w zdaniu poprzedzającym lub drogą e-mailową na
-                  adres: adammegger@int.pl.
+                  Administratorem danych osobowych jest firma Adam Megger, o
+                  numerze NIP: 5591913403. Z Adam Megger można kontaktować się
+                  drogą e-mailową na adres: adammegger@int.pl.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
                   Na podstawie Art. 37 RODO, firma "Adam Megger" nie powołała
