@@ -262,7 +262,7 @@ export default function LandingPage() {
                   {/* The App Screenshot */}
                   <img
                     src={app1}
-                    alt="Paragonly App Interface"
+                    alt="Aplikacja Paragonly - interfejs skanowania paragonów i zarządzania budżetem"
                     className="w-full h-auto object-cover"
                     loading="lazy"
                   />
