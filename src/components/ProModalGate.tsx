@@ -45,8 +45,8 @@ export default function ProModalGate({
       return;
     }
 
-    const STRIPE_PAYMENT_LINK =
-      "https://buy.stripe.com/test_28E4gB1N67PO5kUdrf9IQ00";
+    const STRIPE_PAYMENT_LINK = import.meta.env.VITE_STRIPE_PAYMENT_LINK;
+
     // Append the user's ID so the Stripe Webhook knows who paid
     const checkoutUrl = `${STRIPE_PAYMENT_LINK}?client_reference_id=${user.id}`;
     window.location.href = checkoutUrl;
