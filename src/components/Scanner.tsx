@@ -68,6 +68,7 @@ interface ScannerProps {
     store_name: string;
     date: string;
     total_amount: number;
+    saved_amount: number;
     category: string;
     category_id: string | null;
     items: Array<{
@@ -227,6 +228,7 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
         store_name: storeName,
         date: new Date().toISOString().split("T")[0],
         total_amount: totalAmount,
+        saved_amount: 0,
         category: categoryMapping[smartCategory] || smartCategory,
         category_id: getCategoryId(
           categoryMapping[smartCategory] || smartCategory,
@@ -379,6 +381,7 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
               store_name: receiptData.store_name,
               date: receiptData.date,
               total_amount: receiptData.total_amount,
+              saved_amount: receiptData.saved_amount || 0,
               category: smartCategory,
               category_id: getCategoryId(smartCategory),
               items:

@@ -17,6 +17,7 @@ const RECEIPT_SCAN_PROMPT = {
       store_name: "string",
       date: "YYYY-MM-DD",
       total_amount: "number",
+      saved_amount: "number",
       category: "string",
       items: [
         {
@@ -46,15 +47,18 @@ const RECEIPT_SCAN_PROMPT = {
       "Include volume or weight info in the name if it helps identify the product (e.g. '1.5l', '100g').",
       "Only populate the brand field if the brand name is clearly identifiable in the receipt line (e.g. 'Lindt', 'Tymbark', 'Łaciate').",
     ],
+    discounts: [
+      "Pay special attention to item-level discounts. In Polish receipts (like Biedronka), discounts are often printed immediately below the item as 'Rabat' or 'Zniżka' with a negative value (e.g., '-1,11' or '-0,50'). You MUST sum ALL these negative discount values across the entire receipt and return the total absolute value as 'saved_amount'. For example, if you find 'Rabat -1,11' and 'Rabat -0,50', the 'saved_amount' must be 1.61. If there are no discounts, return 0. The 'price' for each item should be its final price after the discount.",
+    ],
     duplicates: [
       "If two or more line items have identical names AND identical unit prices, merge them into one item and sum their quantities.",
       "Do NOT merge items with different names or different prices.",
     ],
     categories: {
       per_item:
-        "Assign one of: Food, Beverages, Household, Health, Transport, Entertainment, Other",
+        "Alkohol, Apteka, Dom, Edukacja, Elektronika, Inne, Jedzenie, Podróże, Prezenty, Rachunki, Restauracje, Rozrywka, Sport, Transport, Ubrania, Uroda, Zdrowie, Zwierzęta",
       per_receipt:
-        "Assign the overall receipt category based on the store type and majority of items.",
+        "Alkohol, Apteka, Dom, Edukacja, Elektronika, Inne, Jedzenie, Podróże, Prezenty, Rachunki, Restauracje, Rozrywka, Sport, Transport, Ubrania, Uroda, Zdrowie, Zwierzęta",
     },
   },
 };

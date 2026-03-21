@@ -55,6 +55,16 @@ import { RefreshProvider, useRefresh } from "./lib/refreshContext";
 import CookieBanner from "./components/CookieBanner";
 import { ScanningProvider, useScanning } from "./lib/scanningContext";
 import ScanningOverlay from "./components/ScanningOverlay";
+import { CATEGORY_IDS } from "./lib/categories";
+
+// Funkcja pomocnicza do wyszukiwania z ignorowaniem wielkości liter
+const findCategoryId = (categoryName: string | undefined): string | null => {
+  if (!categoryName) return null;
+  const entry = Object.entries(CATEGORY_IDS).find(
+    ([key]) => key.toLowerCase() === categoryName.toLowerCase(),
+  );
+  return entry ? entry[1] : null;
+};
 
 // Import the correct ReceiptData type from receiptVerification
 import type { ReceiptData } from "./lib/receiptVerification";
@@ -161,9 +171,20 @@ function DashboardLayout() {
     setIsAnalyzing(false);
     setCaptureMessage("Zweryfikuj dane z paragonu...");
 
+    // Map category names to IDs for items
+    const receiptDataWithCategoryIds = {
+      ...receiptData,
+      items: receiptData.items.map((item) => ({
+        ...item,
+        category_id: findCategoryId(item.category),
+      })),
+      category_id: findCategoryId(receiptData.category),
+      saved_amount: receiptData.saved_amount || 0,
+    };
+
     // ZAPISUJEMY DANE DO STANU, ŻEBY WYŚWIETLIĆ MODAL:
-    setVerificationReceipt(receiptData);
-    console.log("Oczekuje na weryfikację:", receiptData);
+    setVerificationReceipt(receiptDataWithCategoryIds);
+    console.log("Oczekuje na weryfikację:", receiptDataWithCategoryIds);
   };
 
   const handleAnalysisError = (error: string) => {
