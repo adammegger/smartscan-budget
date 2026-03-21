@@ -25,38 +25,149 @@ const ScanningOverlay: React.FC<ScanningOverlayProps> = ({
         >
           <div className="flex flex-col items-center gap-8">
             {/* Receipt Container */}
-            <div className="w-[320px] bg-white rounded-lg shadow-2xl relative overflow-hidden">
-              {/* Torn receipt edges - top */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-50"></div>
+            <div className="w-[320px] relative overflow-hidden">
+              {/* Torn receipt edges using pseudo-elements */}
+              <div
+                className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-transparent via-white to-transparent opacity-80 pointer-events-none z-10"
+                style={{
+                  backgroundImage: `
+                       linear-gradient(45deg, transparent 48%, #e5e7eb 48%, #e5e7eb 52%, transparent 52%),
+                       linear-gradient(-45deg, transparent 48%, #e5e7eb 48%, #e5e7eb 52%, transparent 52%)
+                     `,
+                  backgroundSize: "8px 8px",
+                  backgroundPosition: "0 0, 4px 0",
+                }}
+              ></div>
 
-              {/* Receipt Content */}
-              <div className="p-6 space-y-4">
-                {/* Header - Logo */}
+              {/* Main receipt container with paper-like styling */}
+              <div
+                className="bg-gradient-to-b from-amber-50 to-amber-100 rounded-lg shadow-2xl relative p-6 space-y-4 border border-amber-200/50"
+                style={{
+                  backgroundImage: `
+                       radial-gradient(circle at 20% 20%, rgba(0,0,0,0.03) 0%, transparent 50%),
+                       radial-gradient(circle at 80% 80%, rgba(0,0,0,0.02) 0%, transparent 50%),
+                       linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px) 0 0 / 20px 20px
+                     `,
+                  boxShadow:
+                    "0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2)",
+                  borderRadius: "12px",
+                }}
+              >
+                {/* Header - Store name/logo */}
                 <div className="flex justify-center">
-                  <div className="h-6 w-24 bg-slate-200 rounded animate-pulse"></div>
+                  <div className="text-center">
+                    <div
+                      className="text-xs font-bold text-gray-600 tracking-widest animate-pulse"
+                      style={{
+                        backgroundImage:
+                          "linear-gradient(90deg, #9ca3af 50%, transparent 50%)",
+                        backgroundSize: "2px 100%",
+                        backgroundClip: "text",
+                        WebkitBackgroundClip: "text",
+                        color: "transparent",
+                      }}
+                    >
+                      SUPERMARKET
+                    </div>
+                  </div>
                 </div>
 
                 {/* Body - Item rows */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {[...Array(5)].map((_, index) => (
                     <div
                       key={index}
-                      className="flex justify-between items-center"
+                      className="flex justify-between items-center text-xs"
                     >
-                      <div className="w-3/4 h-3 bg-slate-100 rounded animate-pulse"></div>
-                      <div className="w-1/4 h-3 bg-slate-100 rounded animate-pulse"></div>
+                      <div
+                        className="flex-1 text-gray-700"
+                        style={{
+                          backgroundImage:
+                            "linear-gradient(90deg, #9ca3af 50%, transparent 50%)",
+                          backgroundSize: "2px 100%",
+                          backgroundClip: "text",
+                          WebkitBackgroundClip: "text",
+                          color: "transparent",
+                        }}
+                      >
+                        {index === 0
+                          ? "CHLEB"
+                          : index === 1
+                            ? "MASŁO 250G"
+                            : index === 2
+                              ? "SER"
+                              : index === 3
+                                ? "JABŁKA 1KG"
+                                : "CZOSNEK 200G"}
+                      </div>
+                      <div
+                        className="text-gray-600 font-medium w-16 text-right"
+                        style={{
+                          backgroundImage:
+                            "linear-gradient(90deg, #9ca3af 50%, transparent 50%)",
+                          backgroundSize: "2px 100%",
+                          backgroundClip: "text",
+                          WebkitBackgroundClip: "text",
+                          color: "transparent",
+                        }}
+                      >
+                        {index === 0
+                          ? "6.50"
+                          : index === 1
+                            ? "8.90"
+                            : index === 2
+                              ? "12.30"
+                              : index === 3
+                                ? "4.80"
+                                : "3.20"}
+                      </div>
                     </div>
                   ))}
                 </div>
 
-                {/* Footer - Total */}
-                <div className="flex justify-end">
-                  <div className="w-1/3 h-5 bg-slate-200 rounded animate-pulse"></div>
+                {/* Footer - Summary line */}
+                <div className="border-t-2 border-dashed border-gray-300 my-3"></div>
+
+                <div className="flex justify-between items-center text-sm font-bold text-gray-700">
+                  <div
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(90deg, #9ca3af 50%, transparent 50%)",
+                      backgroundSize: "2px 100%",
+                      backgroundClip: "text",
+                      WebkitBackgroundClip: "text",
+                      color: "transparent",
+                    }}
+                  >
+                    SUMA:
+                  </div>
+                  <div
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(90deg, #9ca3af 50%, transparent 50%)",
+                      backgroundSize: "2px 100%",
+                      backgroundClip: "text",
+                      WebkitBackgroundClip: "text",
+                      color: "transparent",
+                    }}
+                  >
+                    35.70 PLN
+                  </div>
                 </div>
               </div>
 
               {/* Torn receipt edges - bottom */}
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-50"></div>
+              <div
+                className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-transparent via-white to-transparent opacity-80 pointer-events-none z-10"
+                style={{
+                  backgroundImage: `
+                       linear-gradient(45deg, transparent 48%, #e5e7eb 48%, #e5e7eb 52%, transparent 52%),
+                       linear-gradient(-45deg, transparent 48%, #e5e7eb 48%, #e5e7eb 52%, transparent 52%)
+                     `,
+                  backgroundSize: "8px 8px",
+                  backgroundPosition: "0 0, 4px 0",
+                }}
+              ></div>
 
               {/* THE LASER SCANNER ANIMATION */}
               <div
