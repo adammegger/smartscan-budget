@@ -495,14 +495,18 @@ function DashboardLayout() {
             {isAnalyzing ? "ANALIZUJĘ..." : "SKANUJ PARAGON"}
           </span>
 
-          {/* DEV ONLY - Mock Scan Button */}
-          <button
-            onClick={() => scannerRef.current?.triggerMockScan()}
-            disabled={isAnalyzing}
-            className="mt-4 px-4 py-2 text-sm bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-600 dark:text-yellow-400 rounded-lg border border-yellow-500/30 transition-colors"
-          >
-            🔧 DEV: Symuluj skanowanie
-          </button>
+          {import.meta.env.DEV && (
+            <>
+              {/* DEV ONLY - Mock Scan Button */}
+              <button
+                onClick={() => scannerRef.current?.triggerMockScan()}
+                disabled={isAnalyzing}
+                className="mt-4 px-4 py-2 text-sm bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-600 dark:text-yellow-400 rounded-lg border border-yellow-500/30 transition-colors"
+              >
+                🔧 DEV: Symuluj skanowanie
+              </button>
+            </>
+          )}
         </div>
 
         {/* Capture Message */}
