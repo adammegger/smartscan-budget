@@ -421,6 +421,10 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
             );
           } finally {
             setIsProcessing(false);
+            // Reset the target value to allow selecting the same file again
+            if (event.target) {
+              event.target.value = "";
+            }
           }
         }
       };
@@ -429,6 +433,9 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
   };
 
   const triggerCamera = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""; // Reset the input value
+    }
     fileInputRef.current?.click();
   };
 

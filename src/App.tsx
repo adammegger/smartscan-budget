@@ -631,8 +631,14 @@ function DashboardLayout() {
         <ReceiptVerification
           receiptData={verificationReceipt}
           isOpen={true}
-          onClose={() => setVerificationReceipt(null)}
-          onReject={() => setVerificationReceipt(null)}
+          onClose={() => {
+            setVerificationReceipt(null);
+            setCaptureMessage("");
+          }}
+          onReject={() => {
+            setVerificationReceipt(null);
+            setCaptureMessage("");
+          }}
           onSave={async (finalData: ReceiptData) => {
             try {
               // Start scanning overlay when saving begins

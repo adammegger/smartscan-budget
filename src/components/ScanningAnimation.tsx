@@ -54,7 +54,7 @@ const ScanningAnimation: React.FC = () => {
 
           {/* Laser Scanner */}
           <div
-            className="absolute left-0 right-0 h-1 bg-orange-500 shadow-[0_0_20px_8px_rgba(249,115,22,0.7)]"
+            className="absolute left-0 right-0 h-1 bg-orange-500 shadow-[0_0_20px_8px_rgba(249,115,22,0.7)] z-20"
             style={{
               animation: "scanLaser 3s ease-in-out infinite",
             }}
