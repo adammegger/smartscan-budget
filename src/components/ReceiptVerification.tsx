@@ -324,7 +324,7 @@ const UnitDropdown: React.FC<UnitDropdownProps> = ({ value, onChange }) => {
 
       {/* Dropdown Content */}
       {isDropdownOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-lg shadow-lg z-50 animate-in fade-in-0 zoom-in-95 duration-200">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-lg shadow-lg z-[100] animate-in fade-in-0 zoom-in-95 duration-200 max-h-48 overflow-y-auto">
           {unitOptions.map((unit) => (
             <button
               key={unit.value}
@@ -359,6 +359,29 @@ const MainCategoryDropdown: React.FC<MainCategoryDropdownProps> = ({
   showCategoryError,
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+  const mainCategoryRef = React.useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    if (!isDropdownOpen) return;
+
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (
+        mainCategoryRef.current &&
+        !mainCategoryRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   // Find the label for the currently selected category
   const currentCategoryLabel =
@@ -370,7 +393,7 @@ const MainCategoryDropdown: React.FC<MainCategoryDropdownProps> = ({
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={mainCategoryRef}>
       <Button
         variant="outline"
         className={`h-9 w-full justify-between items-center bg-background border ${
@@ -396,7 +419,7 @@ const MainCategoryDropdown: React.FC<MainCategoryDropdownProps> = ({
 
       {/* Dropdown Content */}
       {isDropdownOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-lg shadow-lg z-50 animate-in fade-in-0 zoom-in-95 duration-200">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-lg shadow-lg z-[100] animate-in fade-in-0 zoom-in-95 duration-200 max-h-48 overflow-y-auto">
           {categories.map((category) => (
             <button
               key={category.id}
@@ -429,6 +452,29 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
   onChange,
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    if (!isDropdownOpen) return;
+
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   // Find the label for the currently selected category
   const currentCategoryLabel =
@@ -440,7 +486,7 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <Button
         variant="outline"
         className="h-9 w-full justify-between items-center bg-card border-border/50 hover:bg-muted transition-colors text-sm"
@@ -458,7 +504,7 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
 
       {/* Dropdown Content */}
       {isDropdownOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-lg shadow-lg z-50 animate-in fade-in-0 zoom-in-95 duration-200">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-lg shadow-lg z-[100] animate-in fade-in-0 zoom-in-95 duration-200 max-h-48 overflow-y-auto">
           {categories.map((category) => (
             <button
               key={category.id}
@@ -880,7 +926,7 @@ export default function ReceiptVerification({
               </Button>
             </div>
 
-            <div className="bg-card border border-border/50 rounded-lg overflow-hidden">
+            <div className="bg-card border border-border/50 rounded-lg pb-32 max-sm:pb-40">
               {/* Desktop: Table layout */}
               <div className="hidden sm:block">
                 <Table>

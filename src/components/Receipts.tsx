@@ -995,7 +995,7 @@ export default function Receipts(props: ReceiptsProps) {
                               <div className="text-right">Suma</div>
                             </div>
 
-                            <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-orange-300 scrollbar-track-transparent">
+                            <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-2 pb-32 max-sm:pb-40 scrollbar-thin scrollbar-thumb-orange-300 scrollbar-track-transparent">
                               {itemsLoading[receipt.id] ? (
                                 <div className="text-center py-6 text-muted-foreground">
                                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500 mx-auto"></div>
