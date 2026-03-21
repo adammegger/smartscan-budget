@@ -1,0 +1,20 @@
+INSERT INTO public.categories (id, name, color, icon) VALUES
+  ('2b3aad52-1453-48b1-bb33-c7aa1fc85edf', 'Alkohol', '#9CA3AF', 'wine'),
+  ('0153d311-79ed-4454-a9c3-a191e0826bd3', 'Apteka', '#EF4444', 'pill'),
+  ('1526fc37-4ab5-421e-b3cd-58cc530137fb', 'Dom', '#8B5CF6', 'home'),
+  ('7fc62e41-b9d4-4912-8914-d00d4440dd2e', 'Edukacja', '#F59E0B', 'book'),
+  ('2a37a75b-9a56-46fd-a130-430ffe581137', 'Elektronika', '#3B82F6', 'laptop'),
+  ('0f176292-600b-43ea-8dba-10bab4da0249', 'Inne', '#6B7280', 'box'),
+  ('4bd1ed8e-54c6-4920-b037-56dd46819c63', 'Jedzenie', '#10B981', 'shopping-cart'),
+  ('100edfc2-1f94-4778-b84f-211e9759052f', 'Podróże', '#06B6D4', 'plane'),
+  ('1d8e7470-05c3-435f-a629-3c6292ae9272', 'Prezenty', '#EC4899', 'gift'),
+  ('b2766faf-ba4d-4ef8-bdbc-48cdd01d4b49', 'Rachunki', '#EF4444', 'file-text'),
+  ('f57fa731-9ddf-42a0-a011-7f945b9dd610', 'Restauracje', '#F59E0B', 'coffee'),
+  ('8ee26835-9c1f-40cc-a5c7-55ddb47d546b', 'Rozrywka', '#8B5CF6', 'tv'),
+  ('37f1fc92-dead-4872-bd5e-0c01a299ecd9', 'Sport', '#10B981', 'activity'),
+  ('409fc9e7-15bb-492e-9309-07309869a3f9', 'Transport', '#3B82F6', 'truck'),
+  ('94293dd6-fe54-42a8-999f-6cd4f6eb6e3d', 'Ubrania', '#EC4899', 'shopping-bag'),
+  ('9e675dba-a0ae-492f-b704-ab7fa71554ad', 'Uroda', '#F43F5E', 'smile'),
+  ('76ebfe68-db58-4767-b5de-4ef2408bf0e4', 'Zdrowie', '#14B8A6', 'heart'),
+  ('f7ee3fa7-5dba-47b2-8c27-ab03d8d7857c', 'Zwierzęta', '#F59E0B', 'twitter')
+ON CONFLICT (id) DO NOTHING;
