@@ -10,6 +10,7 @@ import {
 } from "../lib/categories";
 import { isBioProduct } from "../lib/eco";
 import { FREE_TIER_LIMITS, getReceiptsText } from "../lib/config";
+import ScanningAnimation from "./ScanningAnimation";
 
 // Mock data for testing
 const MOCK_STORES = [
@@ -481,6 +482,9 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
           </div>
         </div>
       )}
+
+      {/* Scanning Animation */}
+      {isProcessing && <ScanningAnimation />}
     </>
   );
 });
