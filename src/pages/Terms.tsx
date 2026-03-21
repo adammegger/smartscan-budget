@@ -3,6 +3,8 @@ import { ArrowLeft, FileText } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 
+const LAST_UPDATE = "21 marca 2026";
+
 export default function Terms() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -153,7 +155,7 @@ export default function Terms() {
                   Regulamin Serwisu
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  Ostatnia aktualizacja: Marzec 2026
+                  Ostatnia aktualizacja: {LAST_UPDATE}
                 </p>
               </div>
             </div>
