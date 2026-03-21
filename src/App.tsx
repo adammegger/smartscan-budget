@@ -93,12 +93,6 @@ export function ThemeToggle({ className }: { className?: string }) {
   const { theme, toggleTheme } = useTheme();
 
   const handleToggle = () => {
-    console.log(
-      "Current theme:",
-      theme,
-      "-> switching to:",
-      theme === "dark" ? "light" : "dark",
-    );
     toggleTheme();
   };
 
@@ -226,8 +220,6 @@ function DashboardLayout() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state change:", event, session);
-
       // Handle refresh token errors gracefully
       if (event === "SIGNED_IN" && session) {
         setIsAuthenticated(true);
@@ -266,7 +258,6 @@ function DashboardLayout() {
         setIsLoadingApp(false);
       } else if (event === "PASSWORD_RECOVERY") {
         // Password recovery event - don't change auth state
-        console.log("Password recovery event");
       } else if (event === "USER_UPDATED") {
         // User updated - refresh session data and profile
         if (session) {
@@ -425,12 +416,6 @@ function DashboardLayout() {
             {/* Theme Toggle - Icon only on mobile, text on desktop */}
             <button
               onClick={() => {
-                console.log(
-                  "Current theme:",
-                  theme,
-                  "-> switching to:",
-                  theme === "dark" ? "light" : "dark",
-                );
                 toggleTheme();
               }}
               className="hidden flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors cursor-pointer"
