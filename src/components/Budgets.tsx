@@ -1,4 +1,4 @@
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState, useTransition, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { getCategoryColor, getCategoryIcon } from "../lib/categoryCache";
 import { Wallet, Pencil, AlertTriangle, Check, X } from "lucide-react";
@@ -51,6 +51,52 @@ export default function Budgets(props: BudgetsProps) {
   const [saving, setSaving] = useState(false);
   const [showProLimitModal, setShowProLimitModal] = useState(false);
   const [, startTransition] = useTransition();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const editContainerRef = useRef<HTMLDivElement>(null);
+
+  // Close editing when clicking outside
+  useEffect(() => {
+    if (!editingCategory) return;
+
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        handleCancel();
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [editingCategory]);
+
+  // Close edit mode when clicking outside
+  useEffect(() => {
+    if (!editingCategory) return;
+
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (
+        editContainerRef.current &&
+        !editContainerRef.current.contains(event.target as Node)
+      ) {
+        handleCancel();
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [editingCategory]);
 
   // Data cache
   const { budgetCache, setBudgetCache } = useDataCache();
@@ -101,12 +147,12 @@ export default function Budgets(props: BudgetsProps) {
         setBudgetCache((prevCache: BudgetCache | null) => {
           if (!prevCache) return prevCache;
           return {
-            ...prevCache,
             budgets: prevCache.budgets.map((budget) => ({
               ...budget,
               spent: spendingData[budget.category_name] || 0,
             })),
             lastFetched: Date.now(),
+            categories: prevCache.categories,
           };
         });
       } catch (err) {
@@ -493,7 +539,10 @@ export default function Budgets(props: BudgetsProps) {
                         className="p-3 hover:bg-muted/30 transition-colors border border-border/50 rounded-lg"
                       >
                         {isEditing ? (
-                          <div className="flex items-center gap-2">
+                          <div
+                            className="flex items-center gap-2"
+                            ref={editContainerRef}
+                          >
                             <CategoryIcon
                               icon={
                                 budget.category_icon ||
@@ -594,7 +643,10 @@ export default function Budgets(props: BudgetsProps) {
                               </div>
                             </div>
                             <button
-                              onClick={() => handleStartEdit(budget)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStartEdit(budget);
+                              }}
                               className="cursor-pointer p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
                             >
                               <Pencil size={16} />
@@ -635,7 +687,10 @@ export default function Budgets(props: BudgetsProps) {
                         className="p-3 hover:bg-muted/30 transition-colors border border-border/50 rounded-lg"
                       >
                         {isAdding ? (
-                          <div className="flex items-center gap-2">
+                          <div
+                            className="flex items-center gap-2"
+                            ref={containerRef}
+                          >
                             <CategoryIcon
                               icon={cat.icon}
                               color={cat.color}
