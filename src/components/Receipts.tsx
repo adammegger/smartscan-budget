@@ -325,6 +325,9 @@ export default function Receipts(props: ReceiptsProps) {
 
       if (receiptError) throw receiptError;
 
+      // Dispatch global event to notify other components of receipt deletion
+      window.dispatchEvent(new Event("receiptDeleted"));
+
       // Update local state
       setReceipts((prev) => prev.filter((r) => r.id !== receiptId));
       setItemCounts((prev) => {
@@ -599,6 +602,9 @@ export default function Receipts(props: ReceiptsProps) {
         .eq("user_id", authUser.id);
 
       if (receiptError) throw receiptError;
+
+      // Dispatch global event to notify other components of receipt update
+      window.dispatchEvent(new Event("receiptUpdated"));
 
       // Delete existing items for this receipt
       const { error: deleteError } = await supabase

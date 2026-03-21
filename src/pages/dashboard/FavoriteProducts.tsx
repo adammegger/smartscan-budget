@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { supabase } from "../../lib/supabase";
 import { getCategoryColor } from "../../lib/categoryCache";
 import { ShoppingCart, Star, Calendar, Edit, Save, X } from "lucide-react";
@@ -12,6 +12,7 @@ import { getIconComponent } from "../../lib/categories";
 import { isBioProduct } from "../../lib/eco";
 import { useDataCache, useCacheValid } from "../../lib/cacheUtils";
 import { useRefresh } from "../../lib/refreshContext";
+import CategoryDropdown from "../../components/CategoryDropdown";
 
 // Format currency function
 const formatCurrency = (amount: number): string => {
@@ -144,7 +145,7 @@ export default function FavoriteProducts() {
       // Fetch items and group by product name
       const { data: items, error: itemsError } = await supabase
         .from("items")
-        .select("name, price, category")
+        .select("name, price, category, receipts!inner(date)")
         .eq("user_id", authUser.id)
         .in("receipt_id", receiptIds);
 
@@ -168,7 +169,7 @@ export default function FavoriteProducts() {
         }
       >();
 
-      items.forEach((item) => {
+      items.forEach((item: any) => {
         const productName = item.name?.trim();
         if (!productName) return;
 
@@ -177,13 +178,19 @@ export default function FavoriteProducts() {
             ? item.price
             : parseFloat(String(item.price).replace(",", "."));
 
+        // Extract the actual receipt date from the joined data
+        const itemDate = new Date(item.receipts?.date || new Date());
+
         if (productMap.has(productName)) {
           const existing = productMap.get(productName)!;
           productMap.set(productName, {
             ...existing,
             count: existing.count + 1,
             totalSpent: existing.totalSpent + price,
-            lastPurchased: new Date(), // We'll update this later
+            lastPurchased:
+              existing.lastPurchased > itemDate
+                ? existing.lastPurchased
+                : itemDate,
           });
         } else {
           productMap.set(productName, {
@@ -191,7 +198,7 @@ export default function FavoriteProducts() {
             category: item.category,
             count: 1,
             totalSpent: price,
-            lastPurchased: new Date(),
+            lastPurchased: itemDate,
           });
         }
       });
@@ -242,14 +249,21 @@ export default function FavoriteProducts() {
     }
   }, [favoriteProductCache, isCacheValid, refreshKey]);
 
-  // Listen for global receiptAdded event to refresh data
+  // Listen for global receipt events to refresh data
   useEffect(() => {
-    const handleReceiptAdded = () => {
+    const handleReceiptEvent = () => {
       fetchFavoriteProducts();
     };
 
-    window.addEventListener("receiptAdded", handleReceiptAdded);
-    return () => window.removeEventListener("receiptAdded", handleReceiptAdded);
+    window.addEventListener("receiptAdded", handleReceiptEvent);
+    window.addEventListener("receiptUpdated", handleReceiptEvent);
+    window.addEventListener("receiptDeleted", handleReceiptEvent);
+
+    return () => {
+      window.removeEventListener("receiptAdded", handleReceiptEvent);
+      window.removeEventListener("receiptUpdated", handleReceiptEvent);
+      window.removeEventListener("receiptDeleted", handleReceiptEvent);
+    };
   }, []);
 
   useEffect(() => {
@@ -361,20 +375,20 @@ export default function FavoriteProducts() {
 
     if (editingProduct === productName) {
       return (
-        <div className="flex items-center gap-2">
-          <select
+        <div className="flex items-center gap-2 edit-container">
+          <CategoryDropdown
             value={newCategory}
-            onChange={(e) => setNewCategory(e.target.value)}
-            className="text-xs border border-border/50 rounded px-2 py-1 bg-background"
-            disabled={isUpdating}
-          >
-            <option value="">Wybierz kategorię...</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.name}>
-                {category.name}
-              </option>
-            ))}
-          </select>
+            categories={categories.map((cat) => ({
+              id: cat.id.toString(),
+              name: cat.name,
+            }))}
+            onChange={(selectedId) => {
+              const selectedCategory = categories.find(
+                (cat) => cat.id.toString() === selectedId,
+              );
+              setNewCategory(selectedCategory?.name || "");
+            }}
+          />
           <div className="flex gap-1">
             <button
               type="button"
@@ -424,7 +438,8 @@ export default function FavoriteProducts() {
           {categoryName}
         </span>
         <button
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             setEditingProduct(productName);
             setNewCategory(categoryName);
           }}
@@ -436,6 +451,33 @@ export default function FavoriteProducts() {
       </div>
     );
   };
+
+  // Click outside functionality for edit mode
+  useEffect(() => {
+    if (!editingProduct) return;
+
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      // Find the edit container element by looking for the specific product's edit container
+      const editContainers = document.querySelectorAll(".edit-container");
+
+      for (const container of editContainers) {
+        if (container && !container.contains(event.target as Node)) {
+          // Clicked outside the edit container, close edit mode
+          setEditingProduct(null);
+          setNewCategory("");
+          break;
+        }
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [editingProduct]);
 
   return (
     <div className="space-y-6">
