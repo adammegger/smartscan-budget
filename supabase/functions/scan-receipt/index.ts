@@ -27,6 +27,7 @@ const RECEIPT_SCAN_PROMPT = {
           unit: "string",
           quantity: "number",
           brand: "string or null",
+          is_bio: "boolean",
         },
       ],
     },
@@ -46,6 +47,8 @@ const RECEIPT_SCAN_PROMPT = {
       "Keep the language of the receipt (Polish store receipts are in Polish – keep Polish product names in Polish).",
       "Include volume or weight info in the name if it helps identify the product (e.g. '1.5l', '100g').",
       "Only populate the brand field if the brand name is clearly identifiable in the receipt line (e.g. 'Lindt', 'Tymbark', 'Łaciate').",
+      "Watch out for tricky Polish grocery abbreviations and ALWAYS use context (units, packaging, surrounding words) to deduce the actual product. Crucial examples: 1) 'Wino luz' or 'Wino bezp' means 'Winogrono' (grapes/Food), NOT Alcohol. 2) 'Szamp.' can mean 'Szampon' (shampoo/Health&Beauty) if followed by cosmetic brands or 'Szampan' (champagne/Alcohol). 3) 'Sał. lod.' means 'Sałata lodowa' (iceberg lettuce/Food), not ice cream. 4) 'Ziem.' or 'Ziemia' can be potatoes ('Ziemniaki luz' - Food) or potting soil ('Ziemia uniw. 20L' - Home). 5) 'Pom. malin.' means raspberry tomatoes (Food), not raspberries. 6) 'Koper.' can be 'Koperek' (dill/Food) or 'Koperta' (envelope/Other). Pay strict attention to units like 'luz' (bulk), 'kg', 'ml', or 'pęczek' to resolve these ambiguities.",
+      "Flag organic products: set 'is_bio' to true ONLY IF the receipt line explicitly contains bio/eco markers. Common Polish market markers include: 'BIO', 'EKO', 'ECO', 'ORGANIC', 'KBIO' or 'K-Bio' (Kaufland), 'GOBIO' or 'Go Bio' (Biedronka), 'BIOTREND' (Lidl). Do not guess based on the product type (e.g., vegetables); the marker must be present in the item name text. Otherwise, set 'is_bio' to false.",
     ],
     discounts: [
       "Pay special attention to item-level discounts. In Polish receipts (like Biedronka), discounts are often printed immediately below the item as 'Rabat' or 'Zniżka' with a negative value (e.g., '-1,11' or '-0,50'). You MUST sum ALL these negative discount values across the entire receipt and return the total absolute value as 'saved_amount'. For example, if you find 'Rabat -1,11' and 'Rabat -0,50', the 'saved_amount' must be 1.61. If there are no discounts, return 0. The 'price' for each item should be its final price after the discount.",
