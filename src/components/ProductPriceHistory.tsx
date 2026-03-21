@@ -539,23 +539,23 @@ export default function ProductPriceHistory({
                     {storePrices.map((store, index) => (
                       <div
                         key={store.store_name}
-                        className="flex items-center justify-between bg-muted rounded-lg p-3"
+                        className="flex items-center gap-3 bg-muted rounded-lg p-3"
                       >
-                        <div className="flex items-center gap-3">
-                          <span className="text-lg font-bold text-muted-foreground w-6">
-                            #{index + 1}
-                          </span>
-                          <span className="text-foreground font-medium">
+                        <span className="text-lg font-bold text-muted-foreground w-6">
+                          #{index + 1}
+                        </span>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between flex-1 min-w-0 gap-1 sm:gap-4">
+                          <span className="text-foreground font-medium truncate sm:flex-1">
                             {store.store_name}
                           </span>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-[#ff7043] dark:text-[#ff7043] font-bold">
-                            {store.min_price.toFixed(2)} PLN
-                          </span>
-                          <span className="text-muted-foreground text-xs ml-2">
-                            ({formatDate(store.date)})
-                          </span>
+                          <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-2 sm:gap-4">
+                            <span className="text-[#ff7043] dark:text-[#ff7043] font-bold">
+                              {store.min_price.toFixed(2)} PLN
+                            </span>
+                            <span className="text-muted-foreground text-xs">
+                              ({formatDate(store.date)})
+                            </span>
+                          </div>
                         </div>
                       </div>
                     ))}
