@@ -2,10 +2,15 @@
 // This file contains direct Gemini API calls that expose the API key in the frontend.
 // For production, use the Supabase Edge Function (scan-receipt) instead.
 // The API key is now securely stored on the server side.
+import { CATEGORY_IDS } from "./categories";
+
 const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 const GOOGLE_API_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=" +
   GOOGLE_API_KEY;
+
+// Generate string with category names from CATEGORY_IDS
+const categoryNames = Object.keys(CATEGORY_IDS).join(", ");
 
 export async function processReceipt(base64Image: string) {
   const maxRetries = 1;
@@ -19,7 +24,7 @@ export async function processReceipt(base64Image: string) {
           {
             parts: [
               {
-                text: 'You are a receipt scanner. Extract: store_name, date (YYYY-MM-DD), total_amount (numeric), and items (array of objects with name, price, category, unit (like "kg", "g", "l", "ml", "szt"), quantity (numeric), and brand if detectable). Parse quantities from text like "200g" -> quantity: 0.2, unit: "kg". For items without unit/quantity, use unit: "szt", quantity: 1. Assign a category to each item based on its name. Categories: Food, Transport, Home, Health, Entertainment, Other. Also assign a category to the entire receipt based on the store and items. Return only pure JSON with this structure: {"store_name": "string", "date": "YYYY-MM-DD", "total_amount": number, "category": "string", "items": [{"name": "string", "price": number, "category": "string", "unit": "string", "quantity": number, "brand": "string|null"}]}',
+                text: `You are an expert receipt scanner for Polish receipts. Extract: store_name, date (YYYY-MM-DD), total_amount (numeric), and items (array of objects with name, price, category, unit, quantity, brand). Parse quantities from text like "200g" -> quantity: 0.2, unit: "kg". For items without unit/quantity, use unit: "szt", quantity: 1. Assign a category to EACH item based on its name. You MUST choose ONLY from these exact Polish categories: [${categoryNames}]. Also assign a main category to the entire receipt from the same list. Return ONLY pure valid JSON without markdown formatting, using this exact structure: {"store_name": "string", "date": "YYYY-MM-DD", "total_amount": number, "category": "string", "items": [{"name": "string", "price": number, "category": "string", "unit": "string", "quantity": number, "brand": "string|null"}]}`,
               },
               {
                 inlineData: {
