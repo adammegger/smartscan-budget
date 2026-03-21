@@ -851,7 +851,7 @@ export default function ReceiptVerification({
         {/* Form Content */}
         <div className="p-6 space-y-6 overflow-y-auto">
           {/* Receipt Header Form */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-muted rounded-lg">
             <div className="space-y-2">
               <Label htmlFor="store_name" className="text-sm font-medium">
                 Sklep
@@ -877,6 +877,42 @@ export default function ReceiptVerification({
                   handleInputChange("date", e.target.value)
                 }
                 className="bg-background border-border/50"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="total_amount" className="text-sm font-medium">
+                Kwota całkowita
+              </Label>
+              <Input
+                id="total_amount"
+                type="text"
+                value={editedData.total_amount}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const val = e.target.value.replace(",", ".");
+                  if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
+                    handleInputChange("total_amount", val);
+                  }
+                }}
+                className="bg-background border-border/50"
+                placeholder="0.00"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="saved_amount" className="text-sm font-medium">
+                Zaoszczędzone
+              </Label>
+              <Input
+                id="saved_amount"
+                type="text"
+                value={editedData.saved_amount || 0}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const val = e.target.value.replace(",", ".");
+                  if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
+                    handleInputChange("saved_amount", parseFloat(val) || 0);
+                  }
+                }}
+                className="bg-background border-border/50"
+                placeholder="0.00"
               />
             </div>
             <div className="space-y-1">

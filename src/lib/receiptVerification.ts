@@ -17,6 +17,7 @@ export interface ReceiptData {
   store_name: string;
   date: string;
   total_amount: number;
+  saved_amount: number;
   category: string;
   category_id: string | null;
   items: ReceiptItem[];
@@ -69,6 +70,7 @@ export const saveReceiptToSupabase = async (receiptData: ReceiptData) => {
         store_name: receiptData.store_name,
         date: receiptData.date,
         total_amount: sanitizedTotalAmount,
+        saved_amount: receiptData.saved_amount || 0,
         category: receiptData.category,
         category_id: receiptData.category_id,
         user_id: authUser.id,

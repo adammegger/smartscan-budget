@@ -24,7 +24,7 @@ export async function processReceipt(base64Image: string) {
           {
             parts: [
               {
-                text: `You are an expert receipt scanner for Polish receipts. Extract: store_name, date (YYYY-MM-DD), total_amount (numeric), and items (array of objects with name, price, category, unit, quantity, brand). Parse quantities from text like "200g" -> quantity: 0.2, unit: "kg". For items without unit/quantity, use unit: "szt", quantity: 1. Assign a category to EACH item based on its name. You MUST choose ONLY from these exact Polish categories: [${categoryNames}]. Also assign a main category to the entire receipt from the same list. Return ONLY pure valid JSON without markdown formatting, using this exact structure: {"store_name": "string", "date": "YYYY-MM-DD", "total_amount": number, "category": "string", "items": [{"name": "string", "price": number, "category": "string", "unit": "string", "quantity": number, "brand": "string|null"}]}`,
+                text: `You are an expert receipt scanner for Polish receipts. Extract: store_name, date (YYYY-MM-DD), total_amount (numeric), saved_amount (numeric), and items (array of objects with name, price, category, unit, quantity, brand). Look for total discounts, savings, or rebates (often labeled in Polish as "Rabat", "Zniżka", "Oszczędzasz", "Suma korzyści"). Extract this as saved_amount. If no savings are found, set it to 0. Parse quantities from text like "200g" -> quantity: 0.2, unit: "kg". For items without unit/quantity, use unit: "szt", quantity: 1. Assign a category to EACH item based on its name. You MUST choose ONLY from these exact Polish categories: [${categoryNames}]. Also assign a main category to the entire receipt from the same list. Return ONLY pure valid JSON without markdown formatting, using this exact structure: {"store_name": "string", "date": "YYYY-MM-DD", "total_amount": number, "saved_amount": number, "category": "string", "items": [{"name": "string", "price": number, "category": "string", "unit": "string", "quantity": number, "brand": "string|null"}]}`,
               },
               {
                 inlineData: {
@@ -200,6 +200,7 @@ function parseGeminiResponse(text: string): {
   store_name: string;
   date: string;
   total_amount: number;
+  saved_amount: number;
   category: string;
   items: Array<{
     name: string;

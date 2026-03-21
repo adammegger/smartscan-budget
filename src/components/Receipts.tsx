@@ -33,6 +33,7 @@ interface Receipt {
   store_name: string;
   date: string;
   total_amount: number;
+  saved_amount: number;
   category: string;
   category_id?: string | null;
   isVisible: boolean;
@@ -537,6 +538,7 @@ export default function Receipts(props: ReceiptsProps) {
         store_name: receipt.store_name,
         date: receipt.date,
         total_amount: receipt.total_amount,
+        saved_amount: receipt.saved_amount || 0,
         category: receipt.category,
         category_id: receipt.category_id || null, // Ensure it's never undefined
         items: receiptItems.map((item) => ({
@@ -956,6 +958,11 @@ export default function Receipts(props: ReceiptsProps) {
                       <div className="font-semibold text-foreground">
                         {receipt.total_amount.toFixed(2)} PLN
                       </div>
+                      {receipt.saved_amount > 0 && (
+                        <div className="text-sm text-green-500 dark:text-green-400 font-medium">
+                          Zaoszczędzono: {receipt.saved_amount.toFixed(2)} PLN
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-center">
                       <div className="flex justify-center gap-2">
@@ -1070,14 +1077,22 @@ export default function Receipts(props: ReceiptsProps) {
                             </div>
                           </div>
                           <div className="flex justify-between items-center pt-4 border-t border-border">
-                            <span className="text-sm text-muted-foreground">
-                              Zapisano:{" "}
-                              {format(
-                                new Date(receipt.created_at),
-                                "dd.MM.yyyy HH:mm",
-                                { locale: pl },
+                            <div className="flex items-center gap-4">
+                              <span className="text-sm text-muted-foreground">
+                                Zapisano:{" "}
+                                {format(
+                                  new Date(receipt.created_at),
+                                  "dd.MM.yyyy HH:mm",
+                                  { locale: pl },
+                                )}
+                              </span>
+                              {receipt.saved_amount > 0 && (
+                                <div className="font-semibold text-green-600 dark:text-green-400">
+                                  Zaoszczędzono:{" "}
+                                  {receipt.saved_amount.toFixed(2)} PLN
+                                </div>
                               )}
-                            </span>
+                            </div>
                             <button
                               onClick={() => handleToggleReceipt(receipt.id)}
                               className="text-orange-500 hover:text-orange-400 text-sm font-medium cursor-pointer"

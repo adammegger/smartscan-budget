@@ -23,6 +23,7 @@ export interface Receipt {
   store_name: string;
   date: string;
   total_amount: number;
+  saved_amount: number;
   category: string;
   isVisible: boolean;
   created_at: string;
