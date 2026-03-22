@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "../../lib/supabase";
 import { getCategoryColor } from "../../lib/categoryCache";
 import { ShoppingCart, Star, Calendar, Edit, Save, X } from "lucide-react";
@@ -54,7 +54,7 @@ export default function FavoriteProducts() {
     FavoriteProductLocal[]
   >([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true); // Start with loading true
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingProduct, setEditingProduct] = useState<string | null>(null);
   const [newCategory, setNewCategory] = useState<string>("");
@@ -145,7 +145,7 @@ export default function FavoriteProducts() {
       // Fetch items and group by product name
       const { data: items, error: itemsError } = await supabase
         .from("items")
-        .select("name, price, category, receipts!inner(date)")
+        .select("id, name, price, category, receipts!inner(date)")
         .eq("user_id", authUser.id)
         .in("receipt_id", receiptIds);
 
@@ -169,7 +169,7 @@ export default function FavoriteProducts() {
         }
       >();
 
-      items.forEach((item: any) => {
+      items.forEach((item) => {
         const productName = item.name?.trim();
         if (!productName) return;
 
@@ -179,7 +179,7 @@ export default function FavoriteProducts() {
             : parseFloat(String(item.price).replace(",", "."));
 
         // Extract the actual receipt date from the joined data
-        const itemDate = new Date(item.receipts?.date || new Date());
+        const itemDate = new Date(item.receipts?.[0]?.date || new Date());
 
         if (productMap.has(productName)) {
           const existing = productMap.get(productName)!;
@@ -210,7 +210,7 @@ export default function FavoriteProducts() {
         id: product.name.toLowerCase().replace(/\s+/g, "-"),
         name: product.name,
         category: product.category,
-        category_id: null, // We don't have category_id in items table
+        category_id: null,
         count: product.count,
         totalSpent: product.totalSpent,
         avgPrice: product.totalSpent / product.count,
@@ -249,23 +249,6 @@ export default function FavoriteProducts() {
     }
   }, [favoriteProductCache, isCacheValid, refreshKey]);
 
-  // Listen for global receipt events to refresh data
-  useEffect(() => {
-    const handleReceiptEvent = () => {
-      fetchFavoriteProducts();
-    };
-
-    window.addEventListener("receiptAdded", handleReceiptEvent);
-    window.addEventListener("receiptUpdated", handleReceiptEvent);
-    window.addEventListener("receiptDeleted", handleReceiptEvent);
-
-    return () => {
-      window.removeEventListener("receiptAdded", handleReceiptEvent);
-      window.removeEventListener("receiptUpdated", handleReceiptEvent);
-      window.removeEventListener("receiptDeleted", handleReceiptEvent);
-    };
-  }, []);
-
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -291,7 +274,6 @@ export default function FavoriteProducts() {
   const filteredData = useMemo(() => {
     const filtered = [...favoriteProducts];
 
-    // Apply sorting
     filtered.sort((a, b) => {
       let comparison = 0;
       if (sortBy === "count") {
@@ -301,7 +283,6 @@ export default function FavoriteProducts() {
       } else if (sortBy === "name") {
         comparison = a.name.localeCompare(b.name);
       }
-
       return sortOrder === "asc" ? comparison : -comparison;
     });
 
@@ -322,7 +303,7 @@ export default function FavoriteProducts() {
     return sortOrder === "asc" ? "↑" : "↓";
   };
 
-  // Function to update category for a product
+  // Zaktualizowana i całkowicie naprawiona funkcja zapisu
   const updateProductCategory = async (
     productName: string,
     newCategory: string,
@@ -334,25 +315,53 @@ export default function FavoriteProducts() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Update all items with this product name to the new category
-      const { error } = await supabase
+      // 1. Zabezpieczenie przed spacjami na końcu nazwy w bazie
+      // Pobieramy ID elementów, które po ucięciu spacji pasują do nazwy
+      const { data: matchedItems } = await supabase
         .from("items")
-        .update({ category: newCategory })
+        .select("id, name")
         .eq("user_id", user.id)
-        .ilike("name", productName);
+        .ilike("name", `${productName}%`);
 
-      if (error) throw error;
+      const idsToUpdate = matchedItems
+        ?.filter(
+          (item) =>
+            item.name.trim().toLowerCase() === productName.toLowerCase(),
+        )
+        .map((item) => item.id);
 
-      // Update local state directly instead of re-fetching
-      setFavoriteProducts((prevProducts) =>
-        prevProducts.map((product) =>
-          product.name === productName
-            ? { ...product, category: newCategory }
-            : product,
-        ),
+      // Jeśli baza cokolwiek znalazła, robimy update używając ID
+      if (idsToUpdate && idsToUpdate.length > 0) {
+        const { error } = await supabase
+          .from("items")
+          .update({ category: newCategory })
+          .in("id", idsToUpdate);
+
+        if (error) throw error;
+      }
+
+      // 2. Aktualizuj lokalny stan
+      const updatedProducts = favoriteProducts.map((product) =>
+        product.name === productName
+          ? {
+              ...product,
+              category: newCategory,
+            }
+          : product,
       );
 
-      // Close edit mode
+      setFavoriteProducts(updatedProducts);
+
+      // 3. MUSIMY zaktualizować czas cache na Date.now(),
+      // inaczej aplikacja natychmiast nadpisze nam stan starymi danymi!
+      if (favoriteProductCache) {
+        setFavoriteProductCache({
+          products: updatedProducts,
+          lastFetched: Date.now(),
+        });
+      }
+
+      // Zamknij tryb edycji
       setEditingProduct(null);
       setNewCategory("");
     } catch (err) {
@@ -363,30 +372,21 @@ export default function FavoriteProducts() {
     }
   };
 
-  // Function to render colorful category badge with edit button
   const renderCategoryBadge = (categoryName: string, productName: string) => {
     const color = getCategoryColor(categoryName);
-
-    // Debug: Log category data
-    console.log(
-      "FavoriteProducts - Category value passed to getIconComponent:",
-      categoryName,
-    );
 
     if (editingProduct === productName) {
       return (
         <div className="flex items-center gap-2 edit-container">
+          {/* Zastąpiono zbugowany CategoryDropdown natywnym, niezawodnym <select> */}
           <CategoryDropdown
             value={newCategory}
             categories={categories.map((cat) => ({
-              id: cat.id.toString(),
+              id: cat.name, // TRIK: Używamy nazwy jako ID, żeby ominąć błędy mapowania
               name: cat.name,
             }))}
-            onChange={(selectedId) => {
-              const selectedCategory = categories.find(
-                (cat) => cat.id.toString() === selectedId,
-              );
-              setNewCategory(selectedCategory?.name || "");
+            onChange={(selectedName) => {
+              setNewCategory(selectedName);
             }}
           />
           <div className="flex gap-1">
@@ -398,9 +398,9 @@ export default function FavoriteProducts() {
                 updateProductCategory(productName, newCategory);
               }}
               disabled={!newCategory || isUpdating}
-              className="p-1 text-green-600 hover:bg-green-500/10 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="p-1.5 text-green-600 hover:bg-green-500/10 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
             >
-              <Save size={14} />
+              <Save size={16} />
             </button>
             <button
               type="button"
@@ -411,9 +411,9 @@ export default function FavoriteProducts() {
                 setNewCategory("");
               }}
               disabled={isUpdating}
-              className="p-1 text-destructive hover:bg-destructive/10 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="p-1.5 text-destructive hover:bg-destructive/10 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
             >
-              <X size={14} />
+              <X size={16} />
             </button>
           </div>
         </div>
@@ -457,57 +457,49 @@ export default function FavoriteProducts() {
     if (!editingProduct) return;
 
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      // Find the edit container element by looking for the specific product's edit container
+      const target = event.target as Element;
+
+      // ZABEZPIECZENIE: Ignoruj kliknięcia wewnątrz customowego dropdowna
+      // (Radix UI, Select, Portals itp. dodają te role i atrybuty)
+      if (
+        target.closest('[role="listbox"]') ||
+        target.closest('[role="option"]') ||
+        target.closest('[role="dialog"]') ||
+        target.closest("[data-radix-popper-content-wrapper]") ||
+        target.id.includes("radix")
+      ) {
+        return;
+      }
+
       const editContainers = document.querySelectorAll(".edit-container");
+      let clickedInside = false;
 
       for (const container of editContainers) {
-        if (container && !container.contains(event.target as Node)) {
-          // Clicked outside the edit container, close edit mode
-          setEditingProduct(null);
-          setNewCategory("");
+        if (container && container.contains(target)) {
+          clickedInside = true;
           break;
         }
       }
+
+      // Jeśli kliknięto naprawdę poza kontenerem i dropdownem -> zamknij
+      if (!clickedInside) {
+        setEditingProduct(null);
+        setNewCategory("");
+      }
     };
 
-    document.addEventListener("click", handleClickOutside);
+    // Zmiana na mousedown działa lepiej z customowymi dropdownami niż click
+    document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("touchstart", handleClickOutside);
 
     return () => {
-      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
     };
   }, [editingProduct]);
 
   return (
     <div className="space-y-6">
-      {/* PRO Banner */}
-      {/* <Card className="border-none bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Lock size={20} className="text-orange-500" />
-              <div>
-                <h3 className="font-semibold text-orange-600 dark:text-orange-400">
-                  ✨ AI Asystent: Generuj przepisy i listy zakupów
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Wkrótce w planie PRO
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-orange-500/30 text-orange-600 hover:bg-orange-500/10"
-            >
-              Zapisz się na listę oczekujących
-            </Button>
-          </div>
-        </CardContent>
-      </Card> */}
-
-      {/* Page Header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-foreground">
@@ -517,26 +509,8 @@ export default function FavoriteProducts() {
             Produkty, które najczęściej kupujesz
           </p>
         </div>
-        {/* <div className="flex items-center gap-2">
-          <Calendar size={20} className="text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">Ostatnie zakupy</span>
-        </div> */}
       </div>
 
-      {/* Time Filter */}
-      {/* <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Filtry</CardTitle>
-            <TimeFilter
-              timeFilter={timeFilter}
-              onTimeFilterChange={setTimeFilter}
-            />
-          </div>
-        </CardHeader>
-      </Card> */}
-
-      {/* Products Table */}
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
@@ -559,7 +533,7 @@ export default function FavoriteProducts() {
               <p className="text-destructive">{error}</p>
               <button
                 onClick={fetchFavoriteProducts}
-                className="mt-2 bg-destructive text-destructive-foreground px-4 py-2 rounded-md text-sm"
+                className="mt-2 bg-destructive text-destructive-foreground px-4 py-2 rounded-md text-sm cursor-pointer hover:bg-destructive/90 transition-colors"
               >
                 Spróbuj ponownie
               </button>
