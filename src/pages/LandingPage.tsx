@@ -24,8 +24,16 @@ import {
   getBudgetsText,
   getReceiptsText,
 } from "../lib/config";
-import app1 from "assets/app1.png";
+import web from "assets/web.png";
+import mobile from "assets/mobile.png";
 import SuppiBadge from "../components/SuppiBadge";
+
+// Import images for Bento Grid
+import paragonImg from "../assets/paragon.png";
+import budzetImg from "../assets/budzet.png";
+import bioImg from "../assets/bio.png";
+import historiaImg from "../assets/historia.png";
+import obrazImg from "../assets/obraz.png";
 
 // Smooth scrolling function
 const scrollToSection = (id: string) => {
@@ -233,47 +241,52 @@ export default function LandingPage() {
                   <div className="flex items-center gap-3 p-3 bg-card border border-border/50 rounded-lg">
                     <Check size={20} className="text-green-500" />
                     <span className="text-sm text-muted-foreground">
-                      Szybkie skanowanie
+                      Kategoryzacja per produkt
                     </span>
                   </div>
                   <div className="flex items-center gap-3 p-3 bg-card border border-border/50 rounded-lg">
                     <Check size={20} className="text-green-500" />
                     <span className="text-sm text-muted-foreground">
-                      Analiza AI
+                      Automatyczne tagi BIO
                     </span>
                   </div>
                   <div className="flex items-center gap-3 p-3 bg-card border border-border/50 rounded-lg">
                     <Check size={20} className="text-green-500" />
                     <span className="text-sm text-muted-foreground">
-                      Oszczędzaj pieniądze
+                      100% Prywatności
                     </span>
                   </div>
                 </div>
               </div>
 
               {/* Preview */}
-              <div className="relative">
-                {/* Main Screenshot Container */}
-                <div className="relative z-10 rounded-2xl overflow-hidden border border-border/50 shadow-2xl bg-card">
-                  {/* Optional Mac-like window controls for a polished look */}
-                  <div className="h-8 bg-muted/50 border-b border-border/50 flex items-center px-4 gap-2">
+              <div className="relative w-full h-[400px] sm:h-[500px] lg:h-[600px] mt-10 lg:mt-0">
+                {/* Web Dashboard - Duży na tytach */}
+                <div className="absolute top-0 left-0 w-[85%] md:w-[90%] rounded-xl overflow-hidden border border-gray-800 shadow-2xl shadow-orange-500/20 bg-[#121212] z-10">
+                  {/* Pasek przeglądarki */}
+                  <div className="h-8 bg-gray-900 flex items-center px-4 gap-2 border-b border-gray-800">
                     <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
                     <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
                     <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
                   </div>
-
-                  {/* The App Screenshot */}
                   <img
-                    src={app1}
-                    alt="Aplikacja Paragonly - interfejs skanowania paragonów i zarządzania budżetem"
+                    src={web}
+                    alt="Dashboard webowy"
                     className="w-full h-auto object-cover"
-                    loading="lazy"
+                    style={{ opacity: 1 }} // BEZ PRZEZROCZYSTOŚCI!
                   />
                 </div>
 
-                {/* Decorative glowing background blobs (kept from original) */}
-                <div className="absolute -top-6 -right-6 w-40 h-40 bg-gradient-to-r from-orange-500/30 to-red-500/30 rounded-full blur-3xl -z-10"></div>
-                <div className="absolute -bottom-6 -left-6 w-40 h-40 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-3xl -z-10"></div>
+                {/* Mobile Scan - Duży, nałożony z boku z mocnym cieniem */}
+                <div className="absolute bottom-[-20px] lg:bottom-[-40px] right-0 lg:right-[-20px] w-[260px] sm:w-[320px] rounded-[2rem] overflow-hidden border-4 border-gray-900 shadow-2xl shadow-cyan-500/40 bg-black z-20">
+                  {/* Pasek telefonu (notch) */}
+                  <div className="absolute top-0 inset-x-0 h-6 bg-gray-900 rounded-b-xl w-1/2 mx-auto z-30"></div>
+                  <img
+                    src={mobile}
+                    alt="Skanowanie mobilne"
+                    className="w-full h-auto object-cover relative z-20"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -294,185 +307,236 @@ export default function LandingPage() {
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {/* Feature 1 */}
-              <div className="bg-card border border-border/50 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 p-3 rounded-lg w-fit mb-4">
-                  <Camera size={24} className="text-orange-500" />
+              <div className="bg-card border border-border/50 rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <div className="h-48 w-full relative border-b border-gray-800/50 bg-[#0a0a0a] overflow-hidden group">
+                  <img
+                    src={paragonImg}
+                    alt="Feature preview"
+                    className="w-full h-full object-cover object-top opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-500"
+                  />
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">
-                  Skaner AI, który widzi więcej
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  Kupiłeś w hipermarkecie chleb, płyn do szyb i skarpetki?
-                  Zwykła aplikacja wrzuci całą kwotę w "Jedzenie", rujnując
-                  Twoje statystyki. Paragonly czyta paragon linijka po linijce.
-                  Chleb to Jedzenie, płyn to Auto, a skarpetki to Ubrania.
-                  Koniec z zakłamanym budżetem.
-                </p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Kategoryzacja na poziomie produktu
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Rozpoznawanie skrótów ze sklepów
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Koniec z ręcznym przepisywaniem
-                  </li>
-                </ul>
+                <div className="p-6 flex-1">
+                  <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 p-3 rounded-lg w-fit mb-4">
+                    <Camera size={24} className="text-orange-500" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">
+                    Skaner AI, który widzi więcej
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    Kupiłeś w hipermarkecie chleb, płyn do szyb i skarpetki?
+                    Zwykła aplikacja wrzuci całą kwotę w "Jedzenie", rujnując
+                    Twoje statystyki. Paragonly czyta paragon linijka po
+                    linijce. Chleb to Jedzenie, płyn to Auto, a skarpetki to
+                    Ubrania. Koniec z zakłamanym budżetem.
+                  </p>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <Check size={16} className="text-green-500" />
+                      Kategoryzacja na poziomie produktu
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check size={16} className="text-green-500" />
+                      Rozpoznawanie skrótów ze sklepów
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check size={16} className="text-green-500" />
+                      Koniec z ręcznym przepisywaniem
+                    </li>
+                  </ul>
+                </div>
               </div>
 
               {/* Feature 2 */}
-              <div className="bg-card border border-border/50 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 p-3 rounded-lg w-fit mb-4">
-                  <Calendar size={24} className="text-cyan-500" />
+              <div className="bg-card border border-border/50 rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <div className="h-48 w-full relative border-b border-gray-800/50 bg-[#0a0a0a] overflow-hidden group">
+                  <img
+                    src={historiaImg}
+                    alt="Feature preview"
+                    className="w-full h-full object-cover object-top opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-500"
+                  />
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">
-                  Śledzenie historii i inflacji
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  Przestań zgadywać, czy w sklepie faktycznie jest taniej.
-                  Paragonly zapamiętuje ceny Twoich ulubionych produktów na
-                  przestrzeni czasu. Od razu sprawdzisz, jaka była najniższa i
-                  najwyższa zapłacona cena, oraz wyłapiesz ukrytą inflację.
-                </p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Historia cen pojedynczych produktów
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Śledzenie ulubionych zakupów
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Porównania
-                  </li>
-                </ul>
+                <div className="p-6 flex-1">
+                  <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 p-3 rounded-lg w-fit mb-4">
+                    <Calendar size={24} className="text-cyan-500" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">
+                    Śledzenie historii i inflacji
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    Przestań zgadywać, czy w sklepie faktycznie jest taniej.
+                    Paragonly zapamiętuje ceny Twoich ulubionych produktów na
+                    przestrzeni czasu. Od razu sprawdzisz, jaka była najniższa i
+                    najwyższa zapłacona cena, oraz wyłapiesz ukrytą inflację.
+                  </p>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <Check size={16} className="text-green-500" />
+                      Historia cen pojedynczych produktów
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check size={16} className="text-green-500" />
+                      Śledzenie ulubionych zakupów
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check size={16} className="text-green-500" />
+                      Porównania
+                    </li>
+                  </ul>
+                </div>
               </div>
 
               {/* Feature 3 */}
-              <div className="bg-card border border-border/50 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 p-3 rounded-lg w-fit mb-4">
-                  <Leaf size={24} className="text-green-500" />
+              <div className="bg-card border border-border/50 rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <div className="h-48 w-full relative border-b border-gray-800/50 bg-[#0a0a0a] overflow-hidden group">
+                  <img
+                    src={bioImg}
+                    alt="Feature preview"
+                    className="w-full h-full object-cover object-top opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-500"
+                  />
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">
-                  Twój eko-ślad na paragonie
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  Nasza sztuczna inteligencja automatycznie wyłapuje z paragonów
-                  produkty ekologiczne (BIO, Eco, Organic). Zmieniaj nawyki na
-                  zdrowsze, zbieraj Zielone Listki i odblokowuj specjalne
-                  osiągnięcia w aplikacji.
-                </p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Automatyczne flagowanie produktów BIO
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    System odznak i osiągnięć
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Świadome budowanie nawyków
-                  </li>
-                </ul>
+                <div className="p-6 flex-1">
+                  <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 p-3 rounded-lg w-fit mb-4">
+                    <Leaf size={24} className="text-green-500" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">
+                    Twój eko-ślad na paragonie
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    Nasza sztuczna inteligencja automatycznie wyłapuje z
+                    paragonów produkty ekologiczne (BIO, Eco, Organic). Zmieniaj
+                    nawyki na zdrowsze, zbieraj Zielone Listki i odblokowuj
+                    specjalne osiągnięcia w aplikacji.
+                  </p>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <Check size={16} className="text-green-500" />
+                      Automatyczne flagowanie produktów BIO
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check size={16} className="text-green-500" />
+                      System odznak i osiągnięć
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check size={16} className="text-green-500" />
+                      Świadome budowanie nawyków
+                    </li>
+                  </ul>
+                </div>
               </div>
 
               {/* Feature 2 */}
-              <div className="bg-card border border-border/50 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 p-3 rounded-lg w-fit mb-4">
-                  <BarChart3 size={24} className="text-blue-500" />
+              <div className="bg-card border border-border/50 rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <div className="h-48 w-full relative border-b border-gray-800/50 bg-[#0a0a0a] overflow-hidden group">
+                  <img
+                    src={budzetImg}
+                    alt="Feature preview"
+                    className="w-full h-full object-cover object-top opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-500"
+                  />
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">
-                  Budżety, które wreszcie działają
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  Skoro precyzyjnie kategoryzujemy każdy produkt, Twoje limity
-                  wydatków są w 100% dokładne. Ustaw osobne budżety na rozrywkę,
-                  rachunki czy chemię domową i otrzymuj powiadomienia, gdy
-                  zbliżasz się do granicy.
-                </p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Kontrola wydatków na bieżąco
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Precyzyjne limity dla kategorii
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Szybkie reagowanie na przekroczenia
-                  </li>
-                </ul>
+                <div className="p-6 flex-1">
+                  <div className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 p-3 rounded-lg w-fit mb-4">
+                    <BarChart3 size={24} className="text-blue-500" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">
+                    Budżety, które wreszcie działają
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    Skoro precyzyjnie kategoryzujemy każdy produkt, Twoje limity
+                    wydatków są w 100% dokładne. Ustaw osobne budżety na
+                    rozrywkę, rachunki czy chemię domową i otrzymuj
+                    powiadomienia, gdy zbliżasz się do granicy.
+                  </p>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <Check size={16} className="text-green-500" />
+                      Kontrola wydatków na bieżąco
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check size={16} className="text-green-500" />
+                      Precyzyjne limity dla kategorii
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check size={16} className="text-green-500" />
+                      Szybkie reagowanie na przekroczenia
+                    </li>
+                  </ul>
+                </div>
               </div>
 
               {/* Feature 4 */}
-              <div className="bg-card border border-border/50 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 p-3 rounded-lg w-fit mb-4">
-                  <Zap size={24} className="text-purple-500" />
+              <div className="bg-card border border-border/50 rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <div className="h-48 w-full relative border-b border-gray-800/50 bg-[#0a0a0a] overflow-hidden group">
+                  <img
+                    src={obrazImg}
+                    alt="Feature preview"
+                    className="w-full h-full object-cover object-top opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-500"
+                  />
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">
-                  Prawdziwy obraz Twoich finansów
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  Zapomnij o ogólnikach. Dzięki temu, że Paragonly zna każdy
-                  pojedynczy produkt, nasze statystyki pokazują dokładnie to, na
-                  co idą Twoje pieniądze. Generuj czytelne raporty miesięczne,
-                  odkrywaj ukryte wzorce i łatwo eksportuj swoje dane.
-                </p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Szczegółowe raporty miesięczne
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Odkrywanie ukrytych kosztów
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Szybki eksport wydatków do CSV
-                  </li>
-                </ul>
+                <div className="p-6 flex-1">
+                  <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 p-3 rounded-lg w-fit mb-4">
+                    <Zap size={24} className="text-purple-500" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">
+                    Prawdziwy obraz Twoich finansów
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    Zapomnij o ogólnikach. Dzięki temu, że Paragonly zna każdy
+                    pojedynczy produkt, nasze statystyki pokazują dokładnie to,
+                    na co idą Twoje pieniądze. Generuj czytelne raporty
+                    miesięczne, odkrywaj ukryte wzorce i łatwo eksportuj swoje
+                    dane.
+                  </p>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <Check size={16} className="text-green-500" />
+                      Szczegółowe raporty miesięczne
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check size={16} className="text-green-500" />
+                      Odkrywanie ukrytych kosztów
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check size={16} className="text-green-500" />
+                      Szybki eksport wydatków do CSV
+                    </li>
+                  </ul>
+                </div>
               </div>
 
               {/* Feature 6 */}
-              <div className="bg-card border border-border/50 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 p-3 rounded-lg w-fit mb-4">
-                  <Shield size={24} className="text-yellow-500" />
+              <div className="bg-card border border-border/50 rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <div className="h-48 w-full flex items-center justify-center relative border-b border-gray-800/50 bg-gradient-to-br from-gray-900 to-black overflow-hidden group">
+                  <Shield className="w-20 h-20 text-green-500 drop-shadow-[0_0_15px_rgba(34,197,94,0.4)] group-hover:scale-110 transition-transform duration-500" />
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">
-                  Twoje dane pod kluczem
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  Wiemy, że Twoje wydatki to bardzo prywatna sprawa.
-                  Wykorzystujemy najnowocześniejsze standardy szyfrowania bazy
-                  danych, aby Twoje paragony były bezpieczne. Nie handlujemy
-                  Twoimi nawykami zakupowymi – zarabiamy na planie PRO, a nie na
-                  Twoich danych.
-                </p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Zaawansowane szyfrowanie bazy
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    100% prywatności nawyków
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Niezależność od reklamodawców
-                  </li>
-                </ul>
+                <div className="p-6 flex-1">
+                  <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 p-3 rounded-lg w-fit mb-4">
+                    <Shield size={24} className="text-yellow-500" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">
+                    Twoje dane pod kluczem
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    Wiemy, że Twoje wydatki to bardzo prywatna sprawa.
+                    Wykorzystujemy najnowocześniejsze standardy szyfrowania bazy
+                    danych, aby Twoje paragony były bezpieczne. Nie handlujemy
+                    Twoimi nawykami zakupowymi – zarabiamy na planie PRO, a nie
+                    na Twoich danych.
+                  </p>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <Check size={16} className="text-green-500" />
+                      Zaawansowane szyfrowanie bazy
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check size={16} className="text-green-500" />
+                      100% prywatności nawyków
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check size={16} className="text-green-500" />
+                      Niezależność od reklamodawców
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
