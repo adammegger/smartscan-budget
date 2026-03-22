@@ -148,13 +148,6 @@ export default function UpdatePassword() {
               </div>
             )}
 
-            {/* Error State */}
-            {error && !success && hasRecoverySession !== null && (
-              <div className="flex justify-center mb-4">
-                <XCircle className="h-12 w-12 text-red-500" />
-              </div>
-            )}
-
             <CardTitle className="text-xl font-semibold text-foreground">
               {hasRecoverySession === null && "Sprawdzanie uprawnień..."}
               {hasRecoverySession === false && "Brak uprawnień"}
@@ -188,7 +181,7 @@ export default function UpdatePassword() {
             )}
 
             {/* Form State */}
-            {hasRecoverySession === true && !success && !error && (
+            {hasRecoverySession === true && !success && (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label
@@ -383,23 +376,6 @@ export default function UpdatePassword() {
                   className="w-full bg-orange-500 hover:bg-orange-600 text-white"
                 >
                   Przejdź do logowania
-                </Button>
-              </div>
-            )}
-
-            {/* Error State Content */}
-            {error && !success && hasRecoverySession !== null && (
-              <div className="space-y-4">
-                <p className="text-center text-muted-foreground">{error}</p>
-                <Button
-                  onClick={() => {
-                    setError(null);
-                    setNewPassword("");
-                    setConfirmPassword("");
-                  }}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white"
-                >
-                  Spróbuj ponownie
                 </Button>
               </div>
             )}
