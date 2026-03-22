@@ -199,16 +199,18 @@ export default function LandingPage() {
                     <span>Nowość na rynku!</span>
                   </div>
                   <h1 className="text-4xl md:text-6xl font-bold text-foreground leading-tight">
-                    Zarządzaj wydatkami
+                    Rozliczaj każdy produkt, nie tylko paragony.
                     <span className="bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
                       {" "}
-                      z pomocą AI
+                      Z pomocą AI
                     </span>
                   </h1>
                   <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-                    Skanuj paragony w sekundę, kontroluj budżet domowy i
-                    zdobywaj nagrody za ekologiczne zakupy. Odkryj, gdzie
-                    uciekają Twoje pieniądze.
+                    Skanuj paragony w sekundę. W przeciwieństwie do innych
+                    aplikacji, Paragonly analizuje każdą pozycję osobno i
+                    przypisuje ją do właściwej kategorii. Zobacz dokładnie, ile
+                    wydajesz na jedzenie, a ile na chemię – nawet jeśli wszystko
+                    kupiłeś w jednym markecie.
                   </p>
                 </div>
 
@@ -297,23 +299,23 @@ export default function LandingPage() {
                   <Camera size={24} className="text-orange-500" />
                 </div>
                 <h3 className="text-xl font-semibold text-foreground mb-2">
-                  Skaner AI
+                  Skaner AI, który widzi więcej
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  Większość aplikacji widzi tylko kwotę całkowitą. Nasz Skaner
-                  AI wyciąga każdy pojedynczy produkt z paragonu! Zapisujemy
-                  całą Twoją listę zakupów, automatycznie przydzielając
-                  konkretnym produktom ich własne kategorie budżetowe (np.
-                  jedzenie, chemia).
+                  Kupiłeś w hipermarkecie chleb, płyn do szyb i skarpetki?
+                  Zwykła aplikacja wrzuci całą kwotę w "Jedzenie", rujnując
+                  Twoje statystyki. Paragonly czyta paragon linijka po linijce.
+                  Chleb to Jedzenie, płyn to Auto, a skarpetki to Ubrania.
+                  Koniec z zakłamanym budżetem.
                 </p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-green-500" />
-                    Skanowanie pojedynczych produktów
+                    Kategoryzacja na poziomie produktu
                   </li>
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-green-500" />
-                    Inteligentne kategorie per produkt
+                    Rozpoznawanie skrótów ze sklepów
                   </li>
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-green-500" />
@@ -324,29 +326,30 @@ export default function LandingPage() {
 
               {/* Feature 2 */}
               <div className="bg-card border border-border/50 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 p-3 rounded-lg w-fit mb-4">
-                  <BarChart3 size={24} className="text-blue-500" />
+                <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 p-3 rounded-lg w-fit mb-4">
+                  <Calendar size={24} className="text-cyan-500" />
                 </div>
                 <h3 className="text-xl font-semibold text-foreground mb-2">
-                  Inteligentne Budżety
+                  Śledzenie historii i inflacji
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  Twórz limity wydatków i śledź wahania cen ulubionych
-                  produktów. Zawsze wiedz, ile wydajesz i gdzie możesz
-                  zaoszczędzić.
+                  Przestań zgadywać, czy w sklepie faktycznie jest taniej.
+                  Paragonly zapamiętuje ceny Twoich ulubionych produktów na
+                  przestrzeni czasu. Od razu sprawdzisz, jaka była najniższa i
+                  najwyższa zapłacona cena, oraz wyłapiesz ukrytą inflację.
                 </p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-green-500" />
-                    Limitowanie wydatków
+                    Historia cen pojedynczych produktów
                   </li>
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-green-500" />
-                    Analiza cen
+                    Śledzenie ulubionych zakupów
                   </li>
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-green-500" />
-                    Oszczędzanie
+                    Porównania
                   </li>
                 </ul>
               </div>
@@ -357,19 +360,56 @@ export default function LandingPage() {
                   <Leaf size={24} className="text-green-500" />
                 </div>
                 <h3 className="text-xl font-semibold text-foreground mb-2">
-                  Grywalizacja i Ekologia
+                  Twój eko-ślad na paragonie
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  Zdobywaj osiągnięcia i Zielone Listki za wybór produktów BIO.
+                  Nasza sztuczna inteligencja automatycznie wyłapuje z paragonów
+                  produkty ekologiczne (BIO, Eco, Organic). Zmieniaj nawyki na
+                  zdrowsze, zbieraj Zielone Listki i odblokowuj specjalne
+                  osiągnięcia w aplikacji.
                 </p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-green-500" />
-                    Osiągnięcia
+                    Automatyczne flagowanie produktów BIO
                   </li>
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-green-500" />
-                    Zielone Listki
+                    System odznak i osiągnięć
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-green-500" />
+                    Świadome budowanie nawyków
+                  </li>
+                </ul>
+              </div>
+
+              {/* Feature 2 */}
+              <div className="bg-card border border-border/50 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <div className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 p-3 rounded-lg w-fit mb-4">
+                  <BarChart3 size={24} className="text-blue-500" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-2">
+                  Budżety, które wreszcie działają
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  Skoro precyzyjnie kategoryzujemy każdy produkt, Twoje limity
+                  wydatków są w 100% dokładne. Ustaw osobne budżety na rozrywkę,
+                  rachunki czy chemię domową i otrzymuj powiadomienia, gdy
+                  zbliżasz się do granicy.
+                </p>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-green-500" />
+                    Kontrola wydatków na bieżąco
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-green-500" />
+                    Precyzyjne limity dla kategorii
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-green-500" />
+                    Szybkie reagowanie na przekroczenia
                   </li>
                 </ul>
               </div>
@@ -380,62 +420,26 @@ export default function LandingPage() {
                   <Zap size={24} className="text-purple-500" />
                 </div>
                 <h3 className="text-xl font-semibold text-foreground mb-2">
-                  Analiza Wydatków
+                  Prawdziwy obraz Twoich finansów
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  Szczegółowe raporty i statystyki pokazujące, gdzie wydajesz
-                  pieniądze. Odkryj ukryte wzorce i optymalizuj swoje wydatki.
+                  Zapomnij o ogólnikach. Dzięki temu, że Paragonly zna każdy
+                  pojedynczy produkt, nasze statystyki pokazują dokładnie to, na
+                  co idą Twoje pieniądze. Generuj czytelne raporty miesięczne,
+                  odkrywaj ukryte wzorce i łatwo eksportuj swoje dane.
                 </p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-green-500" />
-                    Raporty miesięczne
+                    Szczegółowe raporty miesięczne
                   </li>
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-green-500" />
-                    Analiza kategorii
+                    Odkrywanie ukrytych kosztów
                   </li>
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-green-500" />
-                    Trendy wydatków
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Eksport wydatków do CSV
-                  </li>
-                </ul>
-              </div>
-
-              {/* Feature 5 */}
-              <div className="bg-card border border-border/50 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 p-3 rounded-lg w-fit mb-4">
-                  <Calendar size={24} className="text-cyan-500" />
-                </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">
-                  Śledzenie Historii
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  Śledź inflację na własnych oczach. Paragonly zapamiętuje ceny
-                  Twoich ulubionych i najczęściej kupowanych produktów na
-                  przestrzeni czasu, pokazując najniższą i najwyższą zapłaconą
-                  cenę oraz trendy.
-                </p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Archiwum paragonów
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Wyszukiwanie
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Porównania
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check size={16} className="text-green-500" />
-                    Wykresy historii cen produktów
+                    Szybki eksport wydatków do CSV
                   </li>
                 </ul>
               </div>
@@ -446,25 +450,27 @@ export default function LandingPage() {
                   <Shield size={24} className="text-yellow-500" />
                 </div>
                 <h3 className="text-xl font-semibold text-foreground mb-2">
-                  Bezpieczeństwo i Prywatność
+                  Twoje dane pod kluczem
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  Twoje dane są bezpieczne. Używamy najnowocześniejszych
-                  technologii szyfrowania i nie udostępniamy Twoich danych
-                  osobom trzecim.
+                  Wiemy, że Twoje wydatki to bardzo prywatna sprawa.
+                  Wykorzystujemy najnowocześniejsze standardy szyfrowania bazy
+                  danych, aby Twoje paragony były bezpieczne. Nie handlujemy
+                  Twoimi nawykami zakupowymi – zarabiamy na planie PRO, a nie na
+                  Twoich danych.
                 </p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-green-500" />
-                    Szyfrowanie danych
+                    Zaawansowane szyfrowanie bazy
                   </li>
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-green-500" />
-                    Prywatność
+                    100% prywatności nawyków
                   </li>
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-green-500" />
-                    Bezpieczeństwo
+                    Niezależność od reklamodawców
                   </li>
                 </ul>
               </div>
@@ -568,7 +574,7 @@ export default function LandingPage() {
                   <div className="flex items-center gap-3">
                     <Check size={20} className="text-green-500" />
                     <span className="text-foreground">
-                      Nielimitowane skanowanie paragonów
+                      Nielimitowane skanowanie i kategoryzacja AI
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
