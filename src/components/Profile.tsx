@@ -8,6 +8,10 @@ import {
   CheckCircle,
   Edit3,
   CreditCard,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  Circle,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -25,8 +29,12 @@ export default function Profile() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [isSavingName, setIsSavingName] = useState(false);
   const [nameSaveMessage, setNameSaveMessage] = useState<string>("");
-  const [isResettingPassword, setIsResettingPassword] = useState(false);
-  const [resetMessage, setResetMessage] = useState("");
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userDataSummary, setUserDataSummary] = useState<{
@@ -84,32 +92,61 @@ export default function Profile() {
     getCurrentUser();
   }, []);
 
-  const handleResetPassword = async () => {
-    if (!userEmail) {
-      setResetMessage("Nie można zresetować hasła - brak adresu e-mail");
+  const handleUpdatePassword = async () => {
+    // Check if all password requirements are met
+    const hasMinLength = newPassword.length >= 8;
+    const hasUppercase = /(?=.*[A-Z])/.test(newPassword);
+    const hasNumber = /(?=.*[0-9])/.test(newPassword);
+
+    if (!hasMinLength || !hasUppercase || !hasNumber) {
+      setPasswordMessage("Proszę spełnić wszystkie wymagania dotyczące hasła.");
       return;
     }
 
-    setIsResettingPassword(true);
-    setResetMessage("");
+    // Validate password confirmation
+    if (newPassword !== confirmPassword) {
+      setPasswordMessage("Hasła nie są identyczne");
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+    setPasswordMessage("");
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
-        redirectTo: `${window.location.origin}/update-password`,
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
       });
 
       if (error) {
         throw error;
       }
 
-      setResetMessage("Link został wysłany. Sprawdź swoją skrzynkę e-mail.");
+      setPasswordMessage("Hasło zostało zmienione pomyślnie!");
+
+      // Clear inputs after success
+      setNewPassword("");
+      setConfirmPassword("");
+
+      // Show success toast
+      showToast("Hasło zostało zmienione pomyślnie", "success");
     } catch (error) {
-      console.error("Password reset error:", error);
-      setResetMessage(
-        "Wystąpił błąd podczas wysyłania linku do resetowania hasła.",
-      );
+      console.error("Password update error:", error);
+
+      // Map error messages to specific Polish messages
+      if (error && typeof error === "object" && "message" in error) {
+        const errorMessage = error.message as string;
+        if (errorMessage.includes("different from the old password")) {
+          setPasswordMessage("Nowe hasło musi być inne niż obecne.");
+        } else if (errorMessage.includes("should be at least")) {
+          setPasswordMessage("Hasło musi mieć co najmniej 6 znaków.");
+        } else {
+          setPasswordMessage("Wystąpił błąd podczas zmiany hasła.");
+        }
+      } else {
+        setPasswordMessage("Wystąpił błąd podczas zmiany hasła.");
+      }
     } finally {
-      setIsResettingPassword(false);
+      setIsUpdatingPassword(false);
     }
   };
 
@@ -404,38 +441,203 @@ export default function Profile() {
               </div>
             </div>
 
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Wyślij e-mail z linkiem do resetowania hasła na Twój adres
-                e-mail.
-              </p>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="newPassword" className="text-sm font-medium">
+                  Nowe hasło
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="newPassword"
+                    type={showPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    disabled={isUpdatingPassword}
+                    className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-orange-500 focus:ring-orange-500 pr-12"
+                    placeholder="Wprowadź nowe hasło"
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="text-muted-foreground hover:text-foreground focus:outline-none cursor-pointer p-1 pointer-events-auto"
+                      aria-label={showPassword ? "Ukryj hasło" : "Pokaż hasło"}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Password Requirements */}
+                {newPassword && (
+                  <div className="mt-2 space-y-1">
+                    <div className="flex items-center gap-2 text-xs">
+                      {/(?=.*[A-Z])/.test(newPassword) ? (
+                        <CheckCircle2 size={14} className="text-green-500" />
+                      ) : (
+                        <Circle size={14} className="text-muted-foreground" />
+                      )}
+                      <span
+                        className={
+                          /(?=.*[A-Z])/.test(newPassword)
+                            ? "text-green-600 dark:text-green-400"
+                            : "text-muted-foreground"
+                        }
+                      >
+                        Przynajmniej 1 duża litera
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      {/(?=.*[0-9])/.test(newPassword) ? (
+                        <CheckCircle2 size={14} className="text-green-500" />
+                      ) : (
+                        <Circle size={14} className="text-muted-foreground" />
+                      )}
+                      <span
+                        className={
+                          /(?=.*[0-9])/.test(newPassword)
+                            ? "text-green-600 dark:text-green-400"
+                            : "text-muted-foreground"
+                        }
+                      >
+                        Przynajmniej 1 cyfra
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      {newPassword.length >= 8 ? (
+                        <CheckCircle2 size={14} className="text-green-500" />
+                      ) : (
+                        <Circle size={14} className="text-muted-foreground" />
+                      )}
+                      <span
+                        className={
+                          newPassword.length >= 8
+                            ? "text-green-600 dark:text-green-400"
+                            : "text-muted-foreground"
+                        }
+                      >
+                        Minimum 8 znaków
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Password Strength Progress Bar */}
+                {newPassword && (
+                  <div className="mt-2">
+                    <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                      <span>Siła hasła</span>
+                      <span>
+                        {(() => {
+                          const conditions = [
+                            newPassword.length >= 8,
+                            /(?=.*[A-Z])/.test(newPassword),
+                            /(?=.*[0-9])/.test(newPassword),
+                          ];
+                          const metConditions =
+                            conditions.filter(Boolean).length;
+                          return `${metConditions}/3`;
+                        })()}
+                      </span>
+                    </div>
+                    <div className="w-full bg-border rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full transition-all duration-300 ${(() => {
+                          const conditions = [
+                            newPassword.length >= 8,
+                            /(?=.*[A-Z])/.test(newPassword),
+                            /(?=.*[0-9])/.test(newPassword),
+                          ];
+                          const metConditions =
+                            conditions.filter(Boolean).length;
+                          if (metConditions === 0) return "w-0";
+                          if (metConditions === 1) return "w-1/3 bg-red-500";
+                          if (metConditions === 2) return "w-2/3 bg-yellow-500";
+                          return "w-full bg-green-500";
+                        })()}`}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label
+                  htmlFor="confirmPassword"
+                  className="text-sm font-medium"
+                >
+                  Potwierdź hasło
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    disabled={isUpdatingPassword}
+                    className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-orange-500 focus:ring-orange-500 pr-12"
+                    placeholder="Powtórz nowe hasło"
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      className="text-muted-foreground hover:text-foreground focus:outline-none cursor-pointer p-1 pointer-events-auto"
+                      aria-label={
+                        showConfirmPassword ? "Ukryj hasło" : "Pokaż hasło"
+                      }
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff size={18} />
+                      ) : (
+                        <Eye size={18} />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
 
               <div className="flex gap-4">
                 <Button
-                  onClick={handleResetPassword}
-                  disabled={isResettingPassword}
+                  onClick={handleUpdatePassword}
+                  disabled={
+                    isUpdatingPassword ||
+                    !newPassword ||
+                    !confirmPassword ||
+                    newPassword !== confirmPassword ||
+                    !/(?=.*[A-Z])/.test(newPassword) ||
+                    !/(?=.*[0-9])/.test(newPassword) ||
+                    newPassword.length < 8
+                  }
                   className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6 py-2 rounded-full transition-all duration-200 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isResettingPassword ? (
+                  {isUpdatingPassword ? (
                     <div className="flex items-center gap-2">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      Wysyłanie...
+                      Zmienianie hasła...
                     </div>
                   ) : (
-                    "Wyślij link do resetowania hasła"
+                    "Zmień hasło"
                   )}
                 </Button>
               </div>
 
-              {resetMessage && (
+              {passwordMessage && (
                 <div
                   className={`p-4 rounded-lg ${
-                    resetMessage.includes("Wystąpił błąd")
-                      ? "bg-red-500/10 border border-red-500/20 text-red-600"
+                    passwordMessage.includes("Wystąpił błąd") ||
+                    passwordMessage.includes("Hasła nie są identyczne") ||
+                    passwordMessage.includes("Hasło musi mieć") ||
+                    passwordMessage.includes(
+                      "Nowe hasło musi być inne niż obecne",
+                    )
+                      ? "bg-red-950/30 border border-red-700 text-red-500"
                       : "bg-green-500/10 border border-green-500/20 text-green-600"
                   }`}
                 >
-                  {resetMessage}
+                  {passwordMessage}
                 </div>
               )}
             </div>
