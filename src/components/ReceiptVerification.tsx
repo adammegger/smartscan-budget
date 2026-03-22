@@ -1269,14 +1269,14 @@ export default function ReceiptVerification({
           </div>
 
           {/* Summary */}
-          <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-4 sm:gap-2 p-4 bg-muted rounded-lg">
             <div className="text-sm text-muted-foreground">
               <span>Kategoria paragonu: </span>
               <span className="font-medium text-foreground">
                 {editedData.category}
               </span>
             </div>
-            <div className="text-right">
+            <div className="self-start sm:self-auto flex items-center gap-2 whitespace-nowrap mt-1 sm:mt-0">
               <div className="text-sm text-muted-foreground">
                 Suma produktów:
               </div>
