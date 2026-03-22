@@ -912,7 +912,7 @@ export default function DashboardTiles(props: DashboardTilesProps) {
                     return (
                       <div
                         key={category.category}
-                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors border border-border"
+                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors border border-border"
                       >
                         {/* Left side: Category badge */}
                         <div
@@ -939,11 +939,11 @@ export default function DashboardTiles(props: DashboardTilesProps) {
                         </div>
 
                         {/* Right side: Amount and percentage */}
-                        <div className="text-right gap-2">
+                        <div className="self-start sm:self-auto flex items-center gap-2 whitespace-nowrap mt-1 sm:mt-0">
                           <span className="font-bold text-foreground text-sm">
                             {category.total.toFixed(2)} PLN
                           </span>
-                          <span className="text-muted-foreground text-xs ml-2">
+                          <span className="text-muted-foreground text-xs">
                             ({percentage.toFixed(1)}%)
                           </span>
                         </div>
