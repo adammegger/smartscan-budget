@@ -179,8 +179,11 @@ export default function FavoriteProducts() {
             ? item.price
             : parseFloat(String(item.price).replace(",", "."));
 
-        // Extract the actual receipt date from the joined data
-        const itemDate = new Date(item.receipts?.[0]?.date || new Date());
+        // Supabase zwraca relację 1:1 jako obiekt, a nie tablicę. Bezpiecznie sprawdzamy obie opcje.
+        const receiptData = Array.isArray(item.receipts)
+          ? item.receipts[0]
+          : item.receipts;
+        const itemDate = new Date(receiptData?.date || new Date());
 
         if (productMap.has(productName)) {
           const existing = productMap.get(productName)!;
