@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { logger } from "../lib/logger";
 import { ensureUserProfile, type Profile } from "../lib/profile";
 
 /**
@@ -27,7 +28,7 @@ export function useEnsureProfile() {
           setProfile(profileData);
         }
       } catch (err) {
-        console.error("Profile fetch/create error:", err);
+        logger.error("Profile fetch/create error:", err);
 
         if (isMounted) {
           setError(

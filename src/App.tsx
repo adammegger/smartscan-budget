@@ -11,6 +11,7 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import { useEffect, useRef, useState, lazy, Suspense } from "react";
+import { logger } from "./lib/logger";
 import { supabase } from "./lib/supabase";
 import { ThemeProvider, useTheme } from "./lib/theme";
 import {
@@ -164,7 +165,7 @@ function DashboardLayout() {
       setCaptureMessage("");
     }, 3000);
 
-    console.log("Image captured:", imageData);
+    logger.log("Image captured:", imageData);
   };
 
   const handleAnalysisComplete = (receiptData: ReceiptData) => {
@@ -184,7 +185,7 @@ function DashboardLayout() {
 
     // ZAPISUJEMY DANE DO STANU, ŻEBY WYŚWIETLIĆ MODAL:
     setVerificationReceipt(receiptDataWithCategoryIds);
-    console.log("Oczekuje na weryfikację:", receiptDataWithCategoryIds);
+    logger.log("Oczekuje na weryfikację:", receiptDataWithCategoryIds);
   };
 
   const handleAnalysisError = (error: string) => {
@@ -196,7 +197,7 @@ function DashboardLayout() {
       setCaptureMessage("");
     }, 5000);
 
-    console.error("Analysis error:", error);
+    logger.error("Analysis error:", error);
   };
 
   const triggerScan = () => {
@@ -228,7 +229,7 @@ function DashboardLayout() {
           setIsAuthenticated(false);
         }
       } catch (error) {
-        console.error("Auth check error:", error);
+        logger.error("Auth check error:", error);
         // Don't throw - just log and continue
         setIsAuthenticated(false);
       } finally {
@@ -655,7 +656,7 @@ function DashboardLayout() {
               // Stop scanning overlay when all operations are complete
               stopScanning();
             } catch (error) {
-              console.error("Błąd zapisu zweryfikowanego paragonu:", error);
+              logger.error("Błąd zapisu zweryfikowanego paragonu:", error);
               setCaptureMessage("Błąd zapisu paragonu. Spróbuj ponownie.");
               stopScanning();
             }

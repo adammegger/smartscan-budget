@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { logger } from "../lib/logger";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { ThemeProvider } from "../lib/theme";
@@ -28,7 +29,7 @@ export default function AuthCallbackPage() {
         } = await supabase.auth.getSession();
 
         if (error) {
-          console.error("Session error:", error);
+          logger.error("Session error:", error);
           setStatus("error");
           setErrorDetails("Błąd weryfikacji sesji");
           return;
@@ -49,7 +50,7 @@ export default function AuthCallbackPage() {
 
         setStatus("success");
       } catch (err) {
-        console.error("Verification error:", err);
+        logger.error("Verification error:", err);
         setStatus("error");
         setErrorDetails("Wystąpił nieoczekiwany błąd");
       }

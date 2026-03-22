@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { logger } from "./logger";
 import { checkAndTriggerAchievements } from "./achievementUtils";
 import { processReceiptItems, updateGreenLeaves } from "./eco";
 import { refreshAllData } from "./dataRefresh";
@@ -26,7 +27,7 @@ export interface ReceiptData {
 export const saveReceiptToSupabase = async (receiptData: ReceiptData) => {
   try {
     // Log data before saving to verify UUIDs are present
-    console.log("Dane do zapisu do bazy:", {
+    logger.log("Dane do zapisu do bazy:", {
       store_name: receiptData.store_name,
       category: receiptData.category,
       category_id: receiptData.category_id,
@@ -121,7 +122,7 @@ export const saveReceiptToSupabase = async (receiptData: ReceiptData) => {
     try {
       await refreshAllData();
     } catch (cacheError) {
-      console.warn("Failed to refresh cache after saving receipt:", cacheError);
+      logger.warn("Failed to refresh cache after saving receipt:", cacheError);
     }
 
     // Dispatch event to notify components that can't use the refresh hook
@@ -129,7 +130,7 @@ export const saveReceiptToSupabase = async (receiptData: ReceiptData) => {
 
     return receiptDataResult;
   } catch (error) {
-    console.error("Error saving receipt to Supabase:", error);
+    logger.error("Error saving receipt to Supabase:", error);
     throw error;
   }
 };

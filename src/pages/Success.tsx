@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { logger } from "../lib/logger";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { ensureUserProfile } from "@/lib/profile";
@@ -45,9 +46,9 @@ export default function Success() {
         // Force refresh the profile data
         await ensureUserProfile();
         setRefreshComplete(true);
-        console.log("Profile data refreshed after successful payment");
+        logger.log("Profile data refreshed after successful payment");
       } catch (error) {
-        console.error("Error refreshing profile:", error);
+        logger.error("Error refreshing profile:", error);
       } finally {
         setIsRefreshing(false);
       }

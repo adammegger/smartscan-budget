@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { logger } from "./logger";
 
 /**
  * Delete the current user and all their data
@@ -13,7 +14,7 @@ export async function deleteUserAccount(): Promise<{
     const { error } = await supabase.rpc("delete_user");
 
     if (error) {
-      console.error("Error deleting user:", error);
+      logger.error("Error deleting user:", error);
       return {
         success: false,
         error: error.message || "Wystąpił błąd podczas usuwania konta",
@@ -22,7 +23,7 @@ export async function deleteUserAccount(): Promise<{
 
     return { success: true };
   } catch (error) {
-    console.error("Delete user error:", error);
+    logger.error("Delete user error:", error);
     return {
       success: false,
       error:
@@ -61,7 +62,7 @@ export async function getUserDataSummary(): Promise<{
     });
 
     if (error) {
-      console.error("Error getting user data summary:", error);
+      logger.error("Error getting user data summary:", error);
       return {
         receipts_count: 0,
         budgets_count: 0,
@@ -76,7 +77,7 @@ export async function getUserDataSummary(): Promise<{
       profile_exists: data?.profile_exists || false,
     };
   } catch (error) {
-    console.error("Get user data summary error:", error);
+    logger.error("Get user data summary error:", error);
     return {
       receipts_count: 0,
       budgets_count: 0,

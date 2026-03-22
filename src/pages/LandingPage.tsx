@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { logger } from "../lib/logger";
 import type { Session } from "@supabase/supabase-js";
 import {
   Camera,
@@ -47,7 +48,7 @@ export default function LandingPage() {
         } = await supabase.auth.getSession();
         setSession(session);
       } catch (error) {
-        console.error("Error checking session:", error);
+        logger.error("Error checking session:", error);
       }
     };
 

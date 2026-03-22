@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { logger } from "../lib/logger";
 import { ArrowLeft, Mail, MapPin, MessageCircle } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
@@ -46,7 +47,7 @@ export default function Contact() {
         throw new Error(result.message || "Błąd API Web3Forms");
       }
     } catch (err) {
-      console.error("Błąd wysyłania:", err);
+      logger.error("Błąd wysyłania:", err);
       setSubmitMessage(
         "Wystąpił błąd podczas wysyłania wiadomości. Spróbuj ponownie.",
       );

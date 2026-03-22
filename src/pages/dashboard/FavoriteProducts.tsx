@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { logger } from "../../lib/logger";
 import { supabase } from "../../lib/supabase";
 import { getCategoryColor } from "../../lib/categoryCache";
 import { ShoppingCart, Star, Calendar, Edit, Save, X } from "lucide-react";
@@ -228,7 +229,7 @@ export default function FavoriteProducts() {
         lastFetched: Date.now(),
       });
     } catch (err) {
-      console.error("Error fetching favorite products:", err);
+      logger.error("Error fetching favorite products:", err);
       setError("Wystąpił błąd podczas pobierania ulubionych produktów");
     } finally {
       setLoading(false);
@@ -264,7 +265,7 @@ export default function FavoriteProducts() {
         if (error) throw error;
         setCategories(data || []);
       } catch (err) {
-        console.error("Error fetching categories:", err);
+        logger.error("Error fetching categories:", err);
       }
     };
     fetchCategories();
@@ -365,7 +366,7 @@ export default function FavoriteProducts() {
       setEditingProduct(null);
       setNewCategory("");
     } catch (err) {
-      console.error("Error updating product category:", err);
+      logger.error("Error updating product category:", err);
       setError("Wystąpił błąd podczas aktualizacji kategorii produktu");
     } finally {
       setIsUpdating(false);

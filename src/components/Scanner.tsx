@@ -1,4 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
+import { logger } from "../lib/logger";
 import { scanReceipt } from "../lib/receiptScanApi";
 import { supabase } from "../lib/supabase";
 import { compressImage } from "../lib/imageCompression";
@@ -112,17 +113,17 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
       .single();
 
     if (profileError) {
-      console.error("Failed to fetch profile for scan limits:", profileError);
+      logger.error("Failed to fetch profile for scan limits:", profileError);
     }
 
-    console.log("--- REAL-TIME PROFILE CHECK ---");
-    console.log("User ID:", user.id);
-    console.log("Profile Data:", profileData);
+    logger.log("--- REAL-TIME PROFILE CHECK ---");
+    logger.log("User ID:", user.id);
+    logger.log("Profile Data:", profileData);
 
     const currentTier = profileData?.subscription_tier || "free";
     const isPro = currentTier === "pro" || currentTier === "premium";
 
-    console.log("Determined Status - isPro:", isPro, "Tier:", currentTier);
+    logger.log("Determined Status - isPro:", isPro, "Tier:", currentTier);
 
     // 2. ONLY if they are genuinely Free, do we count the receipts
     if (!isPro) {
@@ -138,15 +139,15 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
         .gte("date", startOfMonth);
 
       const currentMonthCount = receiptsData ? receiptsData.length : 0;
-      console.log("Free User Month Count:", currentMonthCount);
+      logger.log("Free User Month Count:", currentMonthCount);
 
       if (currentMonthCount >= FREE_TIER_LIMITS.MAX_RECEIPTS_PER_MONTH) {
-        console.log("BLOCKING! Limit reached.");
+        logger.log("BLOCKING! Limit reached.");
         setShowProModal(true);
         return;
       }
     } else {
-      console.log("User is PRO! Bypassing receipt limits.");
+      logger.log("User is PRO! Bypassing receipt limits.");
     }
 
     setIsSimulating(true);
@@ -277,10 +278,10 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
 
       // Don't save to Supabase automatically - pass to verification modal instead
 
-      console.log("🔍 Scanner: Calling onAnalysisComplete with:", receiptData);
+      logger.log("🔍 Scanner: Calling onAnalysisComplete with:", receiptData);
       onAnalysisComplete(receiptData);
     } catch (error) {
-      console.error("Error in mock scan:", error);
+      logger.error("Error in mock scan:", error);
       onAnalysisError(
         error instanceof Error
           ? error.message
@@ -315,17 +316,17 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
         .single();
 
       if (profileError) {
-        console.error("Failed to fetch profile for scan limits:", profileError);
+        logger.error("Failed to fetch profile for scan limits:", profileError);
       }
 
-      console.log("--- REAL-TIME PROFILE CHECK ---");
-      console.log("User ID:", user.id);
-      console.log("Profile Data:", profileData);
+      logger.log("--- REAL-TIME PROFILE CHECK ---");
+      logger.log("User ID:", user.id);
+      logger.log("Profile Data:", profileData);
 
       const currentTier = profileData?.subscription_tier || "free";
       const isPro = currentTier === "pro" || currentTier === "premium";
 
-      console.log("Determined Status - isPro:", isPro, "Tier:", currentTier);
+      logger.log("Determined Status - isPro:", isPro, "Tier:", currentTier);
 
       // 2. ONLY if they are genuinely Free, do we count the receipts
       if (!isPro) {
@@ -341,21 +342,21 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
           .gte("date", startOfMonth);
 
         const currentMonthCount = receiptsData ? receiptsData.length : 0;
-        console.log("Free User Month Count:", currentMonthCount);
+        logger.log("Free User Month Count:", currentMonthCount);
 
         if (currentMonthCount >= FREE_TIER_LIMITS.MAX_RECEIPTS_PER_MONTH) {
-          console.log("BLOCKING! Limit reached.");
+          logger.log("BLOCKING! Limit reached.");
           setShowProModal(true);
           return;
         }
       } else {
-        console.log("User is PRO! Bypassing receipt limits.");
+        logger.log("User is PRO! Bypassing receipt limits.");
       }
 
-      console.log("--- FILE UPLOAD TRIGGERED IN SCANNER ---");
-      console.log("User Profile:", profileData);
-      console.log("Is PRO?", isPro);
-      console.log("ALLOWING FILE UPLOAD...");
+      logger.log("--- FILE UPLOAD TRIGGERED IN SCANNER ---");
+      logger.log("User Profile:", profileData);
+      logger.log("Is PRO?", isPro);
+      logger.log("ALLOWING FILE UPLOAD...");
 
       // Convert to Base64
       const reader = new FileReader();
@@ -413,7 +414,7 @@ const Scanner = forwardRef<ScannerRef, ScannerProps>(function Scanner(
 
             onAnalysisComplete(receiptDataForVerification);
           } catch (error) {
-            console.error("Error processing receipt:", error);
+            logger.error("Error processing receipt:", error);
             onAnalysisError(
               error instanceof Error
                 ? error.message
